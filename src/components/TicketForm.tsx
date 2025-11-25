@@ -2,36 +2,33 @@
 
 import { useState } from "react";
 import axios from "axios";
-import { Ticket } from "../types/ticket";
 
-export default function TicketForm({ onCreated }: { onCreated?: (t: Ticket) => void }) {
+export default function TicketForm() {
   const [title, setTitle] = useState("");
-  const [message, setMessage] = useState("");
+  const [description, setDescription] = useState("");
   const [requester, setRequester] = useState("");
+  const [priority, setPriority] = useState("normal");
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
 
-    try {
-      const res = await axios.post("/api/tickets", {
-        title,
-        message,
-        requester,
-      });
+    await axios.post("/api/tickets", {
+      title,
+      description,
+      requester,
+      priority,
+    });
 
-      if (res.status === 201 && onCreated) onCreated(res.data);
+    setTitle("");
+    setDescription("");
+    setRequester("");
+    setPriority("normal");
 
-      setTitle("");
-      setMessage("");
-      setRequester("");
-    } catch (err: any) {
-      console.error("Failed to create ticket:", err?.response?.data ?? err.message ?? err);
-      alert("Erro ao criar chamado: " + (err?.response?.data?.error ?? err.message ?? "Servidor retornou erro."));
-    }
+    window.location.reload();
   }
 
   return (
-    <form onSubmit={handleSubmit} className="p-4 bg-black rounded shadow space-y-3">
+    <form onSubmit={handleSubmit} className="p-4 bg-white rounded shadow space-y-3">
       <h2 className="text-lg font-semibold">Abrir Chamado</h2>
 
       <input
@@ -44,19 +41,28 @@ export default function TicketForm({ onCreated }: { onCreated?: (t: Ticket) => v
 
       <textarea
         className="w-full border p-2 rounded"
-        placeholder="Descrição do problema"
-        value={message}
-        onChange={(e) => setMessage(e.target.value)}
-        required
+        placeholder="Descrição"
+        value={description}
+        onChange={(e) => setDescription(e.target.value)}
       />
 
       <input
         className="w-full border p-2 rounded"
-        placeholder="Identificação do solicitante"
+        placeholder="Solicitante"
         value={requester}
         onChange={(e) => setRequester(e.target.value)}
         required
       />
+
+      <select
+        className="w-full border p-2 rounded"
+        value={priority}
+        onChange={(e) => setPriority(e.target.value)}
+      >
+        <option value="low">Baixa</option>
+        <option value="normal">Normal</option>
+        <option value="high">Alta</option>
+      </select>
 
       <button
         type="submit"

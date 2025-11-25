@@ -1,5 +1,5 @@
 import TicketForm from "../components/TicketForm";
-import TicketList from "../components/TicketList";
+import TicketListRealtime from "../components/TicketListRealtime";
 
 export default function Home() {
   return (
@@ -10,7 +10,7 @@ export default function Home() {
 
       <hr className="my-6" />
 
-      <TicketList />
+      <TicketListRealtime />
     </main>
   );
 }

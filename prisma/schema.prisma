@@ -12,6 +12,7 @@ model Ticket {
   title       String
   description String
   requester   String
+  status      String   @default("open")
+  priority    String   @default("normal")
   createdAt   DateTime @default(now())
 }
-

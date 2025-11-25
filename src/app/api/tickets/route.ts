@@ -3,9 +3,7 @@ import prisma from "@/lib/prisma";
 
 export async function GET() {
   const tickets = await prisma.ticket.findMany({
-    orderBy: {
-      createdAt: "desc",
-    },
+    orderBy: { createdAt: "desc" },
   });
 
   return NextResponse.json(tickets);
@@ -15,19 +13,29 @@ export async function POST(req: Request) {
   try {
     const data = await req.json();
 
-    const description = data.description ?? data.message ?? "";
-    const requester = data.requester ?? "Anonymous";
+    if (!data.title || !data.description || !data.requester) {
+      return NextResponse.json(
+        { error: "Campos obrigatórios não preenchidos" },
+        { status: 400 }
+      );
+    }
 
     const created = await prisma.ticket.create({
       data: {
         title: data.title,
-        description,
-        requester,
+        description: data.description,
+        requester: data.requester,
+        status: data.status ?? "open",
+        priority: data.priority ?? "normal",
       },
     });
 
     return NextResponse.json(created, { status: 201 });
-  } catch (error: any) {
-    return NextResponse.json({ error: String(error?.message ?? error) }, { status: 500 });
+  } catch (err) {
+    console.error("POST ERROR:", err);
+    return NextResponse.json(
+      { error: "Erro interno do servidor" },
+      { status: 500 }
+    );
   }
 }
