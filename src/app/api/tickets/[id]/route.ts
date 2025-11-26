@@ -1,19 +1,27 @@
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 
-export async function GET(
+export async function PUT(
   req: Request,
   { params }: { params: { id: string } }
 ) {
   const id = Number(params.id);
+  const body = await req.json();
 
-  const ticket = await prisma.ticket.findUnique({
-    where: { id }
-  });
+  try {
+    const updated = await prisma.ticket.update({
+      where: { id },
+      data: {
+        title: body.title,
+        description: body.description,
+        requester: body.requester,
+        status: body.status,
+        priority: body.priority,
+      },
+    });
 
-  if (!ticket) {
-    return NextResponse.json({ error: "Ticket não encontrado" }, { status: 404 });
+    return NextResponse.json(updated);
+  } catch (e) {
+    return NextResponse.json({ error: "Erro ao atualizar" }, { status: 500 });
   }
-
-  return NextResponse.json(ticket);
 }

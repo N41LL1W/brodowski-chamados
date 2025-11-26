@@ -1,26 +1,49 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+/* Variáveis de tema (úteis para ajustes rápidos) */
+:root{
+  --bg: #f8fafc;          /* gray-50 */
+  --surface: #ffffff;     /* white for cards */
+  --text: #0f172a;        /* slate-900 / quase preto */
+  --muted: #475569;       /* slate-600 */
+  --primary: #0ea5a4;     /* teal-500 */
+  --primary-dark: #0b7f7d;/* teal-600 */
+  --danger: #dc2626;      /* red-600 */
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+/* Body/app background + text */
+html, body, #__next {
+  height: 100%;
 }
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
-
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background-color: var(--bg);
+  color: var(--text);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Links */
+a {
+  color: var(--primary);
+  text-decoration: none;
+}
+a:hover { color: var(--primary-dark); text-decoration: underline; }
+
+/* Inputs / textarea styling helper (for non-Tailwind fallback) */
+.input-base {
+  @apply w-full border border-gray-200 bg-white text-sm text-slate-900 rounded p-2;
+}
+
+/* Melhor foco (acessível) */
+:focus {
+  outline: 3px solid rgba(14,165,164,0.12);
+  outline-offset: 2px;
+}
+
+/* Card util */
+.card {
+  background: var(--surface);
+  border-radius: 12px;
+  box-shadow: 0 6px 18px rgba(2,6,23,0.06);
+  border: 1px solid rgba(15,23,42,0.04);
 }
