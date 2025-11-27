@@ -1,39 +1,44 @@
+// src/app/api/tickets/[id]/route.ts
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 
-export async function POST(
-  req: Request,
-  { params }: { params: Promise<{ id: string }> }
-) {
-  const { id } = await params;
-  const ticketId = Number(id);
+export async function GET(req: Request, { params }: { params: { id: string } }) {
+  const id = Number(params.id);
+  if (isNaN(id)) return NextResponse.json({ error: "ID inválido" }, { status: 400 });
+  const ticket = await prisma.ticket.findUnique({ where: { id }});
+  if (!ticket) return NextResponse.json({ error: "Not found" }, { status: 404 });
+  return NextResponse.json(ticket);
+}
 
-  if (isNaN(ticketId)) {
-    return NextResponse.json({ error: "ID inválido" }, { status: 400 });
+// Use POST to update (form friendly)
+export async function POST(req: Request, { params }: { params: { id: string } }) {
+  const id = Number(params.id);
+  if (isNaN(id)) return NextResponse.json({ error: "ID inválido" }, { status: 400 });
+
+  // support JSON or form-data
+  const contentType = req.headers.get("content-type") || "";
+  let data: any = {};
+  if (contentType.includes("application/json")) {
+    data = await req.json();
+  } else {
+    const form = await req.formData();
+    data = Object.fromEntries(form.entries());
   }
-
-  const formData = await req.formData();
 
   try {
     const updated = await prisma.ticket.update({
-      where: { id: ticketId },
+      where: { id },
       data: {
-        title: formData.get("title")?.toString(),
-        description: formData.get("description")?.toString(),
-        requester: formData.get("requester")?.toString(),
-        status: formData.get("status")?.toString(),
-        priority: formData.get("priority")?.toString(),
+        title: data.title,
+        description: data.description,
+        requester: data.requester,
+        status: data.status,
+        priority: data.priority,
       },
     });
-
-    // Apenas retorna JSON
-    return NextResponse.json({ success: true, updated });
-
-  } catch (error) {
-    console.error("Erro no update:", error);
-    return NextResponse.json(
-      { error: "Erro ao atualizar ticket" },
-      { status: 500 }
-    );
+    return NextResponse.json(updated);
+  } catch (err) {
+    console.error("API POST /api/tickets/[id] error:", err);
+    return NextResponse.json({ error: "Erro ao atualizar" }, { status: 500 });
   }
 }

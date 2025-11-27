@@ -1,89 +1,76 @@
 import prisma from "@/lib/prisma";
 import { notFound, redirect } from "next/navigation";
 
-interface EditTicketProps {
-  params: Promise<{ id: string }>;
+interface Props {
+  params: { id: string };
 }
 
-// 🔵 Server Action
 async function updateTicket(formData: FormData) {
   "use server";
 
-  const id = formData.get("id");
-  if (!id) return;
+  const id = Number(formData.get("id"));
 
-  // Atenção: Aqui você está usando o fetch para a API. 
-  // Se quiser otimizar, pode chamar o prisma.ticket.update() diretamente aqui.
-  await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/tickets/${id}`, {
-    method: "POST",
-    body: formData,
+  await prisma.ticket.update({
+    where: { id },
+    data: {
+      title: String(formData.get("title")),
+      description: String(formData.get("description")),
+      requester: String(formData.get("requester")),
+      status: String(formData.get("status")),
+      priority: String(formData.get("priority")),
+    },
   });
 
   redirect(`/tickets/${id}`);
 }
 
-// Classes base para inputs (usando as variáveis do seu globals.css)
-const inputBaseClass = "w-full border p-2 rounded bg-[var(--surface)] text-[var(--text)] border-gray-300 dark:border-gray-700 focus:ring-2 focus:ring-teal-500 focus:outline-none transition-colors";
-const labelSpanClass = "text-sm font-semibold text-[var(--text)]";
+export default async function EditTicket({ params }: Props) {
+  const id = Number(params.id);
+  if (isNaN(id)) return notFound();
 
-
-export default async function EditTicket({ params }: EditTicketProps) {
-  const { id } = await params;
-  const ticketId = parseInt(id);
-
-  if (isNaN(ticketId)) return notFound();
-
-  const ticket = await prisma.ticket.findUnique({
-    where: { id: ticketId },
-  });
-
+  const ticket = await prisma.ticket.findUnique({ where: { id } });
   if (!ticket) return notFound();
 
   return (
     <div className="p-6 space-y-6">
-      <h1 className="text-2xl font-bold text-var(--text)">Editar Chamado</h1>
+      <h1 className="text-2xl font-bold">Editar Chamado</h1>
 
-      {/* A classe 'card' puxará var(--surface) e as bordas escuras */}
       <form action={updateTicket} className="card p-6 space-y-4">
-        <input type="hidden" name="id" value={ticketId} />
+        <input type="hidden" name="id" value={id} />
 
         <label className="block">
-          <span className={labelSpanClass}>Título</span>
+          <span className="font-semibold text-sm">Título</span>
           <input
+            className="input"
             name="title"
             defaultValue={ticket.title}
-            className={inputBaseClass}
             required
           />
         </label>
 
         <label className="block">
-          <span className={labelSpanClass}>Descrição</span>
+          <span className="font-semibold text-sm">Descrição</span>
           <textarea
+            className="input min-h-[120px]"
             name="description"
             defaultValue={ticket.description}
-            className={`${inputBaseClass} min-h-[120px]`}
             required
           ></textarea>
         </label>
 
         <label className="block">
-          <span className={labelSpanClass}>Solicitante</span>
+          <span className="font-semibold text-sm">Solicitante</span>
           <input
+            className="input"
             name="requester"
             defaultValue={ticket.requester}
-            className={inputBaseClass}
             required
           />
         </label>
 
         <label className="block">
-          <span className={labelSpanClass}>Status</span>
-          <select
-            name="status"
-            defaultValue={ticket.status}
-            className={inputBaseClass}
-          >
+          <span className="font-semibold text-sm">Status</span>
+          <select className="input" name="status" defaultValue={ticket.status}>
             <option value="open">Aberto</option>
             <option value="in_progress">Em Andamento</option>
             <option value="closed">Fechado</option>
@@ -91,21 +78,15 @@ export default async function EditTicket({ params }: EditTicketProps) {
         </label>
 
         <label className="block">
-          <span className={labelSpanClass}>Prioridade</span>
-          <select
-            name="priority"
-            defaultValue={ticket.priority}
-            className={inputBaseClass}
-          >
+          <span className="font-semibold text-sm">Prioridade</span>
+          <select className="input" name="priority" defaultValue={ticket.priority}>
             <option value="low">Baixa</option>
             <option value="normal">Normal</option>
             <option value="high">Alta</option>
           </select>
         </label>
 
-        <button className="bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 text-white px-4 py-2 rounded font-bold transition-colors">
-          Salvar Alterações
-        </button>
+        <button className="btn-primary">Salvar Alterações</button>
       </form>
     </div>
   );

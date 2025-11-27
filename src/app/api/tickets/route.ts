@@ -1,36 +1,30 @@
 // src/app/api/tickets/route.ts
-
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 
-// --- LISTAR TODOS ---
 export async function GET() {
-  const tickets = await prisma.ticket.findMany({
-    orderBy: { id: "desc" }
-  });
-
+  const tickets = await prisma.ticket.findMany({ orderBy: { createdAt: "desc" }});
   return NextResponse.json(tickets);
 }
 
-// --- CRIAR NOVO CHAMADO ---
 export async function POST(req: Request) {
-  const formData = await req.formData();
-
-  const title = String(formData.get("title") || "");
-  const description = String(formData.get("description") || "");
-  const requester = String(formData.get("requester") || "");
-  const status = String(formData.get("status") || "open");
-  const priority = String(formData.get("priority") || "normal");
-
-  const created = await prisma.ticket.create({
-    data: {
-      title,
-      description,
-      requester,
-      status,
-      priority
+  try {
+    const body = await req.json();
+    if (!body.title || !body.description || !body.requester) {
+      return NextResponse.json({ error: "Campos obrigatórios" }, { status: 400 });
     }
-  });
-
-  return NextResponse.json(created);
+    const created = await prisma.ticket.create({
+      data: {
+        title: body.title,
+        description: body.description,
+        requester: body.requester,
+        status: body.status ?? "open",
+        priority: body.priority ?? "normal",
+      },
+    });
+    return NextResponse.json(created, { status: 201 });
+  } catch (err) {
+    console.error("API POST /api/tickets error:", err);
+    return NextResponse.json({ error: "Erro interno" }, { status: 500 });
+  }
 }

@@ -1,3 +1,4 @@
+// src/types/ticket.ts
 export interface Ticket {
   id: number;
   title: string;

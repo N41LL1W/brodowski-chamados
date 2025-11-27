@@ -1,86 +1,42 @@
+// src/components/DarkModeToggle.tsx
+"use client";
+
 import { useEffect, useState } from "react";
 
-// Tipos de tema possíveis
 type ThemeType = "light" | "dark" | "system";
 
-const DarkModeToggle = () => {
-  // Estado do tema inicial, carregado do localStorage ou sistema
-  const [theme, setTheme] = useState<ThemeType>(() => {
-    return (localStorage.getItem("theme") as ThemeType) || "system";
-  });
+export default function DarkModeToggle() {
+  const [theme, setTheme] = useState<ThemeType>(() => (localStorage.getItem("theme") as ThemeType) || "system");
 
   useEffect(() => {
     const root = document.documentElement;
-
-    const applyTheme = (themeValue: ThemeType) => {
+    const apply = (t: ThemeType) => {
       const isSystemDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
-      const finalTheme = themeValue === "system" ? (isSystemDark ? "dark" : "light") : themeValue;
-
-      if (finalTheme === "dark") {
-        root.classList.add("dark");
-      } else {
-        root.classList.remove("dark");
-      }
+      const final = t === "system" ? (isSystemDark ? "dark" : "light") : t;
+      if (final === "dark") root.classList.add("dark");
+      else root.classList.remove("dark");
     };
 
-    applyTheme(theme);
+    apply(theme);
 
-    // Atualiza automaticamente se o sistema mudar de tema
-    const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
-    const handleSystemChange = () => {
-      if (theme === "system") applyTheme("system");
-    };
-
-    mediaQuery.addEventListener("change", handleSystemChange);
+    const mq = window.matchMedia("(prefers-color-scheme: dark)");
+    const handle = () => theme === "system" && apply("system");
+    mq.addEventListener("change", handle);
     localStorage.setItem("theme", theme);
-
-    return () => mediaQuery.removeEventListener("change", handleSystemChange);
+    return () => mq.removeEventListener("change", handle);
   }, [theme]);
 
   return (
-    <div className="flex flex-col items-center gap-4">
-      {/* Botões de alternância */}
-      <div className="flex gap-2">
-        <button
-          onClick={() => setTheme("light")}
-          className={`px-4 py-2 rounded-md ${
-            theme === "light"
-              ? "bg-blue-600 text-white"
-              : "bg-gray-200 dark:bg-gray-800 text-gray-800 dark:text-gray-100"
-          }`}
-        >
-          ☀️ Claro
-        </button>
-
-        <button
-          onClick={() => setTheme("dark")}
-          className={`px-4 py-2 rounded-md ${
-            theme === "dark"
-              ? "bg-blue-600 text-white"
-              : "bg-gray-200 dark:bg-gray-800 text-gray-800 dark:text-gray-100"
-          }`}
-        >
-          🌙 Escuro
-        </button>
-
-        <button
-          onClick={() => setTheme("system")}
-          className={`px-4 py-2 rounded-md ${
-            theme === "system"
-              ? "bg-blue-600 text-white"
-              : "bg-gray-200 dark:bg-gray-800 text-gray-800 dark:text-gray-100"
-          }`}
-        >
-          💻 Sistema
-        </button>
-      </div>
-
-      {/* Exibe o tema atual */}
-      <p className="text-sm opacity-70">
-        Tema atual: <span className="font-semibold">{theme}</span>
-      </p>
+    <div className="flex gap-2 items-center">
+      <button onClick={() => setTheme("light")} className={theme === "light" ? "bg-blue-600 text-white px-3 py-1 rounded" : "px-3 py-1 rounded"}>
+        Claro
+      </button>
+      <button onClick={() => setTheme("dark")} className={theme === "dark" ? "bg-blue-600 text-white px-3 py-1 rounded" : "px-3 py-1 rounded"}>
+        Escuro
+      </button>
+      <button onClick={() => setTheme("system")} className={theme === "system" ? "bg-blue-600 text-white px-3 py-1 rounded" : "px-3 py-1 rounded"}>
+        Sistema
+      </button>
     </div>
   );
-};
-
-export default DarkModeToggle;
+}

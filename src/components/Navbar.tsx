@@ -10,69 +10,67 @@ export default function Navbar() {
   const pathname = usePathname();
 
   useEffect(() => {
-    const savedTheme = localStorage.getItem("theme") || "system";
-    setTheme(savedTheme);
+    const saved = localStorage.getItem("theme") || "system";
+    setTheme(saved);
 
     const root = document.documentElement;
-    const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+    const systemDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+    const finalTheme = saved === "system" ? (systemDark ? "dark" : "light") : saved;
 
-    if (savedTheme === "dark" || (savedTheme === "system" && prefersDark)) {
-      root.classList.add("dark");
-    } else {
-      root.classList.remove("dark");
-    }
+    root.classList.toggle("dark", finalTheme === "dark");
   }, []);
 
   const toggleTheme = () => {
-    const nextTheme =
+    const next =
       theme === "light" ? "dark" : theme === "dark" ? "system" : "light";
 
-    setTheme(nextTheme);
-    localStorage.setItem("theme", nextTheme);
+    setTheme(next);
+    localStorage.setItem("theme", next);
 
     const root = document.documentElement;
-    const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+    const systemDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+    const finalTheme = next === "system" ? (systemDark ? "dark" : "light") : next;
 
-    if (nextTheme === "dark" || (nextTheme === "system" && prefersDark)) {
-      root.classList.add("dark");
-    } else {
-      root.classList.remove("dark");
-    }
+    root.classList.toggle("dark", finalTheme === "dark");
   };
 
   const isActive = (path: string) =>
-    pathname === path
-      ? "text-blue-600 dark:text-blue-400 font-semibold"
-      : "hover:text-blue-500 transition-colors";
+    pathname === path ? "text-blue-500 font-bold" : "opacity-70 hover:opacity-100";
 
   return (
-    <header className="w-full bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-100 shadow-md fixed top-0 left-0 z-50">
+    <header className="w-full bg-[var(--surface)] text-[var(--text)] border-b border-[var(--muted)] fixed top-0 left-0 z-50">
       <div className="max-w-7xl mx-auto flex items-center justify-between p-4">
-        <h1 className="text-xl font-bold tracking-wide">MyReactComponents</h1>
+        <h1 className="text-xl font-bold">Chamados</h1>
 
         <button
           onClick={() => setIsMenuOpen(!isMenuOpen)}
-          className="sm:hidden text-2xl focus:outline-none"
+          className="sm:hidden text-2xl"
         >
           ☰
         </button>
 
         <nav
-          className={`${isMenuOpen ? "block" : "hidden"} sm:flex sm:items-center gap-6`}
+          className={`${
+            isMenuOpen ? "block" : "hidden"
+          } sm:flex gap-6 items-center`}
         >
           <Link href="/" className={isActive("/")}>
             Home
           </Link>
 
+          <Link href="/tickets" className={isActive("/tickets")}>
+            Chamados
+          </Link>
+
           <button
             onClick={toggleTheme}
-            className="ml-4 px-3 py-1.5 rounded-md bg-gray-200 dark:bg-gray-800 text-sm hover:bg-gray-300 dark:hover:bg-gray-700 transition"
+            className="px-3 py-1 rounded bg-[var(--muted)] hover:opacity-80"
           >
             {theme === "light"
               ? "🌞 Claro"
               : theme === "dark"
               ? "🌙 Escuro"
-              : "🖥️ Sistema"}
+              : "💻 Sistema"}
           </button>
         </nav>
       </div>
