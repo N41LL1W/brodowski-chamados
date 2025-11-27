@@ -1,9 +1,31 @@
 import prisma from "@/lib/prisma";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 
 interface EditTicketProps {
   params: Promise<{ id: string }>;
 }
+
+// 🔵 Server Action
+async function updateTicket(formData: FormData) {
+  "use server";
+
+  const id = formData.get("id");
+  if (!id) return;
+
+  // Atenção: Aqui você está usando o fetch para a API. 
+  // Se quiser otimizar, pode chamar o prisma.ticket.update() diretamente aqui.
+  await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/tickets/${id}`, {
+    method: "POST",
+    body: formData,
+  });
+
+  redirect(`/tickets/${id}`);
+}
+
+// Classes base para inputs (usando as variáveis do seu globals.css)
+const inputBaseClass = "w-full border p-2 rounded bg-[var(--surface)] text-[var(--text)] border-gray-300 dark:border-gray-700 focus:ring-2 focus:ring-teal-500 focus:outline-none transition-colors";
+const labelSpanClass = "text-sm font-semibold text-[var(--text)]";
+
 
 export default async function EditTicket({ params }: EditTicketProps) {
   const { id } = await params;
@@ -11,59 +33,56 @@ export default async function EditTicket({ params }: EditTicketProps) {
 
   if (isNaN(ticketId)) return notFound();
 
-  // Buscar ticket atual
   const ticket = await prisma.ticket.findUnique({
     where: { id: ticketId },
   });
 
   if (!ticket) return notFound();
 
-  // --- RENDERIZA ---
   return (
     <div className="p-6 space-y-6">
-      <h1 className="text-2xl font-bold">Editar Chamado</h1>
+      <h1 className="text-2xl font-bold text-var(--text)">Editar Chamado</h1>
 
-      <form
-        action={`/api/tickets/${ticketId}`}
-        method="POST"
-        className="space-y-4 bg-white p-6 border rounded"
-      >
+      {/* A classe 'card' puxará var(--surface) e as bordas escuras */}
+      <form action={updateTicket} className="card p-6 space-y-4">
+        <input type="hidden" name="id" value={ticketId} />
+
         <label className="block">
-          <span className="text-sm font-semibold">Título</span>
+          <span className={labelSpanClass}>Título</span>
           <input
             name="title"
             defaultValue={ticket.title}
-            className="w-full border p-2 rounded"
+            className={inputBaseClass}
             required
           />
         </label>
 
         <label className="block">
-          <span className="text-sm font-semibold">Descrição</span>
+          <span className={labelSpanClass}>Descrição</span>
           <textarea
             name="description"
             defaultValue={ticket.description}
-            className="w-full border p-2 rounded"
+            className={`${inputBaseClass} min-h-[120px]`}
             required
           ></textarea>
         </label>
 
         <label className="block">
-          <span className="text-sm font-semibold">Solicitante</span>
+          <span className={labelSpanClass}>Solicitante</span>
           <input
             name="requester"
             defaultValue={ticket.requester}
-            className="w-full border p-2 rounded"
+            className={inputBaseClass}
             required
           />
         </label>
 
         <label className="block">
-          <span className="text-sm font-semibold">Status</span>
+          <span className={labelSpanClass}>Status</span>
           <select
             name="status"
             defaultValue={ticket.status}
-            className="w-full border p-2 rounded"
+            className={inputBaseClass}
           >
             <option value="open">Aberto</option>
             <option value="in_progress">Em Andamento</option>
@@ -72,11 +91,11 @@ export default async function EditTicket({ params }: EditTicketProps) {
         </label>
 
         <label className="block">
-          <span className="text-sm font-semibold">Prioridade</span>
+          <span className={labelSpanClass}>Prioridade</span>
           <select
             name="priority"
             defaultValue={ticket.priority}
-            className="w-full border p-2 rounded"
+            className={inputBaseClass}
           >
             <option value="low">Baixa</option>
             <option value="normal">Normal</option>
@@ -84,7 +103,7 @@ export default async function EditTicket({ params }: EditTicketProps) {
           </select>
         </label>
 
-        <button className="bg-blue-600 text-white px-4 py-2 rounded">
+        <button className="bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 text-white px-4 py-2 rounded font-bold transition-colors">
           Salvar Alterações
         </button>
       </form>

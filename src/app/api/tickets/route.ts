@@ -1,41 +1,36 @@
+// src/app/api/tickets/route.ts
+
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 
+// --- LISTAR TODOS ---
 export async function GET() {
   const tickets = await prisma.ticket.findMany({
-    orderBy: { createdAt: "desc" },
+    orderBy: { id: "desc" }
   });
 
   return NextResponse.json(tickets);
 }
 
+// --- CRIAR NOVO CHAMADO ---
 export async function POST(req: Request) {
-  try {
-    const data = await req.json();
+  const formData = await req.formData();
 
-    if (!data.title || !data.description || !data.requester) {
-      return NextResponse.json(
-        { error: "Campos obrigatórios não preenchidos" },
-        { status: 400 }
-      );
+  const title = String(formData.get("title") || "");
+  const description = String(formData.get("description") || "");
+  const requester = String(formData.get("requester") || "");
+  const status = String(formData.get("status") || "open");
+  const priority = String(formData.get("priority") || "normal");
+
+  const created = await prisma.ticket.create({
+    data: {
+      title,
+      description,
+      requester,
+      status,
+      priority
     }
+  });
 
-    const created = await prisma.ticket.create({
-      data: {
-        title: data.title,
-        description: data.description,
-        requester: data.requester,
-        status: data.status ?? "open",
-        priority: data.priority ?? "normal",
-      },
-    });
-
-    return NextResponse.json(created, { status: 201 });
-  } catch (err) {
-    console.error("POST ERROR:", err);
-    return NextResponse.json(
-      { error: "Erro interno do servidor" },
-      { status: 500 }
-    );
-  }
+  return NextResponse.json(created);
 }

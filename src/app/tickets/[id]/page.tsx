@@ -47,9 +47,9 @@ export default async function TicketDetails({ params }: TicketDetailsProps) {
         </div>
       </div>
 
-      <div className="bg-white rounded-lg p-4 shadow-sm border">
-        <h2 className="text-sm font-semibold text-gray-500 mb-2">Descrição</h2>
-        <p className="text-gray-800 whitespace-pre-wrap leading-relaxed">
+      <div className="rounded-lg p-4 shadow-sm border">
+        <h2 className="text-sm font-semibold mb-2">Descrição</h2>
+        <p className="whitespace-pre-wrap leading-relaxed">
             {ticket.description}
         </p>
       </div>

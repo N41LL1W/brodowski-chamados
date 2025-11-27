@@ -16,7 +16,7 @@ export default function TicketForm({ onCreated }: { onCreated?: (t: Ticket) => v
     setLoading(true);
     try {
       const res = await axios.post("/api/tickets", { title, description, requester, priority });
-      if (res.status === 201 && onCreated) onCreated(res.data);
+      if ((res.status === 201 || res.status === 200) && onCreated) onCreated(res.data);
       setTitle(""); setDescription(""); setRequester(""); setPriority("normal");
     } catch (err) {
       console.error(err);
@@ -26,41 +26,54 @@ export default function TicketForm({ onCreated }: { onCreated?: (t: Ticket) => v
     }
   }
 
+  // Classes comuns para inputs para evitar repetição
+  const inputClass = "mt-1 w-full border border-gray-300 dark:border-gray-700 rounded p-2 bg-[var(--bg)] text-[var(--text)] focus:ring-2 focus:ring-teal-500 focus:outline-none transition-colors";
+
   return (
-    <form onSubmit={handleSubmit} className="card p-4 space-y-3">
-      <h2 className="text-lg font-semibold text-slate-900">Abrir Chamado</h2>
+    <form onSubmit={handleSubmit} className="card p-6 space-y-4">
+      <h2 className="text-xl font-bold text-[var(--text)]">Abrir Chamado</h2>
 
       <label className="block">
-        <span className="text-sm text-slate-700">Título</span>
+        <span className="text-sm font-medium text-[var(--muted)]">Título</span>
         <input
           value={title}
           onChange={e => setTitle(e.target.value)}
           required
-          className="mt-1 w-full border border-gray-200 rounded p-2 bg-white text-slate-900"
+          className={inputClass}
           placeholder="Resumo do problema"
         />
       </label>
 
       <label className="block">
-        <span className="text-sm text-slate-700">Descrição</span>
+        <span className="text-sm font-medium text-[var(--muted)]">Descrição</span>
         <textarea
           value={description}
           onChange={e => setDescription(e.target.value)}
           required
-          className="mt-1 w-full border border-gray-200 rounded p-2 bg-white text-slate-900 placeholder:text-slate-400 min-h-[100px]"
+          className={`${inputClass} min-h-[100px]`}
           placeholder="Descreva o problema em detalhes"
         />
       </label>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <label className="block md:col-span-1">
-          <span className="text-sm text-slate-700">Solicitante</span>
-          <input value={requester} onChange={e => setRequester(e.target.value)} className="mt-1 w-full border border-gray-200 rounded p-2 bg-white text-slate-900" placeholder="Nome" />
+          <span className="text-sm font-medium text-[var(--muted)]">Solicitante</span>
+          <input 
+            value={requester} 
+            onChange={e => setRequester(e.target.value)} 
+            className={inputClass} 
+            placeholder="Nome" 
+            required
+          />
         </label>
 
         <label className="block md:col-span-1">
-          <span className="text-sm text-slate-700">Prioridade</span>
-          <select value={priority} onChange={e => setPriority(e.target.value as any)} className="mt-1 w-full border border-gray-200 rounded p-2 bg-white text-slate-900">
+          <span className="text-sm font-medium text-[var(--muted)]">Prioridade</span>
+          <select 
+            value={priority} 
+            onChange={e => setPriority(e.target.value as any)} 
+            className={inputClass}
+          >
             <option value="low">Baixa</option>
             <option value="normal">Normal</option>
             <option value="high">Alta</option>
@@ -68,7 +81,11 @@ export default function TicketForm({ onCreated }: { onCreated?: (t: Ticket) => v
         </label>
 
         <div className="flex items-end md:col-span-1">
-          <button type="submit" disabled={loading} className="w-full bg-teal-500 hover:bg-teal-600 text-white font-medium rounded p-2">
+          <button 
+            type="submit" 
+            disabled={loading} 
+            className="w-full bg-teal-600 hover:bg-teal-700 dark:bg-teal-500 dark:hover:bg-teal-600 text-white font-bold rounded py-2 transition-transform active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
             {loading ? "Enviando..." : "Abrir Chamado"}
           </button>
         </div>

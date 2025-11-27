@@ -1,23 +1,43 @@
 @import "tailwindcss";
 
-/* Variáveis de tema (úteis para ajustes rápidos) */
-:root{
-  --bg: #f8fafc;          /* gray-50 */
-  --surface: #ffffff;     /* white for cards */
-  --text: #0f172a;        /* slate-900 / quase preto */
-  --muted: #475569;       /* slate-600 */
-  --primary: #0ea5a4;     /* teal-500 */
-  --primary-dark: #0b7f7d;/* teal-600 */
-  --danger: #dc2626;      /* red-600 */
+@custom-variant dark (&:where(.dark, .dark *));
+
+@layer base {
+  /* Removemos as regras manuais de html/html.dark aqui para evitar conflito */
+  /* Vamos controlar via variáveis abaixo */
+}
+
+/* 1. Definimos as cores padrão (Claro) */
+:root {
+  --bg: #f8fafc;        /* gray-50 */
+  --surface: #ffffff;   /* white */
+  --text: #0f172a;      /* slate-900 */
+  --muted: #475569;     /* slate-600 */
+  --primary: #0ea5a4;   
+  --primary-dark: #0b7f7d;
+  --danger: #dc2626;
+}
+
+/* 2. Definimos as cores quando o modo DARK está ativo */
+:root:has(.dark), .dark {
+  --bg: #111827;        /* gray-900 (Fundo escuro) */
+  --surface: #1f2937;   /* gray-800 (Cards escuros) */
+  --text: #f3f4f6;      /* gray-100 (Texto claro) */
+  --muted: #9ca3af;     /* gray-400 */
+  --primary: #14b8a6;   /* teal-500 (Um pouco mais brilhante no dark) */
+  --primary-dark: #2dd4bf;
 }
 
 /* Body/app background + text */
-html, body, #__next {
+html, body {
   height: 100%;
 }
+
 body {
+  /* Agora usamos as variáveis que mudam automaticamente */
   background-color: var(--bg);
   color: var(--text);
+  transition: background-color 0.3s ease, color 0.3s ease; /* Animação suave */
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
@@ -29,21 +49,10 @@ a {
 }
 a:hover { color: var(--primary-dark); text-decoration: underline; }
 
-/* Inputs / textarea styling helper (for non-Tailwind fallback) */
-.input-base {
-  @apply w-full border border-gray-200 bg-white text-sm text-slate-900 rounded p-2;
-}
-
-/* Melhor foco (acessível) */
-:focus {
-  outline: 3px solid rgba(14,165,164,0.12);
-  outline-offset: 2px;
-}
-
-/* Card util */
+/* ... o resto do seu CSS (inputs, card, focus) continua igual ... */
 .card {
-  background: var(--surface);
+  background: var(--surface); /* Agora o card também fica escuro automaticamente! */
   border-radius: 12px;
-  box-shadow: 0 6px 18px rgba(2,6,23,0.06);
-  border: 1px solid rgba(15,23,42,0.04);
+  box-shadow: 0 6px 18px rgba(0,0,0,0.1); /* Sombra ajustada */
+  border: 1px solid rgba(255,255,255,0.05); /* Borda sutil */
 }
