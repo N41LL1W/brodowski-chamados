@@ -1,92 +1,80 @@
-import prisma from "@/lib/prisma";
-import { notFound, redirect } from "next/navigation";
+import { prisma } from "@/lib/prisma";
+import { notFound } from "next/navigation";
 
 interface Props {
-  params: { id: string };
-}
-
-async function updateTicket(formData: FormData) {
-  "use server";
-
-  const id = Number(formData.get("id"));
-
-  await prisma.ticket.update({
-    where: { id },
-    data: {
-      title: String(formData.get("title")),
-      description: String(formData.get("description")),
-      requester: String(formData.get("requester")),
-      status: String(formData.get("status")),
-      priority: String(formData.get("priority")),
-    },
-  });
-
-  redirect(`/tickets/${id}`);
+  params: Promise<{ id: string }>;
 }
 
 export default async function EditTicket({ params }: Props) {
-  const id = Number(params.id);
+  // Next 16: params é Promise → precisa resolver
+  const resolved = await params;
+
+  const rawId = Array.isArray(resolved.id) ? resolved.id[0] : resolved.id;
+
+  const id = Number(rawId);
   if (isNaN(id)) return notFound();
 
-  const ticket = await prisma.ticket.findUnique({ where: { id } });
+  const ticket = await prisma.ticket.findUnique({
+    where: { id },
+  });
+
   if (!ticket) return notFound();
 
   return (
-    <div className="p-6 space-y-6">
-      <h1 className="text-2xl font-bold">Editar Chamado</h1>
+    <div className="container mx-auto p-6 max-w-xl">
+      <h1 className="text-2xl font-bold mb-6">Editar Chamado</h1>
 
-      <form action={updateTicket} className="card p-6 space-y-4">
-        <input type="hidden" name="id" value={id} />
-
-        <label className="block">
-          <span className="font-semibold text-sm">Título</span>
+      <form
+        action={`/api/tickets/${id}/edit`}
+        method="POST"
+        className="space-y-4 bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md"
+      >
+        <div>
+          <label className="block font-semibold mb-1">Título</label>
           <input
-            className="input"
             name="title"
             defaultValue={ticket.title}
-            required
+            className="w-full px-3 py-2 border rounded dark:bg-gray-700"
           />
-        </label>
+        </div>
 
-        <label className="block">
-          <span className="font-semibold text-sm">Descrição</span>
+        <div>
+          <label className="block font-semibold mb-1">Descrição</label>
           <textarea
-            className="input min-h-[120px]"
             name="description"
             defaultValue={ticket.description}
-            required
-          ></textarea>
-        </label>
+            className="w-full px-3 py-2 border rounded dark:bg-gray-700"
+          />
+        </div>
 
-        <label className="block">
-          <span className="font-semibold text-sm">Solicitante</span>
+        <div>
+          <label className="block font-semibold mb-1">Solicitante</label>
           <input
-            className="input"
             name="requester"
             defaultValue={ticket.requester}
-            required
+            className="w-full px-3 py-2 border rounded dark:bg-gray-700"
           />
-        </label>
+        </div>
 
-        <label className="block">
-          <span className="font-semibold text-sm">Status</span>
-          <select className="input" name="status" defaultValue={ticket.status}>
-            <option value="open">Aberto</option>
-            <option value="in_progress">Em Andamento</option>
-            <option value="closed">Fechado</option>
-          </select>
-        </label>
-
-        <label className="block">
-          <span className="font-semibold text-sm">Prioridade</span>
-          <select className="input" name="priority" defaultValue={ticket.priority}>
-            <option value="low">Baixa</option>
+        <div>
+          <label className="block font-semibold mb-1">Prioridade</label>
+          <select
+            name="priority"
+            defaultValue={ticket.priority}
+            className="w-full px-3 py-2 border rounded dark:bg-gray-700"
+          >
             <option value="normal">Normal</option>
-            <option value="high">Alta</option>
+            <option value="alta">Alta</option>
+            <option value="urgente">Urgente</option>
           </select>
-        </label>
+        </div>
 
-        <button className="btn-primary">Salvar Alterações</button>
+        <button
+          type="submit"
+          className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700"
+        >
+          Salvar Alterações
+        </button>
       </form>
     </div>
   );

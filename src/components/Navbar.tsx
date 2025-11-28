@@ -38,7 +38,7 @@ export default function Navbar() {
     pathname === path ? "text-blue-500 font-bold" : "opacity-70 hover:opacity-100";
 
   return (
-    <header className="w-full bg-[var(--surface)] text-[var(--text)] border-b border-[var(--muted)] fixed top-0 left-0 z-50">
+    <header className="w-full bg-var(--surface) text-var(--text) border-b border-var(--muted) fixed top-0 left-0 z-50">
       <div className="max-w-7xl mx-auto flex items-center justify-between p-4">
         <h1 className="text-xl font-bold">Chamados</h1>
 
@@ -64,7 +64,7 @@ export default function Navbar() {
 
           <button
             onClick={toggleTheme}
-            className="px-3 py-1 rounded bg-[var(--muted)] hover:opacity-80"
+            className="px-3 py-1 rounded bg-var(--muted) hover:opacity-80"
           >
             {theme === "light"
               ? "🌞 Claro"
