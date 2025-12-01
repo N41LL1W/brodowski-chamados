@@ -1,10 +1,10 @@
-import type { Metadata } from "next";
+// src/app/layout.tsx
 import "./globals.css";
 import Navbar from "@/components/Navbar";
 
-export const metadata: Metadata = {
+export const metadata = {
   title: "Sistema de Chamados",
-  description: "Gerenciamento de chamados",
+  description: "Gerenciamento de chamados da prefeitura",
 };
 
 export default function RootLayout({
@@ -13,12 +13,10 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="pt-br" suppressHydrationWarning>
-      <body className="pt-16 bg-[var(--background)] text-[var(--text)]">
+    <html lang="pt-BR">
+      <body className="min-h-screen bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-gray-100">
         <Navbar />
-        <main className="max-w-7xl mx-auto p-6">
-          {children}
-        </main>
+        <main className="container mx-auto px-4 py-6">{children}</main>
       </body>
     </html>
   );

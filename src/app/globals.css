@@ -40,3 +40,8 @@ html, body {
   border: 1px solid var(--muted);
   color: var(--text);
 }
+
+html, body {
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
