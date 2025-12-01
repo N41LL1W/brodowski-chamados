@@ -23,44 +23,38 @@ export default async function TicketDetailPage(props: Props) {
 
   // 🟡 4) Exibir detalhes do ticket
   return (
-    <div className="max-w-2xl mx-auto p-6 bg-white dark:bg-neutral-900 shadow-lg rounded-xl">
-      <h1 className="text-2xl font-bold mb-4 text-neutral-800 dark:text-neutral-100">
-        Chamado #{ticket.id}
-      </h1>
+    <div className="max-w-2xl mx-auto mt-10">
+      <div className="p-6 rounded-xl shadow-lg">
+        <h1 className="text-2xl font-bold mb-4">{ticket.title}</h1>
 
-      <p className="mb-2">
-        <strong>Título:</strong> {ticket.title}
-      </p>
+        <p className="mb-3">
+          <strong>Descrição:</strong> {ticket.description}
+        </p>
 
-      <p className="mb-2">
-        <strong>Descrição:</strong> {ticket.description}
-      </p>
+        <p className="mb-3">
+          <strong>Solicitante:</strong> {ticket.requester}
+        </p>
 
-      <p className="mb-2">
-        <strong>Solicitante:</strong> {ticket.requester}
-      </p>
+        <p className="mb-3">
+          <strong>Status:</strong> {ticket.status}
+        </p>
 
-      <p className="mb-2">
-        <strong>Status:</strong> {ticket.status}
-      </p>
+        <p className="mb-3">
+          <strong>Prioridade:</strong> {ticket.priority}
+        </p>
 
-      <p className="mb-2">
-        <strong>Prioridade:</strong> {ticket.priority}
-      </p>
+        <p className="mb-3">
+          <strong>Criado em:</strong>{" "}
+          {new Date(ticket.createdAt).toLocaleDateString()}
+        </p>
 
-      <p className="mb-2">
-        <strong>Criado em:</strong>{" "}
-        {ticket.createdAt.toLocaleDateString()}
-      </p>
-
-      <div className="mt-6 flex gap-4">
-        {/* Botão Editar */}
-        <Link
-          href={`/tickets/${ticket.id}/edit`}
-          className="px-4 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700"
-        >
-          Editar Chamado
-        </Link>
+        <div className="mt-6 flex justify-end">
+          <Link
+            href={`/tickets/${ticket.id}/edit`}
+            className="px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 text-white transition"
+          >
+            Editar Chamado
+          </Link>
 
         {/* Voltar */}
         <Link
@@ -69,6 +63,7 @@ export default async function TicketDetailPage(props: Props) {
         >
           Voltar
         </Link>
+        </div>
       </div>
     </div>
   );

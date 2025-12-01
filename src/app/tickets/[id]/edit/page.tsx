@@ -27,7 +27,7 @@ export default async function EditTicket({ params }: Props) {
       <form
         action={`/api/tickets/${id}/edit`}
         method="POST"
-        className="space-y-4 bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md"
+        className="space-y-4 p-6 rounded-lg shadow-md"
       >
         <div>
           <label className="block font-semibold mb-1">Título</label>
