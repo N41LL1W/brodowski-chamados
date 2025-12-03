@@ -1,47 +1,27 @@
-@import "tailwindcss";
+/* Tailwind v4 */
 @import "tailwindcss/preflight";
+@import "tailwindcss";
 
-/* Suas variáveis de tema */
+html,
+body {
+  height: 100%;
+}
+
+/* Não use @apply mais! Tailwind 4 não permite fora de scopes especiais */
+
+/* Estilos globais manuais */
+body {
+  background-color: var(--color-bg);
+  color: var(--color-text);
+}
+
+/* Light e Dark Theme */
 :root {
-  --background: #f5f5f5;
-  --surface: #ffffff;
-  --text: #111;
-  --muted: #e0e0e0;
+  --color-bg: #ffffff;
+  --color-text: #1f2937;
 }
 
 .dark {
-  --background: #121212;
-  --surface: #1e1e1e;
-  --text: #f1f1f1;
-  --muted: #2a2a2a;
+  --color-bg: #111827;
+  --color-text: #f3f4f6;
 }
-
-/* Layout global */
-html, body {
-  background: var(--background);
-  color: var(--text);
-  min-height: 100%;
-}
-
-/* Cartões padrão */
-.card {
-  background: var(--surface);
-  border: 1px solid var(--muted);
-  border-radius: 10px;
-  padding: 1rem;
-}
-
-/* Inputs */
-.input {
-  width: 100%;
-  padding: 0.5rem 0.75rem;
-  border-radius: 8px;
-  background: var(--surface);
-  border: 1px solid var(--muted);
-  color: var(--text);
-}
-
-html, body {
-  transition: background-color 0.2s ease, color 0.2s ease;
-}
-

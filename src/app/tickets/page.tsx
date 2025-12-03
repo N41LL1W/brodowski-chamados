@@ -1,21 +1,20 @@
 import TicketCard from "@/components/TicketCard";
-
-async function getTickets() {
-  const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/tickets`, {
-    cache: "no-store",
-  });
-  return res.json();
-}
+import prisma from "@/lib/prisma";
 
 export default async function TicketsPage() {
-  const tickets = await getTickets();
+  const tickets = await prisma.ticket.findMany({ orderBy: { createdAt: "desc" } });
+
+  // converter createdAt para string para components client
+  const serialized = tickets.map(t => ({
+    ...t,
+    createdAt: t.createdAt.toISOString(),
+  }));
 
   return (
-    <div>
+    <div className="container mt-8">
       <h1 className="text-2xl font-bold mb-4">Chamados</h1>
-
       <div className="grid gap-4">
-        {tickets.map((t: any) => (
+        {serialized.map((t: any) => (
           <TicketCard key={t.id} ticket={t} />
         ))}
       </div>

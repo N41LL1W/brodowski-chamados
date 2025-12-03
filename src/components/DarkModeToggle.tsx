@@ -1,42 +1,48 @@
-// src/components/DarkModeToggle.tsx
 "use client";
 
 import { useEffect, useState } from "react";
 
-type ThemeType = "light" | "dark" | "system";
+type Theme = "light" | "dark" | "system";
 
 export default function DarkModeToggle() {
-  const [theme, setTheme] = useState<ThemeType>(() => (localStorage.getItem("theme") as ThemeType) || "system");
+  const [theme, setTheme] = useState<Theme>("system");
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
+    setMounted(true);
+
+    const saved = (localStorage.getItem("theme") as Theme) || "system";
+    setTheme(saved);
+
+    applyTheme(saved);
+  }, []);
+
+  const applyTheme = (mode: Theme) => {
     const root = document.documentElement;
-    const apply = (t: ThemeType) => {
-      const isSystemDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
-      const final = t === "system" ? (isSystemDark ? "dark" : "light") : t;
-      if (final === "dark") root.classList.add("dark");
-      else root.classList.remove("dark");
-    };
+    const systemDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
 
-    apply(theme);
+    const final = mode === "system" ? (systemDark ? "dark" : "light") : mode;
 
-    const mq = window.matchMedia("(prefers-color-scheme: dark)");
-    const handle = () => theme === "system" && apply("system");
-    mq.addEventListener("change", handle);
-    localStorage.setItem("theme", theme);
-    return () => mq.removeEventListener("change", handle);
-  }, [theme]);
+    root.classList.toggle("dark", final === "dark");
+    localStorage.setItem("theme", mode);
+  };
+
+  const toggle = () => {
+    const next: Theme =
+      theme === "light" ? "dark" : theme === "dark" ? "system" : "light";
+
+    setTheme(next);
+    applyTheme(next);
+  };
+
+  if (!mounted) return null;
 
   return (
-    <div className="flex gap-2 items-center">
-      <button onClick={() => setTheme("light")} className={theme === "light" ? "bg-blue-600 text-white px-3 py-1 rounded" : "px-3 py-1 rounded"}>
-        Claro
-      </button>
-      <button onClick={() => setTheme("dark")} className={theme === "dark" ? "bg-blue-600 text-white px-3 py-1 rounded" : "px-3 py-1 rounded"}>
-        Escuro
-      </button>
-      <button onClick={() => setTheme("system")} className={theme === "system" ? "bg-blue-600 text-white px-3 py-1 rounded" : "px-3 py-1 rounded"}>
-        Sistema
-      </button>
-    </div>
+    <button
+      onClick={toggle}
+      className="px-3 py-2 rounded bg-gray-200 dark:bg-gray-700"
+    >
+      Tema: {theme}
+    </button>
   );
 }

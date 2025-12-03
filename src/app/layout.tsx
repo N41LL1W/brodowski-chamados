@@ -1,22 +1,21 @@
 // src/app/layout.tsx
 import "./globals.css";
+import { Inter } from "next/font/google";
 import Navbar from "@/components/Navbar";
 
+const inter = Inter({ subsets: ["latin"] });
+
 export const metadata = {
-  title: "Sistema de Chamados",
-  description: "Gerenciamento de chamados da prefeitura",
+  title: "Sistema",
+  description: "Sistema",
 };
 
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="pt-BR">
-      <body className="min-h-screen bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-gray-100">
+    <html lang="pt-BR" suppressHydrationWarning>
+      <body className={inter.className}>
         <Navbar />
-        <main className="container mx-auto px-4 py-6">{children}</main>
+        <main className="pt-20">{children}</main>
       </body>
     </html>
   );
