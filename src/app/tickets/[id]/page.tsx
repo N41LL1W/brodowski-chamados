@@ -12,22 +12,38 @@ export default async function TicketDetailPage(props: Props) {
   const ticket = await prisma.ticket.findUnique({ where: { id: ticketId } });
   if (!ticket) return notFound();
 
-  // serializar createdAt
   const t = { ...ticket, createdAt: ticket.createdAt.toISOString() };
 
   return (
-    <div className="container mt-8">
-      <div className="card">
-        <h1 className="text-2xl font-bold mb-4">{t.title}</h1>
-        <p className="mb-2"><strong>Descrição:</strong> {t.description}</p>
-        <p className="mb-2"><strong>Solicitante:</strong> {t.requester}</p>
-        <p className="mb-2"><strong>Status:</strong> {t.status}</p>
-        <p className="mb-2"><strong>Prioridade:</strong> {t.priority}</p>
-        <p className="mb-3"><strong>Criado:</strong> {new Date(t.createdAt).toLocaleString()}</p>
+    <div className="max-w-3xl mx-auto mt-10 px-6">
+      <div className="shadow-lg rounded-xl p-8 border">
+        <h1 className="text-3xl font-bold mb-6 ">{t.title}</h1>
 
-        <div className="flex gap-2 justify-end">
-          <Link href={`/tickets/${t.id}/edit`} className="btn">Editar</Link>
-          <Link href="/tickets" className="btn btn-secondary">Voltar</Link>
+        <div className="space-y-3">
+          <p><span className="font-semibold">Descrição:</span> {t.description}</p>
+          <p><span className="font-semibold">Solicitante:</span> {t.requester}</p>
+          <p><span className="font-semibold">Status:</span> {t.status}</p>
+          <p><span className="font-semibold">Prioridade:</span> {t.priority}</p>
+          <p>
+            <span className="font-semibold">Criado em:</span>{" "}
+            {new Date(t.createdAt).toLocaleString()}
+          </p>
+        </div>
+
+        <div className="flex justify-end gap-4 mt-8">
+          <Link
+            href={`/tickets/${ticket.id}/edit`}
+            className="px-4 py-2 rounded-lg hover: transition"
+          >
+            Editar
+          </Link>
+
+          <Link
+            href="/tickets"
+            className="px-4 py-2 rounded-lg hover: transition"
+          >
+            Voltar
+          </Link>
         </div>
       </div>
     </div>

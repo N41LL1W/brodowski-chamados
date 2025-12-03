@@ -8,9 +8,6 @@ export default function Home() {
 
       <TicketForm />
 
-      <hr className="my-6" />
-
-      <TicketListRealtime />
     </main>
   );
 }

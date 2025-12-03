@@ -2,26 +2,41 @@
 @import "tailwindcss/preflight";
 @import "tailwindcss";
 
+/* ===========================
+   VARIÁVEIS DO TEMA
+   =========================== */
+:root {
+  --surface: #ffffff;
+  --text: #1f2937;
+  --card-border: #e5e7eb;
+}
+
+.dark {
+  --surface: #111827;
+  --text: #f3f4f6;
+  --card-border: #374151;
+}
+
+/* ===========================
+   ESTILOS GLOBAIS
+   =========================== */
+
 html,
 body {
   height: 100%;
 }
 
-/* Não use @apply mais! Tailwind 4 não permite fora de scopes especiais */
-
-/* Estilos globais manuais */
 body {
-  background-color: var(--color-bg);
-  color: var(--color-text);
+  background-color: var(--surface);
+  color: var(--text);
+  font-family: sans-serif;
 }
 
-/* Light e Dark Theme */
-:root {
-  --color-bg: #ffffff;
-  --color-text: #1f2937;
-}
-
-.dark {
-  --color-bg: #111827;
-  --color-text: #f3f4f6;
+/* Container padrão */
+.container {
+  max-width: 1100px;
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: 1rem;
+  padding-right: 1rem;
 }
