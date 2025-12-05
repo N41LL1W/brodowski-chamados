@@ -6,7 +6,7 @@ export default function TicketCard({ ticket }: { ticket: Ticket }) {
   return (
     <article className="card">
       <div className="flex justify-between items-start">
-        <Link href={`/tickets/${ticket.id}`} className="font-bold text-lg hover:underline">
+        <Link href={`/meus-chamados/${ticket.id}`} className="font-bold text-lg hover:underline">
           {ticket.title}
         </Link>
         <div className="text-xs opacity-60">

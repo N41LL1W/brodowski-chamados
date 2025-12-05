@@ -1,7 +1,7 @@
 import TicketCard from "@/components/TicketCard";
 import prisma from "@/lib/prisma";
 
-export default async function TicketsPage() {
+export default async function MeusChamadosPage() {
   const tickets = await prisma.ticket.findMany({ orderBy: { createdAt: "desc" } });
 
   // converter createdAt para string para components client
@@ -11,13 +11,13 @@ export default async function TicketsPage() {
   }));
 
   return (
-    <div className="container mt-8">
-      <h1 className="text-2xl font-bold mb-4">Chamados</h1>
-      <div className="grid gap-4">
-        {serialized.map((t: any) => (
-          <TicketCard key={t.id} ticket={t} />
-        ))}
+      <div className="container mt-8">
+        <h1 className="text-2xl font-bold mb-4">Meus Chamados (Visão Geral - Pré-Login)</h1>
+        <div className="grid gap-4">
+          {serialized.map((t: any) => (
+            <TicketCard key={t.id} ticket={t} />
+          ))}
+        </div>
       </div>
-    </div>
-  );
-}
+    );
+  }

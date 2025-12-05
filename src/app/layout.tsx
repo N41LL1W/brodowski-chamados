@@ -15,6 +15,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="pt-BR" suppressHydrationWarning>
       <body className={inter.className}>
         <Navbar />
+        {/* pt-20 (padding-top: 5rem ou 80px) para afastar o conteúdo da Navbar */}
         <main className="pt-20">{children}</main>
       </body>
     </html>

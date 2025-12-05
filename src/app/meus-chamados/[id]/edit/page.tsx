@@ -28,7 +28,7 @@ export default async function EditTicketPage(props: Props) {
       },
     });
 
-    redirect(`/tickets/${ticketId}`);
+    redirect(`/meus-chamados/${ticketId}`);
   }
 
   return (
@@ -104,7 +104,7 @@ export default async function EditTicketPage(props: Props) {
             </button>
 
             <a
-              href={`/tickets/${ticket.id}`}
+              href={`/meus-chamados/${ticket.id}`}
               className="px-5 py-2 rounded-lg hover: transition"
             >
               Cancelar

@@ -32,14 +32,14 @@ export default async function TicketDetailPage(props: Props) {
 
         <div className="flex justify-end gap-4 mt-8">
           <Link
-            href={`/tickets/${ticket.id}/edit`}
+            href={`/meus-chamados/${ticket.id}/edit`}
             className="px-4 py-2 rounded-lg hover: transition"
           >
             Editar
           </Link>
 
           <Link
-            href="/tickets"
+            href="/meus-chamados"
             className="px-4 py-2 rounded-lg hover: transition"
           >
             Voltar
