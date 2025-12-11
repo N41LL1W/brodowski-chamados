@@ -14,9 +14,16 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="pt-BR" suppressHydrationWarning>
       <body className={inter.className}>
-        <Navbar />
-        {/* pt-20 (padding-top: 5rem ou 80px) para afastar o conteúdo da Navbar */}
-        <main className="pt-20">{children}</main>
+        
+        <Navbar /> 
+
+        {/* 1. min-h-screen: Garante que o bloco Main use toda a altura da tela. */}
+        {/* 2. pt-24: Reintroduce o espaçamento necessário para descolar da Navbar (96px). */}
+        {/* 3. flex, items-center, justify-center: Prepara o palco para centralização. */}
+        <main className="min-h-screen pt-24 flex items-center justify-center">
+          {children}
+        </main>
+       
       </body>
     </html>
   );

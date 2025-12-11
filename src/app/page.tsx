@@ -1,10 +1,12 @@
+// src/app/page.tsx
+
 import Link from "next/link";
 import Card from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 
 export default function Home() {
   return (
-    <main className="max-w-4xl mx-auto py-10 px-6 space-y-8">
+    <div className="max-w-4xl mx-auto w-full py-10 px-6 space-y-8"> 
       <section className="text-center space-y-4">
         <h1 className="text-4xl font-extrabold ">
           Bem-vindo ao Sistema de Chamados de TI
@@ -56,6 +58,6 @@ export default function Home() {
         </Card>
       </section>
 
-    </main>
+    </div>
   );
 }
