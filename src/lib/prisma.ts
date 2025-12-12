@@ -1,15 +1,21 @@
-import { PrismaClient } from "@prisma/client";
+// src/lib/prisma.ts
 
-declare global {
-  var prisma: PrismaClient | undefined;
+import { PrismaClient } from '@prisma/client'
+
+// Cria uma variável global para armazenar a instância do PrismaClient
+const globalForPrisma = global as unknown as {
+  prisma: PrismaClient | undefined
 }
 
-export const prisma =
-  global.prisma ??
+// Inicializa o PrismaClient, usando a instância global se estiver disponível.
+// Isso evita que o Next.js crie múltiplas instâncias em modo de desenvolvimento (hot reload).
+export const prisma = 
+  globalForPrisma.prisma ??
   new PrismaClient({
-    log: ["query", "info", "warn", "error"],
-  });
+    log: ['warn', 'error'],
+  })
 
-if (process.env.NODE_ENV !== "production") global.prisma = prisma;
+// Em ambiente de produção, não use o global
+if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = prisma
 
-export default prisma;
+export default prisma

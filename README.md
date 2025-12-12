@@ -19,28 +19,26 @@ Este é um projeto [Next.js](https://nextjs.org) em TypeScript.
 ### 1. Clonar o Repositório
 
 ```bash
-git clone [https://www.youtube.com/watch?v=X49Wz3icO3E](https://www.youtube.com/watch?v=X49Wz3icO3E)
+git clone [https://aws.amazon.com/pt/what-is/repo/](https://aws.amazon.com/pt/what-is/repo/)
 cd [NOME DA PASTA DO PROJETO]
 2. Instalar Dependências
-Instale as dependências do projeto (Next.js, React, Prisma, Tailwind, etc.):
+Instale as dependências do projeto, incluindo as bibliotecas de autenticação:
 
 Bash
 
 npm install
-# ou
-yarn install
-# ou
-pnpm install
-3. Configurar o Banco de Dados (SQLite com Prisma)
-O projeto utiliza SQLite para testes locais. Você precisa gerar o cliente Prisma e criar o arquivo de banco de dados (dev.db).
+npm install next-auth bcrypt
+npm install -D @types/bcrypt
+3. Configurar o Banco de Dados e Autenticação (SQLite com Prisma)
+O projeto utiliza SQLite para testes locais. Você precisa gerar o cliente Prisma e aplicar as alterações do esquema (incluindo o campo passwordHash no modelo User).
 
-Gerar o cliente Prisma e criar o DB:
+Gerar o cliente Prisma e aplicar migrações:
 
 Bash
 
 npx prisma generate
-npx prisma migrate dev --name init
-Atenção: O comando migrate dev aplica o esquema (prisma/schema.prisma) e cria o arquivo dev.db.
+npx prisma migrate dev --name add_auth_tables_and_password_hash
+Atenção: O comando migrate dev aplica o esquema (prisma/schema.prisma) e cria/atualiza o arquivo dev.db.
 
 4. Rodar o Servidor de Desenvolvimento
 Execute o servidor local:
@@ -58,6 +56,10 @@ Abra http://localhost:3000 no seu navegador para ver o resultado.
 Framework: Next.js (App Router)
 
 Linguagem: TypeScript
+
+Autenticação: NextAuth.js (Auth.js)
+
+Segurança: bcrypt
 
 Banco de Dados: SQLite (em desenvolvimento)
 

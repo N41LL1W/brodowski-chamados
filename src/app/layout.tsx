@@ -2,6 +2,7 @@
 import "./globals.css";
 import { Inter } from "next/font/google";
 import Navbar from "@/components/Navbar";
+import AuthProvider from "./providers"; // IMPORTAR o AuthProvider
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -15,14 +16,16 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="pt-BR" suppressHydrationWarning>
       <body className={inter.className}>
         
-        <Navbar /> 
+        {/* ENVOLVER TUDO COM O AUTH PROVIDER */}
+        <AuthProvider>
+          
+          <Navbar /> 
 
-        {/* 1. min-h-screen: Garante que o bloco Main use toda a altura da tela. */}
-        {/* 2. pt-24: Reintroduce o espaçamento necessário para descolar da Navbar (96px). */}
-        {/* 3. flex, items-center, justify-center: Prepara o palco para centralização. */}
-        <main className="min-h-screen pt-24 flex items-center justify-center">
-          {children}
-        </main>
+          <main className="min-h-screen pt-24 flex items-center justify-center">
+            {children}
+          </main>
+        
+        </AuthProvider>
        
       </body>
     </html>
