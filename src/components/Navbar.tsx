@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import ThemeToggle from "./ThemeToggle";
+import AuthButton from "./AuthButton";
 
 export default function Navbar() {
   const pathname = usePathname();
@@ -27,6 +28,10 @@ export default function Navbar() {
           <Link href="/controlador" className={isActive("/controlador")}>Controlador</Link>
           <ThemeToggle />
         </nav>
+
+        {/* Botão de Autenticação */}
+        <AuthButton />
+
       </div>
 
     </header>
