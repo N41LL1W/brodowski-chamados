@@ -4,12 +4,9 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Button } from '@/components/ui/Button'; // Assumindo que você tem Button
-import Card from '@/components/ui/Card'; // Assumindo que você tem Card
+import Card from '@/components/ui/Card'; // Componente Card
 import Link from 'next/link';
-
-// Usaremos esta página para criar os usuários iniciais
-// O campo 'role' será fixo como 'FUNCIONARIO' por padrão, mas pode ser ajustado manualmente no banco se necessário.
+// Nota: O Button foi substituído por uma tag <button> nativa para evitar bugs de UI.
 
 export default function RegisterPage() {
     const [name, setName] = useState('');
@@ -22,11 +19,18 @@ export default function RegisterPage() {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+        console.log("-> Tentativa de Registro Iniciada."); 
+        
+        // Verifica se os inputs estão preenchidos antes de tentar o fetch
+        if (!name || !email || !password) {
+            setError("Por favor, preencha todos os campos obrigatórios.");
+            return;
+        }
+
         setError(null);
         setSuccess(null);
         setIsLoading(true);
 
-        // Por enquanto, todos os usuários registrados por esta página serão FUNCIONARIOs
         const role = "FUNCIONARIO"; 
         
         try {
@@ -38,23 +42,26 @@ export default function RegisterPage() {
                 body: JSON.stringify({ name, email, password, role }),
             });
 
-            const data = await response.json();
+            // CORREÇÃO ESSENCIAL: Tenta ler a resposta JSON.
+            // Se a API retornar um erro não-JSON (como no 400), o catch será acionado.
+            const contentType = response.headers.get("content-type");
+            const isJson = contentType && contentType.includes("application/json");
+            const data = isJson ? await response.json() : await response.text();
 
             if (!response.ok) {
-                // Se o status for 409 (Conflito), usuário já existe
-                const errorMessage = data.message || data || 'Erro ao registrar usuário.';
-                setError(errorMessage);
+                // Trata erro de API (409, 500, etc.)
+                const errorMessage = (isJson && data.message) || data || 'Erro desconhecido ao registrar usuário.';
+                setError(String(errorMessage));
             } else {
                 setSuccess('Usuário registrado com sucesso! Redirecionando para o login...');
                 
-                // Limpa o formulário e redireciona para o login após 2 segundos
                 setTimeout(() => {
                     router.push('/login');
                 }, 2000);
             }
         } catch (err) {
-            setError('Erro de conexão com o servidor.');
-            console.error(err);
+            console.error('Erro de conexão ou JSON inválido:', err);
+            setError('Erro de conexão com o servidor ou resposta inválida. Tente novamente.');
         } finally {
             setIsLoading(false);
         }
@@ -78,6 +85,8 @@ export default function RegisterPage() {
                 )}
 
                 <form onSubmit={handleSubmit} className="space-y-4">
+                    
+                    {/* INPUT NOME */}
                     <div>
                         <label className="block mb-2 font-medium">Nome</label>
                         <input
@@ -89,6 +98,8 @@ export default function RegisterPage() {
                             disabled={isLoading}
                         />
                     </div>
+                    
+                    {/* INPUT EMAIL */}
                     <div>
                         <label className="block mb-2 font-medium">Email</label>
                         <input
@@ -100,6 +111,8 @@ export default function RegisterPage() {
                             disabled={isLoading}
                         />
                     </div>
+                    
+                    {/* INPUT SENHA */}
                     <div>
                         <label className="block mb-2 font-medium">Senha</label>
                         <input
@@ -112,9 +125,12 @@ export default function RegisterPage() {
                         />
                     </div>
                     
-                    <Button type="submit" className="w-full" disabled={isLoading}>
+                    {/* BOTÃO NATIVO (PARA EVITAR BUGS DE COMPONENTE) */}
+                    <button type="submit" 
+                        className="w-full bg-blue-600 text-white p-3 rounded-lg shadow-md hover:bg-blue-700 transition duration-300"
+                        disabled={isLoading}>
                         {isLoading ? 'Registrando...' : 'Registrar'}
-                    </Button>
+                    </button>
                 </form>
 
                 <div className="text-center mt-4">

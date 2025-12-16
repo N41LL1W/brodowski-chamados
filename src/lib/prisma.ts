@@ -8,7 +8,7 @@ const globalForPrisma = global as unknown as {
 }
 
 // Inicializa o PrismaClient, usando a instância global se estiver disponível.
-// Isso evita que o Next.js crie múltiplas instâncias em modo de desenvolvimento (hot reload).
+// Isso evita que o Next.js crie múltiplas instâncias em modo de desenvolvimento.
 export const prisma = 
   globalForPrisma.prisma ??
   new PrismaClient({

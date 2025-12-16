@@ -4,9 +4,8 @@ import NextAuth, { AuthOptions, SessionStrategy } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import { PrismaAdapter } from "@auth/prisma-adapter";
 import prisma from "@/lib/prisma"; 
-import bcrypt from 'bcrypt'; // Importar a biblioteca de criptografia
+import bcrypt from 'bcrypt'; 
 
-// Definir a estratégia de sessão tipada
 const sessionStrategy: SessionStrategy = "jwt"; 
 
 export const authOptions: AuthOptions = { 
@@ -30,7 +29,7 @@ export const authOptions: AuthOptions = {
                 });
 
                 if (!user || !user.passwordHash) {
-                    // Usuário não encontrado ou não tem senha (pode ter logado por outro método)
+                    // Usuário não encontrado ou sem hash de senha
                     return null; 
                 }
                 

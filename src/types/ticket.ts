@@ -1,4 +1,5 @@
 // src/types/ticket.ts
+
 export interface Ticket {
   id: number;
   title: string;
@@ -8,3 +9,6 @@ export interface Ticket {
   priority: string;
   createdAt: string;
 }
+
+// Criamos um "Type Alias" para que o ControladorPage encontre o nome que ele procura
+export type SerializedTicket = Ticket;
