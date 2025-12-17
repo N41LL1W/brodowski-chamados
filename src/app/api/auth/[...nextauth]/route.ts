@@ -19,16 +19,23 @@ export const authOptions: AuthOptions = {
                 password: { label: "Senha", type: "password" }
             },
             async authorize(credentials, req) {
+
+                console.log("=== TENTATIVA DE LOGIN ===");
+                console.log("Email recebido:", credentials?.email);
+
+
                 if (!credentials?.email || !credentials.password) {
+                    console.log("Erro: Email ou senha não fornecidos.");
                     return null;
                 }
 
                 // 1. Buscar o usuário pelo email
                 const user = await prisma.user.findUnique({ 
-                    where: { email: credentials.email },
+                    where: { email: credentials.email.trim() },
                 });
 
                 if (!user || !user.passwordHash) {
+                    console.log("Erro: Usuário não encontrado no banco.");
                     // Usuário não encontrado ou sem hash de senha
                     return null; 
                 }
@@ -38,13 +45,16 @@ export const authOptions: AuthOptions = {
                     credentials.password,
                     user.passwordHash 
                 );
+                
+                console.log("Usuário encontrado! Role:", user.role);
 
                 if (isValidPassword) { 
+                    console.log("Erro: Senha incorreta.");
                     // Se a senha estiver correta, retorna o objeto user
-                    return user;
+                    return null;
                 }
-
-                return null;
+                console.log("Sucesso: Senha validada.");
+                return user;
             }
         })
     ],

@@ -6,7 +6,7 @@ import { useState } from 'react';
 import Card from '@/components/ui/Card'; 
 
 // Lista de roles válidas
-const ROLES = ['FUNCIONARIO', 'TECNICO', 'CONTROLADOR'];
+const ROLES = ['FUNCIONARIO', 'TECNICO', 'CONTROLADOR', 'MASTER'];
 
 export default function AddUserPage() {
     const [name, setName] = useState('');

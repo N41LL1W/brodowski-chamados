@@ -3,30 +3,30 @@
 import { NextResponse } from 'next/server';
 import bcrypt from 'bcrypt';
 import prisma from '@/lib/prisma';
-// Importamos o getServerSession para PROTEGER esta API
 import { getServerSession } from "next-auth";
-import { authOptions } from "../../auth/[...nextauth]/route"; // Importa as opções de autenticação
+import { authOptions } from "../../auth/[...nextauth]/route";
 
 export async function POST(request: Request) {
-    // 1. VERIFICAÇÃO DE AUTORIZAÇÃO (CONTROLLER CHECK)
+    // 1. VERIFICAÇÃO DE AUTORIZAÇÃO (MASTER OU CONTROLADOR)
     const session = await getServerSession(authOptions);
+    const userRole = (session?.user as any)?.role;
 
-    if (!session || (session.user as any).role !== 'CONTROLADOR') {
-        // Se não estiver logado ou não for controlador, nega acesso.
-        return new NextResponse('Acesso não autorizado. Apenas Controladores podem usar esta API.', { status: 403 });
+    // Permite apenas se estiver logado e for CONTROLADOR ou MASTER
+    if (!session || !['CONTROLADOR', 'MASTER'].includes(userRole)) {
+        return new NextResponse('Acesso não autorizado. Apenas administradores podem usar esta API.', { status: 403 });
     }
 
     try {
         const body = await request.json();
-        // Esta API aceita a ROLE!
         const { name, email, password, role } = body; 
 
         if (!name || !email || !password || !role) {
             return new NextResponse('Dados incompletos.', { status: 400 });
         }
 
-        // 2. Verificar se a role é válida
-        if (!['FUNCIONARIO', 'TECNICO', 'CONTROLADOR'].includes(role)) {
+        // 2. Validar se a Role enviada é uma das permitidas (Adicionado MASTER aqui)
+        const rolesPermitidas = ['FUNCIONARIO', 'TECNICO', 'CONTROLADOR', 'MASTER'];
+        if (!rolesPermitidas.includes(role)) {
             return new NextResponse('Nível de acesso (role) inválido.', { status: 400 });
         }
 
@@ -36,11 +36,12 @@ export async function POST(request: Request) {
         });
 
         if (existingUser) {
-            return new NextResponse('Usuário já registrado.', { status: 409 });
+            return new NextResponse('O e-mail informado já está em uso.', { status: 409 });
         }
 
         // 4. Criptografar a senha
-        const passwordHash = await bcrypt.hash(password, 10);
+        const salt = await bcrypt.genSalt(10);
+        const passwordHash = await bcrypt.hash(password, salt);
 
         // 5. Criar o novo usuário
         const newUser = await prisma.user.create({
@@ -48,11 +49,14 @@ export async function POST(request: Request) {
                 name,
                 email,
                 passwordHash,
-                role, // Usa o nível de acesso enviado pelo CONTROLADOR
+                role, 
             },
         });
 
-        return NextResponse.json({ message: "Usuário criado com sucesso.", id: newUser.id }, { status: 201 });
+        return NextResponse.json({ 
+            message: "Usuário criado com sucesso.", 
+            user: { id: newUser.id, name: newUser.name, role: newUser.role } 
+        }, { status: 201 });
 
     } catch (error) {
         console.error('Erro na API de Registro Admin:', error);
