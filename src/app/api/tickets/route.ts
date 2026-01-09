@@ -1,30 +1,37 @@
-// src/app/api/tickets/route.ts
-import { NextResponse } from "next/server";
-import prisma from "@/lib/prisma";
-
-export async function GET() {
-  const tickets = await prisma.ticket.findMany({ orderBy: { createdAt: "desc" }});
-  return NextResponse.json(tickets);
-}
+import { NextResponse } from 'next/server';
+import prisma from '@/lib/prisma';
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 
 export async function POST(req: Request) {
   try {
-    const body = await req.json();
-    if (!body.title || !body.description || !body.requester) {
-      return NextResponse.json({ error: "Campos obrigatórios" }, { status: 400 });
+    // 1. Pega a sessão para saber QUEM está abrindo o chamado
+    const session = await getServerSession(authOptions);
+
+    if (!session || !session.user) {
+      return new NextResponse('Não autorizado. Faça login para abrir um chamado.', { status: 401 });
     }
-    const created = await prisma.ticket.create({
+
+    const { title, description, priority } = await req.json();
+
+    // 2. Cria o ticket usando o ID do usuário da sessão
+    const newTicket = await prisma.ticket.create({
       data: {
-        title: body.title,
-        description: body.description,
-        requester: body.requester,
-        status: body.status ?? "open",
-        priority: body.priority ?? "normal",
+        title,
+        description,
+        priority: priority || "normal",
+        status: "Aberto",
+        // Aqui está a correção: usamos userId em vez de requester
+        userId: (session.user as any).id, 
       },
     });
-    return NextResponse.json(created, { status: 201 });
-  } catch (err) {
-    console.error("API POST /api/tickets error:", err);
-    return NextResponse.json({ error: "Erro interno" }, { status: 500 });
+
+    return NextResponse.json(newTicket);
+  } catch (error) {
+    console.error("Erro ao criar ticket:", error);
+    return NextResponse.json(
+      { message: "Erro interno ao criar o chamado" },
+      { status: 500 }
+    );
   }
 }

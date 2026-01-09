@@ -3,48 +3,31 @@ import prisma from '@/lib/prisma';
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 
-export async function GET() {
+export async function POST(req: Request) {
   try {
-    // 1. Verifica a sessão do usuário
     const session = await getServerSession(authOptions);
-    const userRole = (session?.user as any)?.role;
 
-    // 2. Proteção: Apenas MASTER e CONTROLADOR podem listar todos os chamados
-    if (!session || !['MASTER', 'CONTROLADOR'].includes(userRole)) {
-      return new NextResponse('Não autorizado', { status: 403 });
+    // Bloqueia se não houver ninguém logado
+    if (!session || !session.user) {
+      return new NextResponse('Você precisa estar logado para abrir um chamado.', { status: 401 });
     }
 
-    // 3. Busca todos os chamados incluindo os dados dos usuários relacionados
-    const tickets = await prisma.ticket.findMany({
-      include: {
-        // Traz o nome de quem abriu o chamado
-        user: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
-          },
-        },
-        // Traz o nome do técnico atribuído (se houver)
-        assignedTo: {
-          select: {
-            id: true,
-            name: true,
-          },
-        },
-      },
-      // Ordena pelos mais recentes primeiro
-      orderBy: {
-        createdAt: 'desc',
+    const { title, description, priority } = await req.json();
+
+    const newTicket = await prisma.ticket.create({
+      data: {
+        title,
+        description,
+        priority: priority || "normal",
+        status: "Aberto",
+        // PEGA O ID AUTOMATICAMENTE DA SESSÃO
+        userId: (session.user as any).id, 
       },
     });
 
-    return NextResponse.json(tickets);
+    return NextResponse.json(newTicket);
   } catch (error) {
-    console.error("Erro na API de Tickets:", error);
-    return NextResponse.json(
-      { message: "Erro interno ao buscar chamados" }, 
-      { status: 500 }
-    );
+    console.error("Erro ao criar ticket:", error);
+    return NextResponse.json({ message: "Erro ao criar chamado" }, { status: 500 });
   }
 }
