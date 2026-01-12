@@ -22,7 +22,7 @@ export default async function EditTicketPage(props: Props) {
       data: {
         title: formData.get("title") as string,
         description: formData.get("description") as string,
-        requester: formData.get("requester") as string,
+        userId: formData.get("requester") as string,
         status: formData.get("status") as string,
         priority: formData.get("priority") as string,
       },
@@ -61,7 +61,7 @@ export default async function EditTicketPage(props: Props) {
             <label className="font-semibold block mb-1">Solicitante</label>
             <input
               name="requester"
-              defaultValue={ticket.requester}
+              defaultValue={ticket.userId}
               className="w-full p-3 border rounded-lg focus:ring-2 focus: outline-none"
               required
             />
