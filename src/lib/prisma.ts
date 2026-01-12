@@ -1,14 +1,15 @@
 import { PrismaClient } from '@prisma/client'
 
+// Montamos a URL manualmente para evitar que o sistema se perca nos caracteres especiais
+const dbUrl = "postgresql://neondb_owner:npg_LfwY48hnaVPs@ep-quiet-moon-ah4v70hu-pooler.us-east-1.aws.neon.tech/neondb?sslmode=require";
+
 const prismaClientSingleton = () => {
   return new PrismaClient({
     datasources: {
       db: {
-        // Tenta ler a URL do pooler primeiro, depois a padrão
-        url: process.env.POSTGRES_PRISMA_URL || process.env.DATABASE_URL,
+        url: dbUrl,
       },
     },
-    log: ['warn', 'error'],
   })
 }
 
