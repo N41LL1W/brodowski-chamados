@@ -1,40 +1,34 @@
-// src/middleware.ts
-
 import { withAuth, NextRequestWithAuth } from "next-auth/middleware";
 import { NextResponse } from "next/server";
 
 export default withAuth(
     function middleware(request: NextRequestWithAuth) {
         const pathname = request.nextUrl.pathname;
-        const role = request.nextauth.token?.role; 
-        const isAuthenticated = !!role;
+        const token = request.nextauth.token; // Captura o token corretamente
+        const role = token?.role; 
+        const isAuthenticated = !!token;
 
-        // ===============================================
-        // A. ACESSO MASTER (BYPASS TOTAL)
-        // ===============================================
-        // Se for MASTER, ele ignora todas as regras de bloqueio abaixo e acessa qualquer página.
-        if (role === "MASTER") return NextResponse.next();
+        // 1. BYPASS para MASTER e ADMIN (Acesso total)
+        if (role === "MASTER" || role === "ADMIN") {
+            // Se já está logado e tenta ir para login/registro, manda para a home
+            if (pathname === "/login" || pathname === "/registro") {
+                return NextResponse.redirect(new URL("/", request.url));
+            }
+            return NextResponse.next();
+        }
 
-        // ===============================================
-        // B. REGRAS DE AUTORIZAÇÃO POR NÍVEL DE ACESSO
-        // ===============================================
-
-        // 1. Proteger Rotas de Técnico (/tecnico)
-        // Permite acesso para "TECNICO" e "CONTROLADOR" (MASTER já passou acima)
+        // 2. Proteção de Rotas Técnicas
         if (pathname.startsWith('/tecnico') && role !== "TECNICO" && role !== "CONTROLADOR") {
             return NextResponse.rewrite(new URL("/unauthorized", request.url));
         }
 
-        // 2. Proteger Rotas de Controlador (/controlador)
-        // Permite acesso apenas para "CONTROLADOR" (MASTER já passou acima)
+        // 3. Proteção de Rotas de Controle
         if (pathname.startsWith('/controlador') && role !== "CONTROLADOR") {
             return NextResponse.rewrite(new URL("/unauthorized", request.url));
         }
 
-        // ===============================================
-        // C. REDIRECIONAMENTO PARA LOGADOS
-        // ===============================================
-        if (isAuthenticated && (pathname.startsWith('/login') || pathname.startsWith('/registro'))) {
+        // 4. Redirecionar logados que tentam acessar login/registro (Roles comuns)
+        if (isAuthenticated && (pathname === "/login" || pathname === "/registro")) {
             return NextResponse.redirect(new URL("/", request.url));
         }
 
@@ -42,7 +36,8 @@ export default withAuth(
     },
     {
         callbacks: {
-            authorized: ({ token }) => !!token, 
+            // Só executa a lógica acima se houver um token (usuário logado)
+            authorized: ({ token }) => !!token,
         },
         pages: {
             signIn: '/login',
@@ -51,7 +46,8 @@ export default withAuth(
 );
 
 export const config = {
+    // Matcher para proteger tudo, exceto arquivos públicos e a rota de registro/api
     matcher: [
-        "/((?!api/auth|api/register|_next/static|_next/image|favicon.ico|.*\\.png|registro$).*)",
+        "/((?!api|_next/static|_next/image|favicon.ico|.*\\.png|registro$).*)",
     ],
 };

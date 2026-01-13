@@ -1,12 +1,10 @@
-// src/app/login/page.tsx
-
 "use client";
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { signIn } from 'next-auth/react';
-import { Button } from '@/components/ui/Button'; // Componente Button (Tailwind/shadcn)
-import Card from '@/components/ui/Card';       // Componente Card
+import { signIn, useSession } from 'next-auth/react';
+import { Button } from '@/components/ui/Button';
+import Card from '@/components/ui/Card';
 import Link from 'next/link';
 
 export default function LoginPage() {
@@ -14,79 +12,90 @@ export default function LoginPage() {
     const [password, setPassword] = useState('');
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    const { data: session, status } = useSession();
     const router = useRouter();
+
+    // Se já estiver logado, redireciona automaticamente para a home
+    useEffect(() => {
+        if (status === "authenticated") {
+            window.location.href = "/";
+        }
+    }, [status]);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setError(null);
         setIsLoading(true);
 
-        // Chamada ao endpoint Credentials Provider do NextAuth
-        const result = await signIn('credentials', {
-            redirect: false, // Não redireciona automaticamente
-            email,
-            password,
-        });
+        try {
+            const result = await signIn('credentials', {
+                redirect: false, // Mantemos false para tratar o erro aqui
+                email,
+                password,
+            });
 
-        setIsLoading(false);
-
-        if (result?.error) {
-            // Se o resultado contiver um erro (Ex: Credenciais inválidas)
-            console.error("Erro de Login:", result.error);
-            setError('Credenciais inválidas. Verifique seu email e senha.');
-        } else if (result?.ok) {
-            // Se o login for bem-sucedido
-            router.push('/'); // Redireciona para a página inicial
+            if (result?.error) {
+                setError('Email ou senha incorretos.');
+                setIsLoading(false);
+            } else if (result?.ok) {
+                // Forçamos o reload completo para garantir que o Middleware reconheça a sessão
+                window.location.href = "/";
+            }
+        } catch (err) {
+            setError('Ocorreu um erro ao tentar entrar.');
+            setIsLoading(false);
         }
     };
 
+    if (status === "loading") return <div className="flex justify-center p-10">Carregando...</div>;
+
     return (
-        <div className="flex justify-center items-center h-full">
-            <Card className="w-full max-w-md p-6 shadow-xl">
-                <h1 className="text-3xl font-bold mb-6 text-center">Acesso ao Sistema</h1>
+        <div className="flex justify-center items-center min-h-[80vh]">
+            <Card className="w-full max-w-md p-8 shadow-2xl border-t-4 border-blue-600">
+                <h1 className="text-3xl font-bold mb-2 text-center text-gray-800">Brodowski Chamados</h1>
+                <p className="text-center text-gray-500 mb-8">Entre com suas credenciais</p>
                 
-                {/* Mensagem de Erro */}
                 {error && (
-                    <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4">
-                        {error}
+                    <div className="bg-red-50 border-l-4 border-red-500 text-red-700 p-4 mb-6" role="alert">
+                        <p className="font-bold">Erro</p>
+                        <p>{error}</p>
                     </div>
                 )}
 
-                <form onSubmit={handleSubmit} className="space-y-4">
+                <form onSubmit={handleSubmit} className="space-y-5">
                     <div>
-                        <label htmlFor="email" className="block mb-2 font-medium">Email Institucional</label>
+                        <label className="block text-sm font-semibold text-gray-700 mb-1">E-mail</label>
                         <input
-                            id="email"
                             type="email"
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
                             required
-                            className="w-full p-2 border border-gray-300 rounded focus:ring-blue-500 focus:border-blue-500"
+                            className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition-all"
+                            placeholder="exemplo@brodowski.sp.gov.br"
                             disabled={isLoading}
                         />
                     </div>
                     <div>
-                        <label htmlFor="password" className="block mb-2 font-medium">Senha</label>
+                        <label className="block text-sm font-semibold text-gray-700 mb-1">Senha</label>
                         <input
-                            id="password"
                             type="password"
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
                             required
-                            className="w-full p-2 border border-gray-300 rounded focus:ring-blue-500 focus:border-blue-500"
+                            className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition-all"
+                            placeholder="••••••••"
                             disabled={isLoading}
                         />
                     </div>
                     
-                    <Button type="submit" className="w-full" disabled={isLoading}>
-                        {isLoading ? 'Verificando...' : 'Entrar'}
+                    <Button type="submit" className="w-full py-6 text-lg font-bold" disabled={isLoading}>
+                        {isLoading ? 'Autenticando...' : 'Entrar no Sistema'}
                     </Button>
                 </form>
 
-                {/* Link para a página de Registro */}
-                <div className="text-center mt-4">
-                    <Link href="/registro" className="text-sm text-blue-600 hover:underline">
-                        Não tem uma conta? Registre-se
+                <div className="text-center mt-6">
+                    <Link href="/registro" className="text-blue-600 hover:text-blue-800 font-medium">
+                        Criar nova conta institucional
                     </Link>
                 </div>
             </Card>
