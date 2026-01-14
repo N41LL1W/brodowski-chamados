@@ -4,34 +4,58 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 
 export async function POST(req: Request) {
-  try {
-    // 1. Pega a sessão para saber QUEM está abrindo o chamado
     const session = await getServerSession(authOptions);
 
     if (!session || !session.user) {
-      return new NextResponse('Não autorizado. Faça login para abrir um chamado.', { status: 401 });
+        return new NextResponse('Não autorizado', { status: 401 });
     }
 
-    const { title, description, priority } = await req.json();
+    try {
+        const { title, description, priority } = await req.json();
+        
+        // Usamos (session.user as any) para acessar o id sem erro de TS
+        const userId = (session.user as any).id;
 
-    // 2. Cria o ticket usando o ID do usuário da sessão
-    const newTicket = await prisma.ticket.create({
-      data: {
-        title,
-        description,
-        priority: priority || "normal",
-        status: "Aberto",
-        // Aqui está a correção: usamos userId em vez de requester
-        userId: (session.user as any).id, 
-      },
+        const newTicket = await prisma.ticket.create({
+            data: {
+                title,
+                description,
+                priority: priority || 'normal',
+                status: 'Aberto',
+                userId: userId,
+            }
+        });
+
+        return NextResponse.json(newTicket, { status: 201 });
+    } catch (error) {
+        console.error("Erro ao criar chamado:", error);
+        return NextResponse.json({ message: "Erro ao abrir chamado" }, { status: 500 });
+    }
+}
+
+export async function GET() {
+    const session = await getServerSession(authOptions);
+
+    if (!session || !session.user) {
+        return new NextResponse('Não autorizado', { status: 401 });
+    }
+
+    const user = session.user as any;
+    const role = user.role;
+    const userId = user.id;
+
+    // Funcionários vêem apenas os seus. 
+    // ADMIN, MASTER e TECNICO vêem todos.
+    const whereClause = (role === 'FUNCIONARIO') ? { userId: userId } : {};
+
+    const tickets = await prisma.ticket.findMany({
+        where: whereClause,
+        include: {
+            user: { select: { name: true } },
+            assignedTo: { select: { name: true } }
+        },
+        orderBy: { createdAt: 'desc' }
     });
 
-    return NextResponse.json(newTicket);
-  } catch (error) {
-    console.error("Erro ao criar ticket:", error);
-    return NextResponse.json(
-      { message: "Erro interno ao criar o chamado" },
-      { status: 500 }
-    );
-  }
+    return NextResponse.json(tickets);
 }
