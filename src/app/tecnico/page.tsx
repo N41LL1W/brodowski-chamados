@@ -63,17 +63,11 @@ export default function PainelTecnicoPage() {
                 ) : (
                     tickets.map((ticket: any) => (
                         <Card key={ticket.id} className="p-6 border-l-8 border-l-blue-600 shadow-sm">
-                            // No cabeçalho do card:
-                            <div className="flex gap-2">
-                                <Badge variant="priority" value={ticket.priority}>{ticket.priority}</Badge>
-                                <Badge variant="status" value={ticket.status}>{ticket.status}</Badge>
-                            </div>
                             <div className="flex flex-col lg:flex-row justify-between gap-6">
                                 <div className="flex-1">
                                     <div className="flex items-center gap-3 mb-3">
-                                        <span className={`text-[10px] font-bold px-2 py-1 rounded uppercase ${getPriorityStyle(ticket.priority)}`}>
-                                            {ticket.priority}
-                                        </span>
+                                        <Badge variant="priority" value={ticket.priority}>{ticket.priority}</Badge>
+                                        <Badge variant="status" value={ticket.status}>{ticket.status}</Badge>
                                         <span className="text-xs font-medium text-gray-500 flex items-center gap-1">
                                             <Clock className="w-3 h-3" /> {new Date(ticket.createdAt).toLocaleString('pt-BR')}
                                         </span>
