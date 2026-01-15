@@ -50,6 +50,10 @@ export default function Navbar() {
             {isLogged && ["CONTROLADOR", "ADMIN", "MASTER"].includes(role) && (
               <Link href="/controlador" className={isActive("/controlador")}>Gestão</Link>
             )}
+
+            {isLogged && role === "MASTER" && (
+              <Link href="/config" className={isActive("/config")}>Configurações</Link>
+            )}
           </nav>
 
           {/* Ações Direitas */}
