@@ -135,7 +135,7 @@ export default function ConfigPage() {
                 
                 <div className="grid gap-3">
                     {users.map((user: any) => (
-                        <Card key={user.id} className="p-4 flex flex-wrap justify-between items-center bg-white shadow-sm border-l-4 border-blue-500 hover:shadow-md transition-shadow">
+                        <Card key={user.id} className="p-4 flex flex-wrap justify-between items-center shadow-sm border-l-4 border-blue-500 hover:shadow-md transition-shadow">
                             <div className="min-w-[250px]">
                                 <p className="font-bold text-gray-900 text-lg">{user.name || 'Sem nome'}</p>
                                 <p className="text-sm text-gray-500">{user.email}</p>
@@ -157,7 +157,7 @@ export default function ConfigPage() {
                                 <div className="flex flex-col">
                                     <span className="text-[10px] text-gray-400 uppercase font-black mb-1">Alterar Cargo</span>
                                     <select 
-                                        className="text-sm p-1.5 border rounded bg-white text-black min-w-[140px] shadow-sm" 
+                                        className="text-sm p-1.5 border rounded text-black min-w-[140px] shadow-sm" 
                                         value={user.roleId || ""}
                                         onChange={(e) => {
                                             const rId = e.target.value;
@@ -173,7 +173,7 @@ export default function ConfigPage() {
                                 <div className="flex flex-col border-l pl-4">
                                     <span className="text-[10px] text-gray-400 uppercase font-black mb-1">Nível Técnico</span>
                                     <select 
-                                        className="text-sm p-1.5 border rounded bg-white text-black min-w-[140px] shadow-sm" 
+                                        className="text-sm p-1.5 border rounded text-black min-w-[140px] shadow-sm" 
                                         value={user.levelId || ""}
                                         onChange={(e) => updateUser(user.id, { levelId: e.target.value })}
                                     >
