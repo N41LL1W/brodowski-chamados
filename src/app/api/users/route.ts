@@ -6,7 +6,7 @@ import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 export async function GET() {
     const session = await getServerSession(authOptions);
     
-    // Proteção: Apenas MASTER pode listar todos os usuários
+    // Trava de segurança: só Master vê a lista de todos
     if (!session || (session.user as any)?.role !== 'MASTER') {
         return new NextResponse('Não autorizado', { status: 403 });
     }
@@ -15,8 +15,8 @@ export async function GET() {
         const users = await prisma.user.findMany({
             orderBy: { name: 'asc' },
             include: {
-                roleRelation: true,  // Nome exato do seu Schema
-                levelRelation: true  // Nome exato do seu Schema
+                roleRelation: true,
+                levelRelation: true
             }
         });
         return NextResponse.json(users);
