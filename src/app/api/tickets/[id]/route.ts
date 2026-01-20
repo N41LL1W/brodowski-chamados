@@ -1,37 +1,52 @@
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
-import { type NextRequest } from "next/server"; // Importe NextRequest
 
-// Defina a interface MÍNIMA para o objeto context que o Next.js injeta
+// Definindo a interface correta para o Next.js 15+
 interface RouteContext {
-    params: {
-        id: string; 
+    params: Promise<{ id: string }>;
+}
+
+export async function PUT(req: Request, context: RouteContext) {
+    try {
+        // No Next.js 15, o params é uma Promise
+        const { id } = await context.params;
+
+        // REMOVIDO: Number(id) e isNaN(id)
+        // Como o ID agora é um CUID (string), não precisamos converter para número
+        if (!id) {
+            return NextResponse.json({ error: "ID é obrigatório" }, { status: 400 });
+        }
+
+        const data = await req.json();
+
+        const updated = await prisma.ticket.update({
+            where: { id: id }, // Agora passa a string direta
+            data: {
+                subject: data.subject,
+                description: data.description,
+                status: data.status,
+                priority: data.priority,
+                // Adicione outros campos que deseja permitir a edição aqui
+            },
+        });
+
+        return NextResponse.json(updated);
+    } catch (err: any) {
+        console.error("Erro ao atualizar ticket:", err);
+        return NextResponse.json(
+            { error: "Erro ao atualizar", details: err.message }, 
+            { status: 500 }
+        );
     }
 }
 
-// Para a função PUT (e todas as Route Handlers), use a tipagem mais precisa.
-// NOTA: Em muitos casos, o Next.js permite que você omita a tipagem complexa do contexto 
-// se usar apenas o `Request` ou `NextRequest` e confiar na inferência.
-export async function PUT(
-  req: Request, 
-  context: any // Ignora a tipagem complexa do Next.js
-) {
-  try {
-  const id = Number(context.params.id);
-  if (isNaN(id)) {
-  return NextResponse.json({ error: "ID inválido" }, { status: 400 });
-  }
-
-  const data = await req.json();
-
-  const updated = await prisma.ticket.update({
-  where: { id },
-  data,
-  });
-
-  return NextResponse.json(updated);
-  } catch (err) {
-   console.error(err);
-   return NextResponse.json({ error: "Erro ao atualizar" }, { status: 500 });
- }
+// Aproveite e já deixe o DELETE pronto se tiver um
+export async function DELETE(req: Request, context: RouteContext) {
+    try {
+        const { id } = await context.params;
+        await prisma.ticket.delete({ where: { id } });
+        return NextResponse.json({ message: "Deletado com sucesso" });
+    } catch (err) {
+        return NextResponse.json({ error: "Erro ao deletar" }, { status: 500 });
+    }
 }
