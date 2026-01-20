@@ -52,7 +52,7 @@ export default function NovoChamadoPage() {
             });
 
             if (res.ok) {
-                router.push('/chamados/meus-pedidos'); 
+                router.push('/chamados/meus-chamados'); 
                 router.refresh();
             } else {
                 alert("Erro ao criar chamado.");

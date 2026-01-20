@@ -38,7 +38,7 @@ export default function Navbar() {
             
             {isLogged && (
               <>
-                <Link href="/novo-chamado" className={isActive("/novo-chamado")}>Abrir Chamado</Link>
+                <Link href="/chamados/novo" className={isActive("/chamados/novo")}>Abrir Chamado</Link>
                 <Link href="/meus-chamados" className={isActive("/meus-chamados")}>Meus Chamados</Link>
               </>
             )}
@@ -70,7 +70,7 @@ export default function Navbar() {
           <Link href="/" className={isActive("/")}>Início</Link>
           {isLogged && (
             <>
-              <Link href="/novo-chamado" className={isActive("/novo-chamado")}>Novo</Link>
+              <Link href="/chamados/novo" className={isActive("/chamados/novo")}>Novo</Link>
               <Link href="/meus-chamados" className={isActive("/meus-chamados")}>Chamados</Link>
             </>
           )}

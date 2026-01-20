@@ -14,7 +14,6 @@ export async function PATCH(request: Request) {
 
     try {
         const body = await request.json();
-        // Pegamos o ticketId e o technicianId de dentro do corpo do JSON enviado pelo formulário
         const { ticketId, technicianId } = body;
 
         if (!ticketId) {
@@ -22,16 +21,18 @@ export async function PATCH(request: Request) {
         }
 
         const updatedTicket = await prisma.ticket.update({
-            where: { id: Number(ticketId) }, 
+            // CORREÇÃO: Removido o Number(), pois ticketId agora é String
+            where: { id: ticketId }, 
             data: {
-                assignedToId: technicianId,
-                status: technicianId ? "Em Atendimento" : "Aberto"
+                assignedToId: technicianId || null,
+                // CORREÇÃO: Usando os status em MAIÚSCULO para bater com o Schema e a Barra de Progresso
+                status: technicianId ? "ATENDIMENTO" : "ABERTO"
             }
         });
 
         return NextResponse.json(updatedTicket);
-    } catch (error) {
+    } catch (error: any) {
         console.error("Erro na atribuição:", error);
-        return new NextResponse('Erro ao atribuir técnico', { status: 500 });
+        return new NextResponse('Erro ao atribuir técnico: ' + error.message, { status: 500 });
     }
 }

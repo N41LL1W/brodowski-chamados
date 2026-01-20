@@ -16,7 +16,7 @@ export default function Home() {
           da Prefeitura de Brodowski.
         </p>
         <div className="pt-4">
-          <Link href="/novo-chamado">
+          <Link href="/chamados/novo">
             <Button className="text-lg px-8 py-3">
               Abrir um Chamado Agora
             </Button>
