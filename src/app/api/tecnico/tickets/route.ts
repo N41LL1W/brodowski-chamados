@@ -19,13 +19,16 @@ export async function GET() {
         assignedToId: userId
       },
       include: {
-        user: { select: { name: true, email: true } } // Dados do solicitante
+        requester: { select: { name: true, email: true } }, // CORREÇÃO: 'user' agora é 'requester'
+        category: { select: { name: true } },
+        department: { select: { name: true } }
       },
       orderBy: { createdAt: 'desc' }
     });
 
     return NextResponse.json(tickets);
   } catch (error) {
+    console.error("Erro técnico list:", error);
     return NextResponse.json({ message: "Erro ao buscar chamados" }, { status: 500 });
   }
 }

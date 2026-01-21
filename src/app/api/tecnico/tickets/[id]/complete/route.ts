@@ -17,14 +17,17 @@ export async function PATCH(
     try {
         const updatedTicket = await prisma.ticket.update({
             where: { 
-                id: Number(id),
-                assignedToId: (session.user as any).id // Segurança: Só o técnico dono do chamado pode concluir
+                id: id, // CORREÇÃO: Removido o Number()
+                assignedToId: (session.user as any).id 
             },
-            data: { status: "Concluído" }
+            data: { 
+                status: "CONCLUIDO" // CORREÇÃO: Alinhado com o padrão da barra de progresso
+            }
         });
 
         return NextResponse.json(updatedTicket);
     } catch (error) {
+        console.error("Erro técnico complete:", error);
         return new NextResponse('Erro ao concluir chamado', { status: 500 });
     }
 }
