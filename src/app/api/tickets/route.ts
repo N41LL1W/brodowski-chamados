@@ -11,25 +11,29 @@ export async function POST(req: Request) {
     }
 
     try {
-        const { title, description, priority } = await req.json();
-        
-        // Usamos (session.user as any) para acessar o id sem erro de TS
+        const { subject, description, priority, categoryId, departmentId } = await req.json();
         const userId = (session.user as any).id;
+
+        // Gerar protocolo simples: DATA + TIMESTAMP
+        const protocol = `${new Date().toISOString().slice(0,10).replace(/-/g, '')}-${Math.floor(Math.random() * 1000)}`;
 
         const newTicket = await prisma.ticket.create({
             data: {
-                title,
+                protocol,
+                subject, // Mudado de title para subject
                 description,
-                priority: priority || 'normal',
-                status: 'Aberto',
-                userId: userId,
+                priority: priority || 'NORMAL',
+                status: 'ABERTO',
+                requesterId: userId, // Mudado de userId para requesterId
+                categoryId: categoryId, // Agora obrigatório no novo schema
+                departmentId: departmentId, // Agora obrigatório no novo schema
             }
         });
 
         return NextResponse.json(newTicket, { status: 201 });
-    } catch (error) {
+    } catch (error: any) {
         console.error("Erro ao criar chamado:", error);
-        return NextResponse.json({ message: "Erro ao abrir chamado" }, { status: 500 });
+        return NextResponse.json({ message: "Erro ao abrir chamado", details: error.message }, { status: 500 });
     }
 }
 
@@ -44,15 +48,16 @@ export async function GET() {
     const role = user.role;
     const userId = user.id;
 
-    // Funcionários vêem apenas os seus. 
-    // ADMIN, MASTER e TECNICO vêem todos.
-    const whereClause = (role === 'FUNCIONARIO') ? { userId: userId } : {};
+    // Filtro: Funcionários vêem apenas os seus. 
+    // No novo schema, usamos requesterId
+    const whereClause: any = (role === 'FUNCIONARIO') ? { requesterId: userId } : {};
 
     const tickets = await prisma.ticket.findMany({
         where: whereClause,
         include: {
-            user: { select: { name: true } },
-            assignedTo: { select: { name: true } }
+            requester: { select: { name: true } }, // Mudado de user para requester
+            category: { select: { name: true } },
+            department: { select: { name: true } }
         },
         orderBy: { createdAt: 'desc' }
     });

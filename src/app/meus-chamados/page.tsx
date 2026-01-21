@@ -1,9 +1,8 @@
 "use client";
 
 import { useEffect, useState } from 'react';
-import Card from '@/components/ui/Card';
-import { Badge } from '@/components/ui/Badge';
-import { Clock, MessageSquare, AlertTriangle } from 'lucide-react';
+import Link from 'next/link'; // Adicionado Link
+import { Clock, Tag, MapPin } from 'lucide-react';
 
 export default function MeusChamadosPage() {
     const [tickets, setTickets] = useState([]);
@@ -18,48 +17,69 @@ export default function MeusChamadosPage() {
             });
     }, []);
 
-    const getPriorityColor = (prio: string) => {
-        if (prio === 'alta' || prio === 'urgente') return 'bg-red-100 text-red-700';
-        if (prio === 'normal') return 'bg-blue-100 text-blue-700';
-        return 'bg-gray-100 text-gray-700';
+    const getStatusColor = (status: string) => {
+        if (status === 'ABERTO') return 'bg-emerald-100 text-emerald-700';
+        if (status === 'ATENDIMENTO') return 'bg-amber-100 text-amber-700';
+        return 'bg-blue-100 text-blue-700';
     };
 
-    if (loading) return <p className="p-8 text-center">Carregando seus chamados...</p>;
+    if (loading) return <p className="p-8 text-center font-bold text-slate-500">Buscando chamados em Brodowski...</p>;
 
     return (
         <div className="max-w-5xl mx-auto p-6">
-            <h1 className="text-2xl font-bold mb-6">Meus Chamados</h1>
+            <div className="flex justify-between items-center mb-8">
+                <h1 className="text-3xl font-black text-slate-800 tracking-tighter">Meus Chamados</h1>
+                <Link href="/chamados/novo" className="bg-slate-900 text-white px-6 py-2 rounded-xl font-bold hover:bg-blue-600 transition-all">
+                    Novo Chamado
+                </Link>
+            </div>
             
             {tickets.length === 0 ? (
-                <Card className="p-10 text-center text-gray-500">
-                    Você ainda não abriu nenhum chamado.
-                </Card>
+                <div className="p-20 text-center border-2 border-dashed border-slate-200 rounded-3xl text-slate-400">
+                    Nenhum chamado encontrado.
+                </div>
             ) : (
                 <div className="grid gap-4">
                     {tickets.map((ticket: any) => (
-                        <Card key={ticket.id} className="p-5 hover:shadow-md transition-shadow">
-                            <div className="flex justify-between items-start">
-                                <div>
-                                    <div className="flex items-center gap-2 mb-2">
-                                        <span className={`text-xs font-bold px-2 py-1 rounded-full uppercase ${getPriorityColor(ticket.priority)}`}>
-                                            {ticket.priority}
-                                        </span>
-                                        <span className="text-xs font-bold bg-yellow-100 text-yellow-800 px-2 py-1 rounded-full uppercase">
-                                            {ticket.status}
-                                        </span>
+                        <Link href={`/meus-chamados/${ticket.id}`} key={ticket.id}>
+                            <div className="p-6 bg-white border border-slate-100 rounded-3xl shadow-sm hover:shadow-xl hover:border-blue-200 transition-all group">
+                                <div className="flex justify-between items-start">
+                                    <div className="space-y-3">
+                                        <div className="flex gap-2">
+                                            <span className={`text-[10px] font-black px-3 py-1 rounded-full ${getStatusColor(ticket.status)}`}>
+                                                {ticket.status}
+                                            </span>
+                                            <span className="text-[10px] font-black px-3 py-1 rounded-full bg-slate-100 text-slate-500">
+                                                {ticket.protocol}
+                                            </span>
+                                        </div>
+                                        
+                                        <h3 className="font-bold text-xl text-slate-800 group-hover:text-blue-600 transition-colors">
+                                            {ticket.subject}
+                                        </h3>
+                                        
+                                        <div className="flex gap-4 text-slate-400">
+                                            <div className="flex items-center gap-1 text-[11px] font-medium">
+                                                <Tag size={14} /> {ticket.category?.name || 'Geral'}
+                                            </div>
+                                            <div className="flex items-center gap-1 text-[11px] font-medium">
+                                                <MapPin size={14} /> {ticket.department?.name || 'Prefeitura'}
+                                            </div>
+                                        </div>
                                     </div>
-                                    <h3 className="font-bold text-lg text-gray-800">{ticket.title}</h3>
-                                    <p className="text-gray-600 text-sm line-clamp-2 mt-1">{ticket.description}</p>
-                                </div>
-                                <div className="text-right text-xs text-gray-400">
-                                    <div className="flex items-center justify-end gap-1">
-                                        <Clock className="w-3 h-3" />
-                                        {new Date(ticket.createdAt).toLocaleDateString('pt-BR')}
+                                    
+                                    <div className="text-right flex flex-col items-end">
+                                        <div className="flex items-center gap-1 text-[10px] font-bold text-slate-300">
+                                            <Clock size={12} />
+                                            {new Date(ticket.createdAt).toLocaleDateString('pt-BR')}
+                                        </div>
+                                        <div className="mt-4 text-blue-600 font-black text-xs opacity-0 group-hover:opacity-100 transition-opacity">
+                                            VER DETALHES →
+                                        </div>
                                     </div>
-                                    <p className="mt-2 text-gray-500 font-medium">Cod: #{ticket.id}</p>
                                 </div>
                             </div>
-                        </Card>
+                        </Link>
                     ))}
                 </div>
             )}
