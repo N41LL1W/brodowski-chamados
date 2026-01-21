@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { 
     Monitor, Wifi, Printer, ShieldAlert, 
-    FileText, Send, ArrowLeft, CheckCircle2 
+    FileText, Send, ArrowLeft, MapPin 
 } from 'lucide-react';
 import Card from '@/components/ui/Card';
 
@@ -17,14 +17,14 @@ export default function NovoChamadoPage() {
     const [step, setStep] = useState(1);
     const [loading, setLoading] = useState(false);
     
-    // Dados vindos do Banco (Master Configura)
     const [categories, setCategories] = useState([]);
     const [departments, setDepartments] = useState([]);
 
-    // Estado do Formulário
+    // Estado do Formulário - ADICIONADO location
     const [form, setForm] = useState({
         categoryId: '',
         departmentId: '',
+        location: '', // Novo campo
         subject: '',
         description: '',
         priority: 'NORMAL'
@@ -45,7 +45,7 @@ export default function NovoChamadoPage() {
     const handleSubmit = async () => {
         setLoading(true);
         try {
-            const res = await fetch('/api/tickets', { // Sua rota de API atual
+            const res = await fetch('/api/tickets', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(form),
@@ -66,7 +66,6 @@ export default function NovoChamadoPage() {
 
     return (
         <div className="p-4 md:p-8 max-w-3xl mx-auto">
-            {/* Cabeçalho Dinâmico */}
             <header className="mb-8 flex justify-between items-center">
                 <div>
                     <h1 className="text-3xl font-black text-gray-900 uppercase italic">Suporte TI</h1>
@@ -79,7 +78,6 @@ export default function NovoChamadoPage() {
                 )}
             </header>
 
-            {/* PASSO 1: CATEGORIAS (ÍCONES GRANDES) */}
             {step === 1 && (
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-4 animate-in fade-in zoom-in duration-300">
                     {categories.length > 0 ? categories.map((cat: any) => {
@@ -102,7 +100,6 @@ export default function NovoChamadoPage() {
                 </div>
             )}
 
-            {/* PASSO 2: FORMULÁRIO DETALHADO */}
             {step === 2 && (
                 <Card className="p-8 shadow-2xl border-0 rounded-4x1 animate-in fade-in slide-in-from-right-8 duration-300">
                     <form className="space-y-6">
@@ -133,6 +130,20 @@ export default function NovoChamadoPage() {
                             </div>
                         </div>
 
+                        {/* NOVO CAMPO: LOCALIZAÇÃO EXATA */}
+                        <div>
+                            <label className="block text-[10px] font-black text-blue-600 uppercase mb-2 tracking-widest">Localização Exata (Ex: Recepção, Sala 02)</label>
+                            <div className="relative">
+                                <MapPin className="absolute left-4 top-4 text-slate-400" size={20} />
+                                <input 
+                                    className="w-full p-4 pl-12 border-2 border-slate-100 rounded-2xl bg-slate-50 text-black font-medium focus:border-blue-500 outline-none transition-all"
+                                    placeholder="Onde o técnico deve comparecer?"
+                                    value={form.location}
+                                    onChange={e => setForm({...form, location: e.target.value})}
+                                />
+                            </div>
+                        </div>
+
                         <div>
                             <label className="block text-[10px] font-black text-blue-600 uppercase mb-2 tracking-widest">Assunto Rápido</label>
                             <input 
@@ -156,8 +167,8 @@ export default function NovoChamadoPage() {
                         <button 
                             type="button"
                             onClick={handleSubmit}
-                            disabled={loading || !form.departmentId || !form.subject}
-                            className={`w-full flex items-center justify-center gap-3 p-5 bg-blue-600 text-white rounded-2xl font-black uppercase tracking-tighter hover:bg-blue-700 shadow-lg shadow-blue-200 transition-all ${loading ? 'opacity-50' : ''}`}
+                            disabled={loading || !form.departmentId || !form.subject || !form.location}
+                            className={`w-full flex items-center justify-center gap-3 p-5 bg-blue-600 text-white rounded-2xl font-black uppercase tracking-tighter hover:bg-blue-700 shadow-lg shadow-blue-200 transition-all ${loading ? 'opacity-50 pointer-events-none' : ''}`}
                         >
                             <Send size={20} />
                             {loading ? 'Enviando...' : 'Finalizar e Enviar'}
