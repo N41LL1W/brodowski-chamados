@@ -3,11 +3,16 @@ import prisma from "@/lib/prisma";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 
-export async function GET(req: Request, { params }: { params: Promise<{ id: string }> }) {
+// GET: Busca detalhes de um chamado específico
+export async function GET(req: Request, props: { params: Promise<{ id: string }> }) {
     try {
-        const { id } = await params;
+        const params = await props.params;
+        const id = params.id;
+        
         const session = await getServerSession(authOptions);
-        const user = session?.user as any;
+        if (!session) return new NextResponse('Não autorizado', { status: 401 });
+        
+        const user = session.user as any;
 
         const ticket = await (prisma as any).ticket.findUnique({
             where: { id },
@@ -21,23 +26,25 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
 
         if (!ticket) return NextResponse.json({ error: "Não encontrado" }, { status: 404 });
 
-        // SEGURANÇA: Se não for técnico/admin e tentar ver chamado de outro, bloqueia
+        // SEGURANÇA: Se for funcionário comum, só vê se for o dono do chamado
         if ((user.role === 'USER' || user.role === 'FUNCIONARIO') && ticket.requesterId !== user.id) {
             return NextResponse.json({ error: "Acesso negado" }, { status: 403 });
         }
 
         return NextResponse.json(ticket);
     } catch (err) {
+        console.error("Erro ao buscar ticket:", err);
         return NextResponse.json({ error: "Erro interno" }, { status: 500 });
     }
 }
 
-export async function PUT(req: Request, { params }: { params: Promise<{ id: string }> }) {
+// PUT: Atualiza status ou técnico do chamado
+export async function PUT(req: Request, props: { params: Promise<{ id: string }> }) {
     try {
-        const { id } = await params;
+        const params = await props.params;
+        const id = params.id;
         const data = await req.json();
         
-        // Atualiza status e técnico (assignedToId)
         const updated = await (prisma as any).ticket.update({
             where: { id },
             data: {
@@ -49,12 +56,19 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
 
         return NextResponse.json(updated);
     } catch (err) {
+        console.error("Erro ao atualizar ticket:", err);
         return NextResponse.json({ error: "Erro ao atualizar" }, { status: 500 });
     }
 }
 
-export async function DELETE(req: Request, { params }: { params: Promise<{ id: string }> }) {
-    const { id } = await params;
-    await (prisma as any).ticket.delete({ where: { id } });
-    return NextResponse.json({ message: "Removido" });
+// DELETE: Remove o chamado
+export async function DELETE(req: Request, props: { params: Promise<{ id: string }> }) {
+    try {
+        const params = await props.params;
+        const id = params.id;
+        await (prisma as any).ticket.delete({ where: { id } });
+        return NextResponse.json({ message: "Removido" });
+    } catch (err) {
+        return NextResponse.json({ error: "Erro ao deletar" }, { status: 500 });
+    }
 }
