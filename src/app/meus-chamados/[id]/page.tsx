@@ -4,7 +4,7 @@ import { useState, useEffect, use } from 'react';
 import Link from "next/link";
 import { 
     Clock, Wrench, CheckCircle2, ArrowLeft, 
-    Calendar, Tag, MapPin, Send, MessageSquare 
+    Tag, MapPin, Send, MessageSquare 
 } from "lucide-react";
 
 export default function TicketDetailPage({ params }: { params: Promise<{ id: string }> }) {
@@ -33,19 +33,25 @@ export default function TicketDetailPage({ params }: { params: Promise<{ id: str
 
     const handleSendComment = async () => {
         if (!newComment.trim()) return;
-        const res = await fetch(`/api/tickets/${id}/comments`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ content: newComment })
-        });
-        if (res.ok) {
-            setNewComment("");
-            loadData();
+        try {
+            const res = await fetch(`/api/tickets/${id}/comments`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ content: newComment })
+            });
+            if (res.ok) {
+                setNewComment("");
+                loadData();
+            } else {
+                alert("Erro ao enviar mensagem. Verifique sua conexão.");
+            }
+        } catch (err) {
+            console.error("Erro no chat:", err);
         }
     };
 
-    if (loading) return <div className="p-20 text-center font-black animate-pulse text-slate-300">CARREGANDO DETALHES...</div>;
-    if (!ticket) return <div className="p-20 text-center font-bold">Chamado não encontrado.</div>;
+    if (loading) return <div className="p-20 text-center font-black animate-pulse text-slate-300 tracking-tighter italic">BUSCANDO DADOS DO SISTEMA...</div>;
+    if (!ticket) return <div className="p-20 text-center font-bold text-red-500 uppercase">Chamado não encontrado ou acesso negado.</div>;
 
     const statusSteps = ['ABERTO', 'ATENDIMENTO', 'CONCLUIDO'];
     const currentStep = statusSteps.indexOf(ticket.status);
@@ -69,6 +75,7 @@ export default function TicketDetailPage({ params }: { params: Promise<{ id: str
                             </span>
                         </div>
 
+                        {/* Barra de Progresso */}
                         <div className="p-10 bg-slate-50/50 border-b border-slate-100 relative">
                             <div className="absolute top-1/2 left-16 right-16 h-1 bg-slate-200 z-0"></div>
                             <div className="flex justify-between relative z-10">
@@ -102,27 +109,26 @@ export default function TicketDetailPage({ params }: { params: Promise<{ id: str
                             </div>
 
                             <div className="grid md:grid-cols-2 gap-4">
-                                <div className="flex items-center gap-4 p-4 bg-white border border-slate-100 rounded-2xl shadow-sm">
+                                <div className="flex items-center gap-4 p-4 bg-white border border-slate-100 rounded-2xl">
                                     <div className="p-2.5 bg-blue-50 text-blue-600 rounded-xl"><Tag size={20}/></div>
                                     <div>
                                         <p className="text-[9px] font-bold text-slate-400 uppercase">Categoria</p>
                                         <p className="text-sm font-bold text-slate-700">{ticket.category?.name || "Geral"}</p>
                                     </div>
                                 </div>
-                                <div className="flex items-center gap-4 p-4 bg-white border border-slate-100 rounded-2xl shadow-sm">
+                                <div className="flex items-center gap-4 p-4 bg-white border border-slate-100 rounded-2xl">
                                     <div className="p-2.5 bg-emerald-50 text-emerald-600 rounded-xl"><MapPin size={20}/></div>
                                     <div>
-                                        <p className="text-[9px] font-bold text-slate-400 uppercase">Localização Exata</p>
+                                        <p className="text-[9px] font-bold text-slate-400 uppercase">Localização</p>
                                         <p className="text-sm font-bold text-slate-700">{ticket.location || "Não informada"}</p>
                                     </div>
                                 </div>
 
-                                {/* CARD DO TÉCNICO RESPONSÁVEL */}
                                 <div className="flex items-center gap-4 p-5 bg-blue-600 text-white rounded-3xl md:col-span-2 shadow-xl shadow-blue-200">
                                     <div className="p-3 bg-white/20 rounded-2xl backdrop-blur-sm"><Wrench size={24}/></div>
                                     <div>
-                                        <p className="text-[10px] font-bold text-blue-100 uppercase tracking-wider">Suporte Técnico</p>
-                                        <p className="text-base font-black">
+                                        <p className="text-[10px] font-bold text-blue-100 uppercase">Técnico Responsável</p>
+                                        <p className="text-base font-black italic">
                                             {ticket.assignedTo?.name || "Aguardando técnico assumir..."}
                                         </p>
                                     </div>
@@ -132,33 +138,24 @@ export default function TicketDetailPage({ params }: { params: Promise<{ id: str
                     </div>
                 </div>
 
+                {/* Coluna do Chat */}
                 <div className="lg:col-span-1">
                     <div className="bg-white rounded-4xl shadow-2xl shadow-slate-200/50 border border-slate-100 overflow-hidden flex flex-col h-[650px]">
                         <div className="p-6 bg-slate-900 text-white flex items-center gap-3">
                             <MessageSquare className="text-blue-400" size={20} />
-                            <h2 className="text-xs font-black uppercase tracking-widest">Chat de Interação</h2>
+                            <h2 className="text-xs font-black uppercase tracking-widest">Conversa com Suporte</h2>
                         </div>
 
                         <div className="flex-1 overflow-y-auto p-6 space-y-4 bg-slate-50/50">
-                            {comments.length === 0 && (
-                                <div className="text-center py-10">
-                                    <div className="bg-slate-100 w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-3 text-slate-400">
-                                        <MessageSquare size={20} />
-                                    </div>
-                                    <p className="text-slate-400 text-[10px] font-bold uppercase">Nenhuma mensagem ainda</p>
-                                </div>
-                            )}
                             {comments.map((c: any) => (
-                                <div key={c.id} className={`flex flex-col ${c.user?.role === 'USER' ? 'items-end' : 'items-start'}`}>
+                                <div key={c.id} className={`flex flex-col ${c.user?.role === 'USER' || c.user?.role === 'FUNCIONARIO' ? 'items-end' : 'items-start'}`}>
                                     <div className={`max-w-[85%] p-4 rounded-2xl text-sm ${
-                                        c.user?.role === 'USER' 
+                                        c.user?.role === 'USER' || c.user?.role === 'FUNCIONARIO'
                                         ? 'bg-blue-600 text-white rounded-tr-none shadow-md shadow-blue-100' 
                                         : 'bg-white text-slate-800 rounded-tl-none border border-slate-100 shadow-sm'
                                     }`}>
-                                        <p className="text-[8px] font-black uppercase opacity-60 mb-1">
-                                            {c.user?.name || "Usuário"}
-                                        </p>
-                                        <p className="font-medium leading-tight text-[13px]">{c.content}</p>
+                                        <p className="text-[8px] font-black uppercase opacity-60 mb-1">{c.user?.name}</p>
+                                        <p className="font-medium leading-tight">{c.content}</p>
                                     </div>
                                     <span className="text-[8px] text-slate-400 mt-1 font-bold">
                                         {new Date(c.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
@@ -168,19 +165,15 @@ export default function TicketDetailPage({ params }: { params: Promise<{ id: str
                         </div>
 
                         <div className="p-4 bg-white border-t border-slate-100">
-                            <div className="flex gap-2 bg-slate-50 p-2 rounded-2xl border-2 border-slate-100 focus-within:border-blue-500 focus-within:bg-white transition-all">
+                            <div className="flex gap-2 bg-slate-50 p-2 rounded-2xl border-2 border-slate-100 focus-within:border-blue-500 transition-all">
                                 <input 
                                     className="flex-1 bg-transparent p-2 outline-none text-sm font-semibold"
-                                    placeholder="Digite sua dúvida..."
+                                    placeholder="Escreva sua mensagem..."
                                     value={newComment}
                                     onChange={(e) => setNewComment(e.target.value)}
                                     onKeyDown={(e) => e.key === 'Enter' && handleSendComment()}
                                 />
-                                <button 
-                                    onClick={handleSendComment}
-                                    disabled={!newComment.trim()}
-                                    className="p-3 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-all disabled:opacity-30"
-                                >
+                                <button onClick={handleSendComment} className="p-3 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-all">
                                     <Send size={18} />
                                 </button>
                             </div>
