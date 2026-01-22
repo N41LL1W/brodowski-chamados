@@ -14,7 +14,6 @@ export default function TicketDetailPage({ params }: { params: Promise<{ id: str
     const [newComment, setNewComment] = useState("");
     const [loading, setLoading] = useState(true);
 
-    // Carrega dados do ticket e comentários
     const loadData = async () => {
         try {
             const [tRes, cRes] = await Promise.all([
@@ -41,11 +40,11 @@ export default function TicketDetailPage({ params }: { params: Promise<{ id: str
         });
         if (res.ok) {
             setNewComment("");
-            loadData(); // Atualiza o chat
+            loadData();
         }
     };
 
-    if (loading) return <div className="p-20 text-center font-black animate-pulse text-slate-300">CARREGANDO RASTREAMENTO...</div>;
+    if (loading) return <div className="p-20 text-center font-black animate-pulse text-slate-300">CARREGANDO DETALHES...</div>;
     if (!ticket) return <div className="p-20 text-center font-bold">Chamado não encontrado.</div>;
 
     const statusSteps = ['ABERTO', 'ATENDIMENTO', 'CONCLUIDO'];
@@ -53,18 +52,13 @@ export default function TicketDetailPage({ params }: { params: Promise<{ id: str
 
     return (
         <div className="max-w-6xl mx-auto py-10 px-6">
-            {/* Botão Voltar */}
             <Link href="/meus-chamados" className="inline-flex items-center gap-2 text-slate-500 hover:text-blue-600 font-bold mb-6 transition-colors">
                 <ArrowLeft size={20} /> Voltar para meus pedidos
             </Link>
 
             <div className="grid lg:grid-cols-3 gap-8">
-                
-                {/* COLUNA DA ESQUERDA: DETALHES E RASTREIO (2/3) */}
                 <div className="lg:col-span-2 space-y-6">
                     <div className="bg-white rounded-4xl shadow-2xl shadow-slate-200/50 border border-slate-100 overflow-hidden">
-                        
-                        {/* Cabeçalho */}
                         <div className="bg-slate-900 p-8 text-white flex justify-between items-center">
                             <div>
                                 <p className="text-blue-400 text-[10px] font-black uppercase tracking-[0.2em] mb-1">Protocolo</p>
@@ -75,7 +69,6 @@ export default function TicketDetailPage({ params }: { params: Promise<{ id: str
                             </span>
                         </div>
 
-                        {/* Barra de Progresso */}
                         <div className="p-10 bg-slate-50/50 border-b border-slate-100 relative">
                             <div className="absolute top-1/2 left-16 right-16 h-1 bg-slate-200 z-0"></div>
                             <div className="flex justify-between relative z-10">
@@ -99,7 +92,6 @@ export default function TicketDetailPage({ params }: { params: Promise<{ id: str
                             </div>
                         </div>
 
-                        {/* Informações */}
                         <div className="p-8 space-y-8">
                             <div>
                                 <h2 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4">Descrição do Problema</h2>
@@ -110,18 +102,29 @@ export default function TicketDetailPage({ params }: { params: Promise<{ id: str
                             </div>
 
                             <div className="grid md:grid-cols-2 gap-4">
-                                <div className="flex items-center gap-4 p-4 bg-white border border-slate-100 rounded-2xl">
+                                <div className="flex items-center gap-4 p-4 bg-white border border-slate-100 rounded-2xl shadow-sm">
                                     <div className="p-2.5 bg-blue-50 text-blue-600 rounded-xl"><Tag size={20}/></div>
                                     <div>
                                         <p className="text-[9px] font-bold text-slate-400 uppercase">Categoria</p>
-                                        <p className="text-sm font-bold text-slate-700">{ticket.category?.name}</p>
+                                        <p className="text-sm font-bold text-slate-700">{ticket.category?.name || "Geral"}</p>
                                     </div>
                                 </div>
-                                <div className="flex items-center gap-4 p-4 bg-white border border-slate-100 rounded-2xl">
+                                <div className="flex items-center gap-4 p-4 bg-white border border-slate-100 rounded-2xl shadow-sm">
                                     <div className="p-2.5 bg-emerald-50 text-emerald-600 rounded-xl"><MapPin size={20}/></div>
                                     <div>
                                         <p className="text-[9px] font-bold text-slate-400 uppercase">Localização Exata</p>
-                                        <p className="text-sm font-bold text-slate-700">{ticket.location || "Não informado"}</p>
+                                        <p className="text-sm font-bold text-slate-700">{ticket.location || "Não informada"}</p>
+                                    </div>
+                                </div>
+
+                                {/* CARD DO TÉCNICO RESPONSÁVEL */}
+                                <div className="flex items-center gap-4 p-5 bg-blue-600 text-white rounded-3xl md:col-span-2 shadow-xl shadow-blue-200">
+                                    <div className="p-3 bg-white/20 rounded-2xl backdrop-blur-sm"><Wrench size={24}/></div>
+                                    <div>
+                                        <p className="text-[10px] font-bold text-blue-100 uppercase tracking-wider">Suporte Técnico</p>
+                                        <p className="text-base font-black">
+                                            {ticket.assignedTo?.name || "Aguardando técnico assumir..."}
+                                        </p>
                                     </div>
                                 </div>
                             </div>
@@ -129,44 +132,46 @@ export default function TicketDetailPage({ params }: { params: Promise<{ id: str
                     </div>
                 </div>
 
-                {/* COLUNA DA DIREITA: CHAT DE INTERAÇÃO (1/3) */}
                 <div className="lg:col-span-1">
-                    <div className="bg-white rounded-4xl shadow-2xl shadow-slate-200/50 border border-slate-100 overflow-hidden flex flex-col h-[600px]">
-                        <div className="p-6 bg-slate-50 border-b border-slate-100 flex items-center gap-3">
-                            <MessageSquare className="text-blue-600" size={20} />
-                            <h2 className="text-xs font-black text-slate-700 uppercase tracking-widest">Conversa com TI</h2>
+                    <div className="bg-white rounded-4xl shadow-2xl shadow-slate-200/50 border border-slate-100 overflow-hidden flex flex-col h-[650px]">
+                        <div className="p-6 bg-slate-900 text-white flex items-center gap-3">
+                            <MessageSquare className="text-blue-400" size={20} />
+                            <h2 className="text-xs font-black uppercase tracking-widest">Chat de Interação</h2>
                         </div>
 
-                        {/* Área de Mensagens */}
-                        <div className="flex-1 overflow-y-auto p-6 space-y-4 bg-slate-50/30">
+                        <div className="flex-1 overflow-y-auto p-6 space-y-4 bg-slate-50/50">
                             {comments.length === 0 && (
-                                <p className="text-center text-slate-400 text-xs mt-10">Nenhuma mensagem ainda.</p>
+                                <div className="text-center py-10">
+                                    <div className="bg-slate-100 w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-3 text-slate-400">
+                                        <MessageSquare size={20} />
+                                    </div>
+                                    <p className="text-slate-400 text-[10px] font-bold uppercase">Nenhuma mensagem ainda</p>
+                                </div>
                             )}
                             {comments.map((c: any) => (
-                                <div key={c.id} className={`flex flex-col ${c.user.role === 'USER' ? 'items-end' : 'items-start'}`}>
-                                    <div className={`max-w-[90%] p-4 rounded-2xl text-sm shadow-sm ${
-                                        c.user.role === 'USER' 
-                                        ? 'bg-blue-600 text-white rounded-tr-none' 
-                                        : 'bg-white text-slate-800 rounded-tl-none border border-slate-100'
+                                <div key={c.id} className={`flex flex-col ${c.user?.role === 'USER' ? 'items-end' : 'items-start'}`}>
+                                    <div className={`max-w-[85%] p-4 rounded-2xl text-sm ${
+                                        c.user?.role === 'USER' 
+                                        ? 'bg-blue-600 text-white rounded-tr-none shadow-md shadow-blue-100' 
+                                        : 'bg-white text-slate-800 rounded-tl-none border border-slate-100 shadow-sm'
                                     }`}>
-                                        <p className="text-[9px] font-black uppercase opacity-70 mb-1">
-                                            {c.user.role === 'USER' ? 'Você' : 'Técnico: ' + c.user.name}
+                                        <p className="text-[8px] font-black uppercase opacity-60 mb-1">
+                                            {c.user?.name || "Usuário"}
                                         </p>
-                                        {c.content}
+                                        <p className="font-medium leading-tight text-[13px]">{c.content}</p>
                                     </div>
-                                    <span className="text-[8px] text-slate-400 mt-1 uppercase font-bold">
+                                    <span className="text-[8px] text-slate-400 mt-1 font-bold">
                                         {new Date(c.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                                     </span>
                                 </div>
                             ))}
                         </div>
 
-                        {/* Input do Chat */}
                         <div className="p-4 bg-white border-t border-slate-100">
-                            <div className="flex gap-2 bg-slate-50 p-2 rounded-2xl border-2 border-slate-100 focus-within:border-blue-500 transition-all">
+                            <div className="flex gap-2 bg-slate-50 p-2 rounded-2xl border-2 border-slate-100 focus-within:border-blue-500 focus-within:bg-white transition-all">
                                 <input 
-                                    className="flex-1 bg-transparent p-2 outline-none text-sm font-medium"
-                                    placeholder="Escreva para o TI..."
+                                    className="flex-1 bg-transparent p-2 outline-none text-sm font-semibold"
+                                    placeholder="Digite sua dúvida..."
                                     value={newComment}
                                     onChange={(e) => setNewComment(e.target.value)}
                                     onKeyDown={(e) => e.key === 'Enter' && handleSendComment()}
@@ -174,7 +179,7 @@ export default function TicketDetailPage({ params }: { params: Promise<{ id: str
                                 <button 
                                     onClick={handleSendComment}
                                     disabled={!newComment.trim()}
-                                    className="p-3 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-colors disabled:opacity-50"
+                                    className="p-3 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-all disabled:opacity-30"
                                 >
                                     <Send size={18} />
                                 </button>
@@ -182,7 +187,6 @@ export default function TicketDetailPage({ params }: { params: Promise<{ id: str
                         </div>
                     </div>
                 </div>
-
             </div>
         </div>
     );

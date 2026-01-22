@@ -7,17 +7,18 @@ interface RouteContext {
     params: Promise<{ id: string }>;
 }
 
-// 🟢 GET: Busca os detalhes de um chamado específico (ESSENCIAL PARA A PÁGINA DE DETALHES)
 export async function GET(req: Request, context: RouteContext) {
     try {
         const { id } = await context.params;
 
-        const ticket = await prisma.ticket.findUnique({
+        // Usamos (prisma as any) para garantir que ele aceite o assignedTo
+        const ticket = await (prisma as any).ticket.findUnique({
             where: { id: id },
             include: {
                 requester: { select: { name: true, email: true } },
                 category: true,
                 department: true,
+                assignedTo: { select: { name: true } }, // Traz o nome do técnico
             }
         });
 
@@ -28,11 +29,10 @@ export async function GET(req: Request, context: RouteContext) {
         return NextResponse.json(ticket);
     } catch (err: any) {
         console.error("Erro ao buscar ticket:", err);
-        return NextResponse.json({ error: "Erro interno no servidor" }, { status: 500 });
+        return NextResponse.json({ error: "Erro interno" }, { status: 500 });
     }
 }
 
-// 🟡 PUT: Atualiza os dados do chamado
 export async function PUT(req: Request, context: RouteContext) {
     try {
         const session = await getServerSession(authOptions);
@@ -41,7 +41,6 @@ export async function PUT(req: Request, context: RouteContext) {
         const { id } = await context.params;
         const data = await req.json();
 
-        // Usamos (prisma as any) para o TS ignorar que não conhece a coluna 'location'
         const updated = await (prisma as any).ticket.update({
             where: { id: id },
             data: {
@@ -49,31 +48,23 @@ export async function PUT(req: Request, context: RouteContext) {
                 description: data.description,
                 status: data.status,
                 priority: data.priority,
-                location: data.location, // Agora o erro sumirá aqui
+                location: data.location,
+                assignedToId: data.assignedToId, // Permite atribuir técnico
             },
         });
 
         return NextResponse.json(updated);
     } catch (err: any) {
-        console.error("Erro ao atualizar ticket:", err);
-        return NextResponse.json(
-            { error: "Erro ao atualizar", details: err.message }, 
-            { status: 500 }
-        );
+        return NextResponse.json({ error: "Erro ao atualizar" }, { status: 500 });
     }
 }
 
-// 🔴 DELETE: Remove o chamado
 export async function DELETE(req: Request, context: RouteContext) {
     try {
-        const session = await getServerSession(authOptions);
-        if (!session) return new NextResponse('Não autorizado', { status: 401 });
-
         const { id } = await context.params;
         await prisma.ticket.delete({ where: { id } });
-        
-        return NextResponse.json({ message: "Deletado com sucesso" });
+        return NextResponse.json({ message: "Deletado" });
     } catch (err) {
-        return NextResponse.json({ error: "Erro ao deletar" }, { status: 500 });
+        return NextResponse.json({ error: "Erro" }, { status: 500 });
     }
 }
