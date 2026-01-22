@@ -3,110 +3,149 @@
 import { useEffect, useState } from 'react';
 import Card from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
-import { CheckCircle, PlayCircle, Clock, User, AlertCircle } from 'lucide-react';
+import { CheckCircle, PlayCircle, Clock, User, MessageCircle } from 'lucide-react';
+import { useSession } from "next-auth/react";
+import Link from 'next/link';
 
 export default function PainelTecnicoPage() {
-    const [tickets, setTickets] = useState([]);
+    const { data: session } = useSession();
+    const [disponiveis, setDisponiveis] = useState([]);
+    const [meusChamados, setMeusChamados] = useState([]);
     const [loading, setLoading] = useState(true);
 
     const fetchTickets = async () => {
         setLoading(true);
-        const res = await fetch('/api/tickets');
-        const data = await res.json();
-        setTickets(data);
-        setLoading(false);
+        try {
+            // Chamando a API que separa as listas
+            const res = await fetch('/api/admin/tickets');
+            const data = await res.json();
+            setDisponiveis(data.disponiveis || []);
+            setMeusChamados(data.meusTrabalhos || []);
+        } catch (error) {
+            console.error("Erro ao buscar tickets:", error);
+        } finally {
+            setLoading(false);
+        }
     };
 
     useEffect(() => {
         fetchTickets();
     }, []);
 
-    const updateStatus = async (ticketId: string, newStatus: string) => {
-        // Vamos criar esta rota de update a seguir
+    const assumirChamado = async (ticketId: string) => {
         const res = await fetch(`/api/tickets/${ticketId}`, {
-            method: 'PATCH',
+            method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ status: newStatus })
+            body: JSON.stringify({ 
+                status: 'ATENDIMENTO',
+                assignedToId: (session?.user as any)?.id 
+            })
         });
 
-        if (res.ok) fetchTickets(); // Recarrega a lista
+        if (res.ok) fetchTickets();
     };
 
-    const getPriorityStyle = (prio: string) => {
-        switch(prio) {
-            case 'alta': case 'urgente': return 'bg-red-600 text-white';
-            case 'normal': return 'bg-blue-500 text-white';
-            default: return 'bg-gray-400 text-white';
-        }
+    const finalizarChamado = async (ticketId: string) => {
+        const res = await fetch(`/api/tickets/${ticketId}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ status: 'CONCLUIDO' })
+        });
+
+        if (res.ok) fetchTickets();
     };
 
-    if (loading) return <div className="p-10 text-center text-gray-500">A carregar fila de chamados...</div>;
+    if (loading) return <div className="p-10 text-center text-gray-500 font-bold animate-pulse">Sincronizando fila de Brodowski...</div>;
 
     return (
-        <div className="max-w-7xl mx-auto p-6">
-            <div className="flex justify-between items-center mb-8">
-                <div>
-                    <h1 className="text-3xl font-bold text-gray-800">Painel de Atendimento</h1>
-                    <p className="text-gray-500 text-sm">Gerencie todos os chamados da Prefeitura</p>
-                </div>
-                <div className="bg-blue-50 p-4 rounded-lg border border-blue-100">
-                    <span className="block text-xs text-blue-600 font-bold uppercase">Total na Fila</span>
-                    <span className="text-2xl font-black text-blue-800">{tickets.length}</span>
-                </div>
+        <div className="max-w-7xl mx-auto p-6 space-y-10">
+            <div>
+                <h1 className="text-3xl font-black text-slate-800 uppercase tracking-tighter">Painel de Atendimento TI</h1>
+                <p className="text-slate-500">Gestão de chamados e suporte técnico</p>
             </div>
 
-            <div className="grid gap-6">
-                {tickets.length === 0 ? (
-                    <Card className="p-20 text-center text-gray-400">
-                        Nenhum chamado pendente no momento.
-                    </Card>
-                ) : (
-                    tickets.map((ticket: any) => (
-                        <Card key={ticket.id} className="p-6 border-l-8 border-l-blue-600 shadow-sm">
-                            <div className="flex flex-col lg:flex-row justify-between gap-6">
-                                <div className="flex-1">
-                                    <div className="flex items-center gap-3 mb-3">
-                                        <Badge variant="priority" value={ticket.priority}>{ticket.priority}</Badge>
-                                        <Badge variant="status" value={ticket.status}>{ticket.status}</Badge>
-                                        <span className="text-xs font-medium text-gray-500 flex items-center gap-1">
-                                            <Clock className="w-3 h-3" /> {new Date(ticket.createdAt).toLocaleString('pt-BR')}
-                                        </span>
-                                    </div>
-                                    
-                                    <h2 className="text-xl font-bold text-gray-900 mb-2">{ticket.title}</h2>
-                                    <p className="text-gray-600 text-sm mb-4 bg-gray-50 p-3 rounded">{ticket.description}</p>
-                                    
-                                    <div className="flex items-center gap-4 text-sm text-gray-500">
-                                        <div className="flex items-center gap-1">
-                                            <User className="w-4 h-4 text-blue-500" />
-                                            <span className="font-semibold">Solicitante:</span> {ticket.user?.name}
-                                        </div>
-                                        <div className="flex items-center gap-1">
-                                            <span className="font-semibold">Status Atual:</span> 
-                                            <span className="text-orange-600 font-bold">{ticket.status}</span>
-                                        </div>
-                                    </div>
-                                </div>
+            {/* SEÇÃO 1: DISPONÍVEIS */}
+            <section>
+                <div className="flex items-center gap-2 mb-4">
+                    <div className="w-3 h-3 bg-amber-500 rounded-full animate-ping"></div>
+                    <h2 className="text-lg font-bold text-slate-700 uppercase tracking-tight">Aguardando Técnico ({disponiveis.length})</h2>
+                </div>
+                
+                <div className="grid gap-4">
+                    {disponiveis.length === 0 ? (
+                        <div className="p-10 border-2 border-dashed border-slate-200 rounded-3xl text-center text-slate-400 font-medium">
+                            Nenhum chamado novo na fila.
+                        </div>
+                    ) : (
+                        disponiveis.map((ticket: any) => (
+                            <TicketCard key={ticket.id} ticket={ticket} onAction={() => assumirChamado(ticket.id)} actionLabel="Assumir" actionColor="bg-blue-600" />
+                        ))
+                    )}
+                </div>
+            </section>
 
-                                <div className="flex flex-row lg:flex-col gap-2 justify-center border-t lg:border-t-0 lg:border-l pt-4 lg:pt-0 lg:pl-6">
-                                    <button 
-                                        onClick={() => updateStatus(ticket.id, 'Em Atendimento')}
-                                        className="flex items-center justify-center gap-2 bg-amber-500 hover:bg-amber-600 text-white px-4 py-2 rounded-lg font-bold text-sm transition-colors"
-                                    >
-                                        <PlayCircle className="w-4 h-4" /> Assumir
-                                    </button>
-                                    <button 
-                                        onClick={() => updateStatus(ticket.id, 'Concluído')}
-                                        className="flex items-center justify-center gap-2 bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg font-bold text-sm transition-colors"
-                                    >
-                                        <CheckCircle className="w-4 h-4" /> Finalizar
-                                    </button>
-                                </div>
-                            </div>
-                        </Card>
-                    ))
-                )}
-            </div>
+            {/* SEÇÃO 2: MEUS ATENDIMENTOS */}
+            <section>
+                <div className="flex items-center gap-2 mb-4">
+                    <div className="w-3 h-3 bg-green-500 rounded-full"></div>
+                    <h2 className="text-lg font-bold text-slate-700 uppercase tracking-tight">Meus Atendimentos em Curso ({meusChamados.length})</h2>
+                </div>
+
+                <div className="grid gap-4">
+                    {meusChamados.length === 0 ? (
+                        <div className="p-10 border-2 border-dashed border-slate-200 rounded-3xl text-center text-slate-400 font-medium">
+                            Você não assumiu nenhum chamado ainda.
+                        </div>
+                    ) : (
+                        meusChamados.map((ticket: any) => (
+                            <TicketCard 
+                                key={ticket.id} 
+                                ticket={ticket} 
+                                onAction={() => finalizarChamado(ticket.id)} 
+                                actionLabel="Finalizar" 
+                                actionColor="bg-emerald-600"
+                                isMine
+                            />
+                        ))
+                    )}
+                </div>
+            </section>
         </div>
+    );
+}
+
+// Sub-componente para o Card
+function TicketCard({ ticket, onAction, actionLabel, actionColor, isMine = false }: any) {
+    return (
+        <Card className={`p-5 transition-all hover:shadow-md border-l-4 ${isMine ? 'border-l-emerald-500' : 'border-l-amber-500'}`}>
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                <div className="flex-1">
+                    <div className="flex items-center gap-2 mb-2">
+                        <span className="text-[10px] font-black px-2 py-0.5 bg-slate-100 text-slate-600 rounded uppercase">{ticket.protocol}</span>
+                        <Badge variant="priority" value={ticket.priority}>{ticket.priority}</Badge>
+                    </div>
+                    <h3 className="font-bold text-slate-800">{ticket.subject || ticket.title}</h3>
+                    <div className="flex items-center gap-4 mt-2 text-xs text-slate-500">
+                        <span className="flex items-center gap-1"><User size={14}/> {ticket.requester?.name}</span>
+                        <span className="flex items-center gap-1"><Clock size={14}/> {new Date(ticket.createdAt).toLocaleDateString()}</span>
+                    </div>
+                </div>
+                
+                <div className="flex gap-2 w-full md:w-auto">
+                    <Link 
+                        href={`/meus-chamados/${ticket.id}`}
+                        className="flex-1 md:flex-none flex items-center justify-center gap-2 px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl font-bold text-xs transition-all"
+                    >
+                        <MessageCircle size={16}/> Detalhes / Chat
+                    </Link>
+                    <button 
+                        onClick={onAction}
+                        className={`flex-1 md:flex-none px-6 py-2 ${actionColor} text-white rounded-xl font-bold text-xs hover:opacity-90 transition-all uppercase`}
+                    >
+                        {actionLabel}
+                    </button>
+                </div>
+            </div>
+        </Card>
     );
 }

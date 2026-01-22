@@ -3,7 +3,6 @@ import prisma from '@/lib/prisma';
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 
-// GET: Lista as mensagens do chat
 export async function GET(req: Request, { params }: { params: Promise<{ id: string }> }) {
     const { id } = await params;
     try {
@@ -16,30 +15,35 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
         });
         return NextResponse.json(comments);
     } catch (error) {
-        console.error("Erro ao buscar chat:", error);
+        console.error("Erro GET chat:", error);
         return NextResponse.json([], { status: 200 });
     }
 }
 
-// POST: Envia uma nova mensagem
 export async function POST(req: Request, { params }: { params: Promise<{ id: string }> }) {
     const session = await getServerSession(authOptions);
     const { id } = await params;
-    const { content } = await req.json();
 
-    if (!session) return new NextResponse('Não autorizado', { status: 401 });
+    if (!session || !(session.user as any).id) {
+        return new NextResponse('Não autorizado', { status: 401 });
+    }
 
     try {
+        const { content } = await req.json();
+        
         const comment = await (prisma as any).comment.create({
             data: {
                 content,
                 ticketId: id,
-                userId: (session.user as any).id
+                userId: (session.user as any).id // Verifique se o campo no schema é userId
+            },
+            include: {
+                user: { select: { name: true, role: true } }
             }
         });
         return NextResponse.json(comment);
-    } catch (error) {
-        console.error("Erro ao enviar mensagem:", error);
-        return NextResponse.json({ error: "Erro ao enviar" }, { status: 500 });
+    } catch (error: any) {
+        console.error("Erro POST chat:", error);
+        return NextResponse.json({ error: error.message }, { status: 500 });
     }
 }
