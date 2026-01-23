@@ -8,6 +8,8 @@ datasource db {
   directUrl = env("POSTGRES_URL_NON_POOLING")
 }
 
+// --- TABELAS DE APOIO ---
+
 model Role {
   id    Int    @id @default(autoincrement())
   name  String @unique
@@ -21,6 +23,8 @@ model Level {
   users User[]
 }
 
+// --- USUÁRIOS ---
+
 model User {
   id              String    @id @default(cuid())
   name            String?
@@ -29,6 +33,7 @@ model User {
   emailVerified   DateTime?
   image           String?
   role            String    @default("FUNCIONARIO")
+  
   roleId          Int?
   roleRelation    Role?     @relation(fields: [roleId], references: [id])
   levelId         Int?
@@ -36,32 +41,35 @@ model User {
   
   tickets          Ticket[]  @relation("CreatedBy")
   assignedTickets  Ticket[]  @relation("AssignedTo")
-  
-  // ADICIONADO: Volta da relação com comentários
   comments         Comment[]
 
   accounts         Account[]
   sessions         Session[]
 }
 
+// --- CONFIGURAÇÕES DE CHAMADO ---
+
 model Category {
-  id      String   @id @default(cuid())
+  id      String   @id // Removido default para aceitar cat_1, cat_2 do seu SQL
   name    String
   icon    String   @default("Wrench")
   tickets Ticket[]
 }
 
 model Department {
-  id      String   @id @default(cuid())
+  id      String   @id // Removido default para aceitar dept_1, dept_2 do seu SQL
   name    String
   tickets Ticket[]
 }
+
+// --- O CHAMADO (TICKET) ---
 
 model Ticket {
   id            String     @id @default(cuid())
   protocol      String     @unique 
   subject       String
   description   String
+  location      String?    // ADICIONADO para bater com o formulário
   status        String     @default("ABERTO") 
   priority      String     @default("NORMAL") 
   
@@ -76,12 +84,25 @@ model Ticket {
   assignedTo    User?      @relation("AssignedTo", fields: [assignedToId], references: [id])
   assignedToId  String?
 
-  // ADICIONADO: Volta da relação com comentários
   comments      Comment[]
 
   createdAt     DateTime   @default(now())
   updatedAt     DateTime   @updatedAt
 }
+
+// --- CHAT / COMENTÁRIOS ---
+
+model Comment {
+  id        String   @id @default(cuid())
+  content   String
+  createdAt DateTime @default(now())
+  ticketId  String
+  userId    String
+  ticket    Ticket   @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id])
+}
+
+// --- NEXT AUTH ---
 
 model Account {
   id                String  @id @default(cuid())
@@ -113,14 +134,4 @@ model VerificationToken {
   token      String   @unique
   expires    DateTime
   @@unique([identifier, token])
-}
-
-model Comment {
-  id        String   @id @default(cuid())
-  content   String
-  createdAt DateTime @default(now())
-  ticketId  String
-  userId    String
-  ticket    Ticket   @relation(fields: [ticketId], references: [id], onDelete: Cascade)
-  user      User     @relation(fields: [userId], references: [id])
 }
