@@ -3,6 +3,7 @@ import prisma from '@/lib/prisma';
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 
+// GET: Busca os comentários do chamado
 export async function GET(req: Request, props: { params: Promise<{ id: string }> }) {
     try {
         const { id } = await props.params;
@@ -19,36 +20,50 @@ export async function GET(req: Request, props: { params: Promise<{ id: string }>
     }
 }
 
+// POST: Cria um novo comentário
 export async function POST(req: Request, props: { params: Promise<{ id: string }> }) {
     try {
         const session = await getServerSession(authOptions);
         const { id } = await props.params;
         const { content } = await req.json();
-
         if (!session?.user) return new NextResponse('Não autorizado', { status: 401 });
 
         const userId = (session.user as any).id;
-
-        // Tenta criar o comentário. Se der erro 500 aqui, o catch vai nos dizer porquê.
         const comment = await (prisma as any).comment.create({
+            data: { content, ticketId: id, userId },
+            include: { user: { select: { name: true, role: true } } }
+        });
+        return NextResponse.json(comment);
+    } catch (error: any) {
+        return NextResponse.json({ error: error.message }, { status: 500 });
+    }
+}
+
+// PATCH: Assumir ou Alterar Status do Chamado (O que faltava!)
+export async function PATCH(req: Request, props: { params: Promise<{ id: string }> }) {
+    try {
+        const session = await getServerSession(authOptions);
+        if (!session) return new NextResponse('Não autorizado', { status: 401 });
+        
+        const { id } = await props.params;
+        const body = await req.json();
+        const user = session.user as any;
+
+        const updatedTicket = await (prisma as any).ticket.update({
+            where: { id },
             data: {
-                content: content,
-                ticketId: id,
-                userId: userId, 
-            },
-            include: {
-                user: { select: { name: true, role: true } }
+                status: body.status || undefined,
+                assignedToId: body.assignedToId || undefined,
+                // Se estiver assumindo, define o técnico logado
+                ...(body.action === 'ASSUMIR' && {
+                    status: 'EM_ANDAMENTO',
+                    assignedToId: user.id
+                })
             }
         });
 
-        return NextResponse.json(comment);
+        return NextResponse.json(updatedTicket);
     } catch (error: any) {
-        console.error("DETALHE DO ERRO NO CLOUD:", error);
-        // Retornamos o erro exato para você ver no console do navegador (aba Response)
-        return NextResponse.json({ 
-            message: "Erro no banco de dados", 
-            error: error.message,
-            code: error.code 
-        }, { status: 500 });
+        return NextResponse.json({ error: error.message }, { status: 500 });
     }
 }

@@ -6,11 +6,10 @@ import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 export async function GET() {
     const session = await getServerSession(authOptions);
     if (!session) return new NextResponse('Não autorizado', { status: 401 });
-    
     const user = session.user as any;
 
     try {
-        // 1. Apenas chamados ABERTOS e sem técnico (Fila de espera)
+        // 1. Fila de Espera: Apenas ABERTOS e sem técnico
         const disponiveis = await prisma.ticket.findMany({
             where: { 
                 status: 'ABERTO', 
@@ -20,11 +19,11 @@ export async function GET() {
             orderBy: { createdAt: 'desc' }
         });
 
-        // 2. Chamados que o técnico assumiu e que NÃO estão concluídos
+        // 2. Trabalhos Ativos: Chamados do técnico logado que NÃO estão concluídos
         const meusTrabalhos = await prisma.ticket.findMany({
             where: { 
                 assignedToId: user.id,
-                status: { not: 'CONCLUIDO' } // Não mostra os já finalizados aqui
+                status: { not: 'CONCLUIDO' }
             },
             include: { requester: true, category: true, department: true },
             orderBy: { createdAt: 'desc' }
@@ -40,8 +39,6 @@ export async function POST(req: Request) {
     try {
         const session = await getServerSession(authOptions);
         const body = await req.json();
-
-        // Protocolo Brodowski
         const protocol = `${new Date().toISOString().slice(0,10).replace(/-/g, '')}-${Math.floor(1000 + Math.random() * 9000)}`;
 
         const newTicket = await (prisma as any).ticket.create({
@@ -49,6 +46,7 @@ export async function POST(req: Request) {
                 protocol,
                 subject: body.subject,
                 description: body.description,
+                location: body.location, // AGORA SALVA A LOCALIZAÇÃO
                 priority: body.priority || "NORMAL",
                 status: "ABERTO",
                 requesterId: body.requesterId || (session?.user as any).id,
