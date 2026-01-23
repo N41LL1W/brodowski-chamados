@@ -3,7 +3,6 @@ import prisma from '@/lib/prisma';
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 
-// GET: Retorna listas separadas para o Técnico
 export async function GET() {
     const session = await getServerSession(authOptions);
     if (!session) return new NextResponse('Não autorizado', { status: 401 });
@@ -11,16 +10,22 @@ export async function GET() {
     const user = session.user as any;
 
     try {
-        // 1. Chamados que NINGUÉM assumiu ainda
+        // 1. Apenas chamados ABERTOS e sem técnico (Fila de espera)
         const disponiveis = await prisma.ticket.findMany({
-            where: { status: 'ABERTO', assignedToId: null },
+            where: { 
+                status: 'ABERTO', 
+                assignedToId: null 
+            },
             include: { requester: true, category: true, department: true },
             orderBy: { createdAt: 'desc' }
         });
 
-        // 2. Chamados que EU (Técnico Logado) assumi
+        // 2. Chamados que o técnico assumiu e que NÃO estão concluídos
         const meusTrabalhos = await prisma.ticket.findMany({
-            where: { assignedToId: user.id },
+            where: { 
+                assignedToId: user.id,
+                status: { not: 'CONCLUIDO' } // Não mostra os já finalizados aqui
+            },
             include: { requester: true, category: true, department: true },
             orderBy: { createdAt: 'desc' }
         });
@@ -31,24 +36,24 @@ export async function GET() {
     }
 }
 
-// POST: Permite ao Admin criar chamados em nome de outros
 export async function POST(req: Request) {
     try {
         const session = await getServerSession(authOptions);
-        const { subject, description, priority, categoryId, departmentId, requesterId } = await req.json();
+        const body = await req.json();
 
+        // Protocolo Brodowski
         const protocol = `${new Date().toISOString().slice(0,10).replace(/-/g, '')}-${Math.floor(1000 + Math.random() * 9000)}`;
 
         const newTicket = await (prisma as any).ticket.create({
             data: {
                 protocol,
-                subject,
-                description,
-                priority: priority || "NORMAL",
+                subject: body.subject,
+                description: body.description,
+                priority: body.priority || "NORMAL",
                 status: "ABERTO",
-                requesterId: requesterId || (session?.user as any).id,
-                categoryId,
-                departmentId,
+                requesterId: body.requesterId || (session?.user as any).id,
+                categoryId: body.categoryId,
+                departmentId: body.departmentId,
             },
         });
 
