@@ -10,18 +10,17 @@ import {
 export default function TicketDetailPage({ params }: { params: Promise<{ id: string }> }) {
     const { id } = use(params);
     const [ticket, setTicket] = useState<any>(null);
-    const [comments, setComments] = useState([]);
     const [newComment, setNewComment] = useState("");
     const [loading, setLoading] = useState(true);
 
     const loadData = async () => {
         try {
-            const [tRes, cRes] = await Promise.all([
-                fetch(`/api/tickets/${id}`),
-                fetch(`/api/tickets/${id}/comments`)
-            ]);
-            if (tRes.ok) setTicket(await tRes.json());
-            if (cRes.ok) setComments(await cRes.json());
+            // Agora fazemos apenas UMA chamada que traz TUDO
+            const res = await fetch(`/api/tickets/${id}`);
+            if (res.ok) {
+                const data = await res.json();
+                setTicket(data);
+            }
         } catch (err) {
             console.error("Erro ao carregar dados:", err);
         } finally {
@@ -34,16 +33,17 @@ export default function TicketDetailPage({ params }: { params: Promise<{ id: str
     const handleSendComment = async () => {
         if (!newComment.trim()) return;
         try {
-            const res = await fetch(`/api/tickets/${id}/comments`, {
+            // Enviamos para a rota unificada /api/tickets/[id]
+            const res = await fetch(`/api/tickets/${id}`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ content: newComment })
             });
             if (res.ok) {
                 setNewComment("");
-                loadData();
+                loadData(); // Recarrega para mostrar o novo comentário
             } else {
-                alert("Erro ao enviar mensagem. Verifique sua conexão.");
+                alert("Erro ao enviar mensagem.");
             }
         } catch (err) {
             console.error("Erro no chat:", err);
@@ -51,9 +51,9 @@ export default function TicketDetailPage({ params }: { params: Promise<{ id: str
     };
 
     if (loading) return <div className="p-20 text-center font-black animate-pulse text-slate-300 tracking-tighter italic">BUSCANDO DADOS DO SISTEMA...</div>;
-    if (!ticket) return <div className="p-20 text-center font-bold text-red-500 uppercase">Chamado não encontrado ou acesso negado.</div>;
+    if (!ticket) return <div className="p-20 text-center font-bold text-red-500 uppercase">Chamado não encontrado.</div>;
 
-    const statusSteps = ['ABERTO', 'ATENDIMENTO', 'CONCLUIDO'];
+    const statusSteps = ['ABERTO', 'EM_ANDAMENTO', 'CONCLUIDO'];
     const currentStep = statusSteps.indexOf(ticket.status);
 
     return (
@@ -71,7 +71,7 @@ export default function TicketDetailPage({ params }: { params: Promise<{ id: str
                                 <h1 className="text-2xl font-mono font-bold tracking-tighter">{ticket.protocol}</h1>
                             </div>
                             <span className="bg-blue-600 px-4 py-2 rounded-xl text-xs font-black uppercase shadow-lg shadow-blue-900/20">
-                                {ticket.status}
+                                {ticket.status.replace('_', ' ')}
                             </span>
                         </div>
 
@@ -91,7 +91,7 @@ export default function TicketDetailPage({ params }: { params: Promise<{ id: str
                                                 {idx === 2 && <CheckCircle2 size={24} />}
                                             </div>
                                             <span className={`text-[10px] font-black uppercase tracking-tight ${isActive ? 'text-blue-600' : 'text-slate-400'}`}>
-                                                {step === 'ATENDIMENTO' ? 'EM CURSO' : step}
+                                                {step === 'EM_ANDAMENTO' ? 'EM CURSO' : step}
                                             </span>
                                         </div>
                                     );
@@ -138,7 +138,7 @@ export default function TicketDetailPage({ params }: { params: Promise<{ id: str
                     </div>
                 </div>
 
-                {/* Coluna do Chat */}
+                {/* Coluna do Chat - Agora usa ticket.comments */}
                 <div className="lg:col-span-1">
                     <div className="bg-white rounded-4xl shadow-2xl shadow-slate-200/50 border border-slate-100 overflow-hidden flex flex-col h-[650px]">
                         <div className="p-6 bg-slate-900 text-white flex items-center gap-3">
@@ -147,10 +147,10 @@ export default function TicketDetailPage({ params }: { params: Promise<{ id: str
                         </div>
 
                         <div className="flex-1 overflow-y-auto p-6 space-y-4 bg-slate-50/50">
-                            {comments.map((c: any) => (
-                                <div key={c.id} className={`flex flex-col ${c.user?.role === 'USER' || c.user?.role === 'FUNCIONARIO' ? 'items-end' : 'items-start'}`}>
+                            {ticket.comments?.map((c: any) => (
+                                <div key={c.id} className={`flex flex-col ${c.user?.role !== 'ADMIN' && c.user?.role !== 'TECNICO' ? 'items-end' : 'items-start'}`}>
                                     <div className={`max-w-[85%] p-4 rounded-2xl text-sm ${
-                                        c.user?.role === 'USER' || c.user?.role === 'FUNCIONARIO'
+                                        c.user?.role !== 'ADMIN' && c.user?.role !== 'TECNICO'
                                         ? 'bg-blue-600 text-white rounded-tr-none shadow-md shadow-blue-100' 
                                         : 'bg-white text-slate-800 rounded-tl-none border border-slate-100 shadow-sm'
                                     }`}>
