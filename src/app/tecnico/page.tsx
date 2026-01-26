@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import Card from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
-import { CheckCircle, PlayCircle, Clock, User, MessageCircle, CheckCheck } from 'lucide-react';
+import { Clock, User, MessageCircle, CheckCheck, Search, RefreshCw, LayoutDashboard } from 'lucide-react';
 import { useSession } from "next-auth/react";
 import Link from 'next/link';
 
@@ -11,18 +11,17 @@ export default function PainelTecnicoPage() {
     const { data: session } = useSession();
     const [disponiveis, setDisponiveis] = useState([]);
     const [meusChamados, setMeusChamados] = useState([]);
-    const [finalizados, setFinalizados] = useState([]); // NOVO ESTADO
+    const [finalizados, setFinalizados] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [searchTerm, setSearchTerm] = useState(""); // Estado para busca
 
     const fetchTickets = async () => {
         setLoading(true);
         try {
             const res = await fetch('/api/admin/tickets');
             const data = await res.json();
-            
             setDisponiveis(data.disponiveis || []);
             setMeusChamados(data.meusTrabalhos || []);
-            // Filtra os finalizados que vêm da API (certifique-se que a API os envia)
             setFinalizados(data.finalizados || []); 
         } catch (error) {
             console.error("Erro ao buscar tickets:", error);
@@ -31,148 +30,163 @@ export default function PainelTecnicoPage() {
         }
     };
 
-    useEffect(() => {
-        fetchTickets();
-    }, []);
+    useEffect(() => { fetchTickets(); }, []);
 
-    // CORREÇÃO: Usando PATCH e a lógica de ACTION que criamos na API
+    // Função de filtro para a busca
+    const filterTickets = (list: any[]) => {
+        return list.filter(t => 
+            t.protocol.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            t.subject.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            t.requester?.name.toLowerCase().includes(searchTerm.toLowerCase())
+        );
+    };
+
     const assumirChamado = async (ticketId: string) => {
         const res = await fetch(`/api/tickets/${ticketId}`, {
-            method: 'PATCH', // Alterado de PUT para PATCH
+            method: 'PATCH',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ action: 'ASSUMIR' }) 
         });
-
         if (res.ok) fetchTickets();
-        else alert("Erro ao assumir chamado");
     };
 
     const finalizarChamado = async (ticketId: string) => {
         const res = await fetch(`/api/tickets/${ticketId}`, {
-            method: 'PATCH', // Alterado de PUT para PATCH
+            method: 'PATCH',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ action: 'FINALIZAR' })
         });
-
         if (res.ok) fetchTickets();
-        else alert("Erro ao finalizar chamado");
     };
 
-    if (loading) return <div className="p-10 text-center text-gray-500 font-bold animate-pulse">Sincronizando fila de atendimento...</div>;
+    if (loading && disponiveis.length === 0) return <div className="p-10 text-center font-bold animate-pulse">Carregando central de comando...</div>;
 
     return (
-        <div className="max-w-7xl mx-auto p-6 space-y-10">
-            <div>
-                <h1 className="text-3xl font-black text-slate-800 uppercase tracking-tighter">Painel de Atendimento TI</h1>
-                <p className="text-slate-500">Gestão de chamados e suporte técnico</p>
-            </div>
-
-            {/* SEÇÃO 1: AGUARDANDO */}
-            <section>
-                <div className="flex items-center gap-2 mb-4">
-                    <div className="w-3 h-3 bg-amber-500 rounded-full animate-ping"></div>
-                    <h2 className="text-lg font-bold text-slate-700 uppercase tracking-tight">Aguardando Técnico ({disponiveis.length})</h2>
+        <div className="max-w-7xl mx-auto p-6 space-y-8">
+            {/* CABEÇALHO COM ACTIONS */}
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b pb-6">
+                <div>
+                    <h1 className="text-3xl font-black text-slate-800 uppercase tracking-tighter flex items-center gap-2">
+                        <LayoutDashboard className="text-blue-600" /> Painel Técnico
+                    </h1>
+                    <p className="text-slate-500">Olá, {session?.user?.name}. Você tem {meusChamados.length} chamados em aberto.</p>
                 </div>
                 
-                <div className="grid gap-4">
-                    {disponiveis.length === 0 ? (
-                        <div className="p-10 border-2 border-dashed border-slate-200 rounded-3xl text-center text-slate-400 font-medium">
-                            Nenhum chamado novo na fila.
-                        </div>
-                    ) : (
-                        disponiveis.map((ticket: any) => (
-                            <TicketCard key={ticket.id} ticket={ticket} onAction={() => assumirChamado(ticket.id)} actionLabel="Assumir" actionColor="bg-blue-600" />
-                        ))
-                    )}
+                <div className="flex items-center gap-2 w-full md:w-auto">
+                    <div className="relative flex-1 md:w-64">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+                        <input 
+                            type="text" 
+                            placeholder="Buscar protocolo ou nome..."
+                            className="w-full pl-10 pr-4 py-2 bg-white border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 outline-none"
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                        />
+                    </div>
+                    <button onClick={fetchTickets} className="p-2 bg-slate-100 hover:bg-slate-200 rounded-xl transition-all">
+                        <RefreshCw size={20} className={loading ? "animate-spin" : ""} />
+                    </button>
                 </div>
-            </section>
+            </div>
 
-            {/* SEÇÃO 2: EM CURSO */}
-            <section>
-                <div className="flex items-center gap-2 mb-4">
-                    <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
-                    <h2 className="text-lg font-bold text-slate-700 uppercase tracking-tight">Meus Atendimentos em Curso ({meusChamados.length})</h2>
-                </div>
+            {/* CARDS DE ESTATÍSTICAS */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <StatCard label="Aguardando" count={disponiveis.length} color="text-amber-600" bg="bg-amber-50" />
+                <StatCard label="Meus Atendimentos" count={meusChamados.length} color="text-blue-600" bg="bg-blue-50" />
+                <StatCard label="Concluídos (Total)" count={finalizados.length} color="text-emerald-600" bg="bg-emerald-50" />
+            </div>
 
-                <div className="grid gap-4">
-                    {meusChamados.length === 0 ? (
-                        <div className="p-10 border-2 border-dashed border-slate-200 rounded-3xl text-center text-slate-400 font-medium">
-                            Você não possui atendimentos em andamento.
-                        </div>
-                    ) : (
-                        meusChamados.map((ticket: any) => (
-                            <TicketCard 
-                                key={ticket.id} 
-                                ticket={ticket} 
-                                onAction={() => finalizarChamado(ticket.id)} 
-                                actionLabel="Finalizar" 
-                                actionColor="bg-emerald-600"
-                                isMine
-                            />
-                        ))
-                    )}
-                </div>
-            </section>
+            {/* LISTAS FILTRADAS */}
+            <div className="space-y-10">
+                <TicketSection 
+                    title="Fila de Espera" 
+                    count={filterTickets(disponiveis).length} 
+                    tickets={filterTickets(disponiveis)} 
+                    onAction={assumirChamado}
+                    actionLabel="Assumir"
+                    color="amber"
+                />
 
-            {/* SEÇÃO 3: FINALIZADOS - NOVA ÁREA */}
-            <section>
-                <div className="flex items-center gap-2 mb-4">
-                    <div className="w-3 h-3 bg-slate-400 rounded-full"></div>
-                    <h2 className="text-lg font-bold text-slate-500 uppercase tracking-tight">Atendimentos Finalizados ({finalizados.length})</h2>
-                </div>
+                <TicketSection 
+                    title="Em Andamento" 
+                    count={filterTickets(meusChamados).length} 
+                    tickets={filterTickets(meusChamados)} 
+                    onAction={finalizarChamado}
+                    actionLabel="Finalizar"
+                    color="blue"
+                    isMine
+                />
 
-                <div className="grid gap-4 opacity-70">
-                    {finalizados.length === 0 ? (
-                        <div className="p-6 border-2 border-dashed border-slate-200 rounded-3xl text-center text-slate-400 text-sm">
-                            Nenhum chamado finalizado recentemente.
-                        </div>
-                    ) : (
-                        finalizados.map((ticket: any) => (
-                            <TicketCard 
-                                key={ticket.id} 
-                                ticket={ticket} 
-                                actionLabel="Concluído" 
-                                actionColor="bg-slate-400"
-                                isDisabled={true}
-                            />
-                        ))
-                    )}
-                </div>
-            </section>
+                <TicketSection 
+                    title="Histórico Recente" 
+                    count={filterTickets(finalizados).length} 
+                    tickets={filterTickets(finalizados)} 
+                    color="slate"
+                    isDisabled
+                />
+            </div>
         </div>
     );
 }
 
-function TicketCard({ ticket, onAction, actionLabel, actionColor, isMine = false, isDisabled = false }: any) {
+// Componentes Auxiliares (Sub-renderers)
+function StatCard({ label, count, color, bg }: any) {
     return (
-        <Card className={`p-5 transition-all hover:shadow-md border-l-4 ${isMine ? 'border-l-blue-500' : (isDisabled ? 'border-l-slate-300' : 'border-l-amber-500')}`}>
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-                <div className="flex-1">
-                    <div className="flex items-center gap-2 mb-2">
-                        <span className="text-[10px] font-black px-2 py-0.5 bg-slate-100 text-slate-600 rounded uppercase">{ticket.protocol}</span>
-                        <Badge variant="priority" value={ticket.priority}>{ticket.priority}</Badge>
+        <div className={`${bg} p-4 rounded-2xl border border-transparent hover:border-slate-200 transition-all`}>
+            <p className={`text-xs font-bold uppercase tracking-wider ${color} opacity-80`}>{label}</p>
+            <p className={`text-3xl font-black ${color}`}>{count}</p>
+        </div>
+    );
+}
+
+function TicketSection({ title, count, tickets, onAction, actionLabel, color, isMine, isDisabled }: any) {
+    const dotColors: any = { amber: 'bg-amber-500', blue: 'bg-blue-500', slate: 'bg-slate-400' };
+    
+    return (
+        <section>
+            <div className="flex items-center gap-2 mb-4 border-l-4 border-slate-800 pl-3">
+                <div className={`w-2 h-2 rounded-full ${dotColors[color]}`}></div>
+                <h2 className="text-lg font-black text-slate-700 uppercase">{title} ({count})</h2>
+            </div>
+            <div className="grid gap-4">
+                {tickets.length === 0 ? (
+                    <div className="p-8 border-2 border-dashed rounded-3xl text-center text-slate-400">Vazio</div>
+                ) : (
+                    tickets.map((t: any) => (
+                        <TicketCard key={t.id} ticket={t} onAction={() => onAction?.(t.id)} actionLabel={actionLabel} isMine={isMine} isDisabled={isDisabled} />
+                    ))
+                )}
+            </div>
+        </section>
+    );
+}
+
+function TicketCard({ ticket, onAction, actionLabel, isMine, isDisabled }: any) {
+    // Lógica de cor baseada na prioridade
+    const priorityColor = ticket.priority === 'URGENTE' ? 'bg-red-100 text-red-700 border-red-200' : 'bg-slate-100';
+
+    return (
+        <Card className={`p-5 hover:shadow-xl transition-all border-l-4 ${isMine ? 'border-l-blue-500 shadow-blue-50' : (isDisabled ? 'border-l-slate-300 grayscale-[0.5]' : 'border-l-amber-500')}`}>
+            <div className="flex flex-col md:flex-row justify-between gap-4">
+                <div className="space-y-2">
+                    <div className="flex flex-wrap items-center gap-2">
+                        <span className="text-[10px] font-black px-2 py-0.5 bg-slate-800 text-white rounded">{ticket.protocol}</span>
+                        <Badge variant="priority" className={priorityColor} value={ticket.priority}>{ticket.priority}</Badge>
                         {isDisabled && <span className="text-[10px] font-bold text-emerald-600 uppercase flex items-center gap-1"><CheckCheck size={12}/> Finalizado</span>}
                     </div>
-                    <h3 className="font-bold text-slate-800">{ticket.subject}</h3>
-                    <div className="flex items-center gap-4 mt-2 text-xs text-slate-500">
-                        <span className="flex items-center gap-1"><User size={14}/> {ticket.requester?.name}</span>
-                        <span className="flex items-center gap-1"><Clock size={14}/> {new Date(ticket.createdAt).toLocaleDateString()}</span>
-                        {ticket.location && <span className="font-bold text-blue-600 tracking-tight italic">@ {ticket.location}</span>}
+                    <h3 className="font-bold text-slate-800 text-lg leading-tight">{ticket.subject}</h3>
+                    <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-slate-500">
+                        <span className="flex items-center gap-1 font-medium"><User size={14}/> {ticket.requester?.name}</span>
+                        <span className="flex items-center gap-1"><Clock size={14}/> {new Date(ticket.createdAt).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })}</span>
+                        {ticket.location && <span className="bg-blue-50 text-blue-700 px-2 py-0.5 rounded-md font-bold italic">📍 {ticket.location}</span>}
                     </div>
                 </div>
                 
-                <div className="flex gap-2 w-full md:w-auto">
-                    <Link 
-                        href={`/meus-chamados/${ticket.id}`}
-                        className="flex-1 md:flex-none flex items-center justify-center gap-2 px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl font-bold text-xs transition-all"
-                    >
-                        <MessageCircle size={16}/> Detalhes
+                <div className="flex items-center gap-2">
+                    <Link href={`/meus-chamados/${ticket.id}`} className="p-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl transition-all" title="Ver Detalhes">
+                        <MessageCircle size={20}/>
                     </Link>
                     {!isDisabled && (
-                        <button 
-                            onClick={onAction}
-                            className={`flex-1 md:flex-none px-6 py-2 ${actionColor} text-white rounded-xl font-bold text-xs hover:opacity-90 transition-all uppercase`}
-                        >
+                        <button onClick={onAction} className={`px-6 py-2 rounded-xl font-black text-xs uppercase text-white transition-all shadow-lg ${isMine ? 'bg-emerald-500 shadow-emerald-100' : 'bg-blue-600 shadow-blue-100'}`}>
                             {actionLabel}
                         </button>
                     )}
