@@ -1,10 +1,9 @@
 "use client";
 
 import { useEffect, useState } from 'react';
-import { Badge } from '@/components/ui/Badge';
-import { Search, RefreshCw, LayoutDashboard, X } from 'lucide-react';
+import { Search, RefreshCw, LayoutDashboard, X, Inbox } from 'lucide-react';
 import { useSession } from "next-auth/react";
-import TicketCard from '@/components/TicketCard'; // Ajuste o caminho se necessário
+import TicketCard from '@/components/TicketCard';
 
 export default function PainelTecnicoPage() {
     const { data: session } = useSession();
@@ -42,109 +41,126 @@ export default function PainelTecnicoPage() {
         );
     };
 
-    const assumirChamado = async (ticketId: string) => {
+    const handleAction = async (ticketId: string, action: 'ASSUMIR' | 'FINALIZAR') => {
         const res = await fetch(`/api/tickets/${ticketId}`, {
             method: 'PATCH',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ action: 'ASSUMIR' }) 
-        });
-        if (res.ok) fetchTickets();
-    };
-
-    const finalizarChamado = async (ticketId: string) => {
-        const res = await fetch(`/api/tickets/${ticketId}`, {
-            method: 'PATCH',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ action: 'FINALIZAR' })
+            body: JSON.stringify({ action }) 
         });
         if (res.ok) fetchTickets();
     };
 
     if (loading && disponiveis.length === 0) {
-        return <div className="p-10 text-center font-bold animate-pulse text-slate-400 uppercase tracking-widest">Sincronizando Central...</div>;
+        return (
+            <div className="flex h-screen items-center justify-center">
+                <div className="text-center space-y-4">
+                    <RefreshCw className="w-12 h-12 text-blue-600 animate-spin mx-auto" />
+                    <p className="font-black text-slate-400 uppercase tracking-widest animate-pulse">Sincronizando Central...</p>
+                </div>
+            </div>
+        );
     }
 
     return (
-        <div className="max-w-7xl mx-auto p-6 space-y-8">
+        <div className="max-w-7xl mx-auto p-6 space-y-10">
             {/* CABEÇALHO */}
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 border-b pb-8">
+            <header className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 border-b border-slate-100 pb-10">
                 <div>
-                    <h1 className="text-3xl font-black text-slate-800 uppercase tracking-tighter flex items-center gap-2">
-                        <LayoutDashboard className="text-blue-600" size={32} /> Painel Técnico
+                    <h1 className="text-4xl font-black text-slate-800 uppercase tracking-tighter flex items-center gap-3">
+                        <div className="p-2 bg-blue-600 rounded-xl text-white">
+                            <LayoutDashboard size={28} />
+                        </div>
+                        Painel Técnico
                     </h1>
-                    <p className="text-slate-500">Olá, <span className="font-bold text-slate-700">{session?.user?.name}</span></p>
+                    <p className="text-slate-500 mt-2">Logado como: <span className="font-bold text-blue-600">{session?.user?.name}</span></p>
                 </div>
                 
                 <div className="flex items-center gap-3 w-full md:w-auto">
                     <div className="relative flex-1 md:w-96">
-                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
                         <input 
                             type="text" 
                             value={searchTerm}
                             placeholder="Buscar protocolo, nome ou local..."
-                            className="w-full pl-10 pr-10 py-3 bg-white border border-slate-200 rounded-2xl text-sm focus:ring-2 focus:ring-blue-500 outline-none shadow-sm transition-all"
+                            className="w-full pl-12 pr-12 py-4 bg-white border border-slate-200 rounded-2xl text-sm focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 outline-none shadow-sm transition-all"
                             onChange={(e) => setSearchTerm(e.target.value)}
                         />
                         {searchTerm && (
-                            <button onClick={() => setSearchTerm("")} className="absolute right-3 top-1/2 -translate-y-1/2 bg-slate-100 p-1 rounded-full text-slate-500 hover:bg-slate-200">
+                            <button onClick={() => setSearchTerm("")} className="absolute right-4 top-1/2 -translate-y-1/2 bg-slate-100 p-1 rounded-full text-slate-500 hover:bg-slate-200 transition-colors">
                                 <X size={14} />
                             </button>
                         )}
                     </div>
-                    <button onClick={fetchTickets} className="p-3 bg-white border border-slate-200 hover:border-blue-400 rounded-2xl shadow-sm">
-                        <RefreshCw size={22} className={loading ? "animate-spin text-blue-600" : ""} />
+                    <button 
+                        onClick={fetchTickets} 
+                        className="p-4 bg-white border border-slate-200 hover:border-blue-400 hover:text-blue-600 rounded-2xl shadow-sm transition-all active:scale-95 group"
+                    >
+                        <RefreshCw size={24} className={loading ? "animate-spin" : "group-hover:rotate-180 transition-transform duration-500"} />
                     </button>
                 </div>
-            </div>
+            </header>
 
-            {/* LISTAS FILTRADAS */}
-            <div className="space-y-12">
+            {/* SEÇÕES */}
+            <main className="space-y-16">
                 <TicketSection 
-                    title="Fila de Espera" 
+                    title="Aguardando Atendimento" 
                     tickets={filterTickets(disponiveis)} 
-                    onAction={assumirChamado}
-                    actionLabel="Assumir"
+                    onAction={(id: string) => handleAction(id, 'ASSUMIR')}
+                    actionLabel="Assumir Chamado"
                     color="amber"
                 />
 
                 <TicketSection 
-                    title="Em Atendimento" 
+                    title="Meus Chamados em Curso" 
                     tickets={filterTickets(meusChamados)} 
-                    onAction={finalizarChamado}
-                    actionLabel="Finalizar"
+                    onAction={(id: string) => handleAction(id, 'FINALIZAR')}
+                    actionLabel="Concluir Atendimento"
                     color="blue"
                     isMine
                 />
 
                 <TicketSection 
-                    title="Histórico Recente" 
+                    title="Histórico de Hoje" 
                     tickets={filterTickets(finalizados)} 
                     color="slate"
                     isDisabled
                 />
-            </div>
+            </main>
         </div>
     );
 }
 
-// Sub-componente de Seção para organizar o código
 function TicketSection({ title, tickets, onAction, actionLabel, color, isMine, isDisabled }: any) {
-    const dotColors: any = { amber: 'bg-amber-500', blue: 'bg-blue-500', slate: 'bg-slate-400' };
+    const colors: any = { 
+        amber: 'bg-amber-500 border-amber-500 text-amber-600', 
+        blue: 'bg-blue-600 border-blue-600 text-blue-600', 
+        slate: 'bg-slate-400 border-slate-400 text-slate-400' 
+    };
+
     return (
-        <section>
-            <div className="flex items-center gap-3 mb-6 border-l-4 border-slate-800 pl-4 font-black text-slate-800 uppercase tracking-tight text-xl">
-                <div className={`w-3 h-3 rounded-full ${dotColors[color]}`}></div>
-                {title} ({tickets.length})
+        <section className="animate-in fade-in slide-in-from-bottom-4 duration-700">
+            <div className="flex items-center justify-between mb-8 border-b border-slate-100 pb-4">
+                <div className="flex items-center gap-3">
+                    <div className={`w-2 h-8 rounded-full ${colors[color].split(' ')[0]}`}></div>
+                    <h2 className="text-2xl font-black text-slate-800 uppercase tracking-tight">{title}</h2>
+                </div>
+                <span className="bg-slate-100 text-slate-600 px-4 py-1.5 rounded-full text-xs font-black uppercase tracking-widest">
+                    {tickets.length} chamados
+                </span>
             </div>
-            <div className="grid gap-4">
+            
+            <div className="grid gap-6">
                 {tickets.length === 0 ? (
-                    <div className="p-8 border-2 border-dashed rounded-4x1 text-center text-slate-400">Vazio</div>
+                    <div className="py-20 border-2 border-dashed border-slate-200 rounded-[3rem] text-center bg-slate-50/50">
+                        <Inbox className="mx-auto text-slate-300 mb-4" size={48} strokeWidth={1} />
+                        <p className="text-slate-400 font-bold uppercase text-xs tracking-[0.2em]">Nenhum registro encontrado</p>
+                    </div>
                 ) : (
                     tickets.map((t: any) => (
                         <TicketCard 
                             key={t.id} 
                             ticket={t} 
-                            onAction={() => onAction?.(t.id)} 
+                            onAction={onAction} 
                             actionLabel={actionLabel} 
                             isMine={isMine} 
                             isDisabled={isDisabled} 

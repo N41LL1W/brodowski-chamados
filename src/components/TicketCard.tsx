@@ -4,8 +4,8 @@ import Link from "next/link";
 import Card from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
 import { Clock, User, MessageCircle, CheckCheck, MapPin } from 'lucide-react';
+import { usePathname } from 'next/navigation';
 
-// Função para tempo amigável (ex: Há 15 min)
 function getRelativeTime(date: string) {
     const diff = Math.floor((new Date().getTime() - new Date(date).getTime()) / 60000);
     if (diff < 1) return "Agora";
@@ -15,7 +15,15 @@ function getRelativeTime(date: string) {
 }
 
 export default function TicketCard({ ticket, onAction, actionLabel, isMine, isDisabled }: any) {
-    // Alerta visual se passar de 2 horas aguardando
+    const pathname = usePathname();
+    
+    // Se o técnico estiver na pasta /tecnico, o link deve levar para /tecnico/chamado/id
+    // Caso contrário, leva para a pasta padrão do usuário
+    const isTecnicoPath = pathname?.includes('/tecnico');
+    const detailHref = isTecnicoPath 
+        ? `/tecnico/chamado/${ticket.id}` 
+        : `/meus-chamados/${ticket.id}`;
+
     const isLate = !isDisabled && !isMine && (new Date().getTime() - new Date(ticket.createdAt).getTime() > 120 * 60000);
 
     return (
@@ -57,7 +65,7 @@ export default function TicketCard({ ticket, onAction, actionLabel, isMine, isDi
                 
                 <div className="flex items-center gap-3 w-full md:w-auto">
                     <Link 
-                        href={`/meus-chamados/${ticket.id}`} 
+                        href={detailHref} 
                         className="flex-1 md:flex-none flex items-center justify-center gap-2 px-5 py-3 bg-white border-2 border-slate-200 hover:border-slate-800 text-slate-700 rounded-2xl font-black text-xs uppercase transition-all"
                     >
                         <MessageCircle size={18}/> Detalhes
@@ -65,7 +73,7 @@ export default function TicketCard({ ticket, onAction, actionLabel, isMine, isDi
                     {!isDisabled && (
                         <button 
                             onClick={onAction} 
-                            className={`flex-1 md:flex-none px-8 py-3 rounded-2xl font-black text-xs uppercase text-white transition-all shadow-lg active:scale-95 ${isMine ? 'bg-emerald-600' : 'bg-blue-600'}`}
+                            className={`flex-1 md:flex-none px-8 py-3 rounded-2xl font-black text-xs uppercase text-white transition-all shadow-lg active:scale-95 ${isMine ? 'bg-emerald-600 hover:bg-emerald-700' : 'bg-blue-600 hover:bg-blue-700'}`}
                         >
                             {actionLabel}
                         </button>
