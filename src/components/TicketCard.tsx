@@ -3,7 +3,7 @@
 import Link from "next/link";
 import Card from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
-import { Clock, User, MessageCircle, CheckCheck, MapPin } from 'lucide-react';
+import { Clock, User, MessageCircle, CheckCheck, MapPin, Wrench } from 'lucide-react';
 import { usePathname } from 'next/navigation';
 
 function getRelativeTime(date: string) {
@@ -16,9 +16,6 @@ function getRelativeTime(date: string) {
 
 export default function TicketCard({ ticket, onAction, actionLabel, isMine, isDisabled }: any) {
     const pathname = usePathname();
-    
-    // Se o técnico estiver na pasta /tecnico, o link deve levar para /tecnico/chamado/id
-    // Caso contrário, leva para a pasta padrão do usuário
     const isTecnicoPath = pathname?.includes('/tecnico');
     const detailHref = isTecnicoPath 
         ? `/tecnico/chamado/${ticket.id}` 
@@ -47,13 +44,13 @@ export default function TicketCard({ ticket, onAction, actionLabel, isMine, isDi
                         )}
                     </div>
                     
-                    <h3 className="font-extrabold text-slate-800 text-xl tracking-tight group-hover:text-blue-700 transition-colors">
+                    <h3 className="font-extrabold text-slate-800 text-xl tracking-tight">
                         {ticket.subject || ticket.title}
                     </h3>
                     
                     <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-[13px] text-slate-500">
                         <span className="flex items-center gap-1.5 font-bold text-slate-700">
-                            <User size={16} className="text-slate-400"/> {ticket.requester?.name || ticket.requester}
+                            <User size={16} className="text-slate-400"/> {ticket.requester?.name || "Usuário"}
                         </span>
                         {ticket.location && (
                             <span className="flex items-center gap-1.5 bg-blue-50 text-blue-700 px-3 py-0.5 rounded-full font-black text-[10px] uppercase border border-blue-100">
@@ -64,16 +61,20 @@ export default function TicketCard({ ticket, onAction, actionLabel, isMine, isDi
                 </div>
                 
                 <div className="flex items-center gap-3 w-full md:w-auto">
+                    {/* Botão de Detalhes (Sempre visível ou transformado em botão de trabalho) */}
                     <Link 
                         href={detailHref} 
-                        className="flex-1 md:flex-none flex items-center justify-center gap-2 px-5 py-3 bg-white border-2 border-slate-200 hover:border-slate-800 text-slate-700 rounded-2xl font-black text-xs uppercase transition-all"
+                        className={`flex-1 md:flex-none flex items-center justify-center gap-2 px-5 py-3 rounded-2xl font-black text-xs uppercase transition-all border-2 ${isMine ? 'bg-blue-600 border-blue-600 text-white hover:bg-blue-700 shadow-lg' : 'bg-white border-slate-200 text-slate-700 hover:border-slate-800'}`}
                     >
-                        <MessageCircle size={18}/> Detalhes
+                        {isMine ? <Wrench size={18}/> : <MessageCircle size={18}/>}
+                        {isMine ? "Trabalhar no Chamado" : "Ver Detalhes"}
                     </Link>
-                    {!isDisabled && (
+
+                    {/* Botão de Ação (Apenas para chamados NÃO assumidos) */}
+                    {!isDisabled && !isMine && (
                         <button 
-                            onClick={onAction} 
-                            className={`flex-1 md:flex-none px-8 py-3 rounded-2xl font-black text-xs uppercase text-white transition-all shadow-lg active:scale-95 ${isMine ? 'bg-emerald-600 hover:bg-emerald-700' : 'bg-blue-600 hover:bg-blue-700'}`}
+                            onClick={() => onAction(ticket.id)} 
+                            className="flex-1 md:flex-none px-8 py-3 rounded-2xl font-black text-xs uppercase text-white transition-all shadow-lg active:scale-95 bg-blue-600 hover:bg-blue-700"
                         >
                             {actionLabel}
                         </button>

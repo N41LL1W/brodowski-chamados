@@ -28,7 +28,9 @@ export default function PainelTecnicoPage() {
         }
     };
 
-    useEffect(() => { fetchTickets(); }, []);
+    useEffect(() => { 
+        fetchTickets(); 
+    }, []);
 
     const filterTickets = (list: any[]) => {
         if (!searchTerm.trim()) return list;
@@ -41,7 +43,7 @@ export default function PainelTecnicoPage() {
         );
     };
 
-    const handleAction = async (ticketId: string, action: 'ASSUMIR' | 'FINALIZAR') => {
+    const handleAction = async (ticketId: string, action: 'ASSUMIR') => {
         const res = await fetch(`/api/tickets/${ticketId}`, {
             method: 'PATCH',
             headers: { 'Content-Type': 'application/json' },
@@ -52,7 +54,7 @@ export default function PainelTecnicoPage() {
 
     if (loading && disponiveis.length === 0) {
         return (
-            <div className="flex h-screen items-center justify-center">
+            <div className="flex h-screen items-center justify-center bg-slate-50">
                 <div className="text-center space-y-4">
                     <RefreshCw className="w-12 h-12 text-blue-600 animate-spin mx-auto" />
                     <p className="font-black text-slate-400 uppercase tracking-widest animate-pulse">Sincronizando Central...</p>
@@ -72,7 +74,9 @@ export default function PainelTecnicoPage() {
                         </div>
                         Painel Técnico
                     </h1>
-                    <p className="text-slate-500 mt-2">Logado como: <span className="font-bold text-blue-600">{session?.user?.name}</span></p>
+                    <p className="text-slate-500 mt-2 italic">
+                        Bem-vindo, <span className="font-bold text-blue-600 not-italic">{session?.user?.name}</span>
+                    </p>
                 </div>
                 
                 <div className="flex items-center gap-3 w-full md:w-auto">
@@ -102,6 +106,7 @@ export default function PainelTecnicoPage() {
 
             {/* SEÇÕES */}
             <main className="space-y-16">
+                {/* 1. CHAMADOS LIVRES */}
                 <TicketSection 
                     title="Aguardando Atendimento" 
                     tickets={filterTickets(disponiveis)} 
@@ -110,15 +115,15 @@ export default function PainelTecnicoPage() {
                     color="amber"
                 />
 
+                {/* 2. MEUS CHAMADOS - Sem onAction pois a finalização é interna */}
                 <TicketSection 
                     title="Meus Chamados em Curso" 
                     tickets={filterTickets(meusChamados)} 
-                    onAction={(id: string) => handleAction(id, 'FINALIZAR')}
-                    actionLabel="Concluir Atendimento"
                     color="blue"
                     isMine
                 />
 
+                {/* 3. HISTÓRICO DE HOJE */}
                 <TicketSection 
                     title="Histórico de Hoje" 
                     tickets={filterTickets(finalizados)} 
@@ -130,21 +135,31 @@ export default function PainelTecnicoPage() {
     );
 }
 
-function TicketSection({ title, tickets, onAction, actionLabel, color, isMine, isDisabled }: any) {
-    const colors: any = { 
-        amber: 'bg-amber-500 border-amber-500 text-amber-600', 
-        blue: 'bg-blue-600 border-blue-600 text-blue-600', 
-        slate: 'bg-slate-400 border-slate-400 text-slate-400' 
+interface TicketSectionProps {
+    title: string;
+    tickets: any[];
+    onAction?: (id: string) => void;
+    actionLabel?: string;
+    color: 'amber' | 'blue' | 'slate';
+    isMine?: boolean;
+    isDisabled?: boolean;
+}
+
+function TicketSection({ title, tickets, onAction, actionLabel, color, isMine, isDisabled }: TicketSectionProps) {
+    const colors = { 
+        amber: 'bg-amber-500', 
+        blue: 'bg-blue-600', 
+        slate: 'bg-slate-400' 
     };
 
     return (
         <section className="animate-in fade-in slide-in-from-bottom-4 duration-700">
             <div className="flex items-center justify-between mb-8 border-b border-slate-100 pb-4">
                 <div className="flex items-center gap-3">
-                    <div className={`w-2 h-8 rounded-full ${colors[color].split(' ')[0]}`}></div>
+                    <div className={`w-2 h-8 rounded-full ${colors[color]}`}></div>
                     <h2 className="text-2xl font-black text-slate-800 uppercase tracking-tight">{title}</h2>
                 </div>
-                <span className="bg-slate-100 text-slate-600 px-4 py-1.5 rounded-full text-xs font-black uppercase tracking-widest">
+                <span className="bg-slate-100 text-slate-600 px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest">
                     {tickets.length} chamados
                 </span>
             </div>
@@ -153,7 +168,7 @@ function TicketSection({ title, tickets, onAction, actionLabel, color, isMine, i
                 {tickets.length === 0 ? (
                     <div className="py-20 border-2 border-dashed border-slate-200 rounded-[3rem] text-center bg-slate-50/50">
                         <Inbox className="mx-auto text-slate-300 mb-4" size={48} strokeWidth={1} />
-                        <p className="text-slate-400 font-bold uppercase text-xs tracking-[0.2em]">Nenhum registro encontrado</p>
+                        <p className="text-slate-400 font-bold uppercase text-[10px] tracking-[0.2em]">Nenhum registro encontrado</p>
                     </div>
                 ) : (
                     tickets.map((t: any) => (
