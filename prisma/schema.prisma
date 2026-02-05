@@ -26,22 +26,22 @@ model Level {
 // --- USUÁRIOS ---
 
 model User {
-  id              String    @id @default(cuid())
-  name            String?
-  email           String?   @unique
-  passwordHash    String?
-  emailVerified   DateTime?
-  image           String?
-  role            String    @default("FUNCIONARIO")
+  id            String    @id @default(cuid())
+  name          String?
+  email         String?   @unique
+  passwordHash  String?
+  emailVerified DateTime?
+  image         String?
+  role          String    @default("FUNCIONARIO")
   
-  roleId          Int?
-  roleRelation    Role?     @relation(fields: [roleId], references: [id])
-  levelId         Int?
-  levelRelation   Level?    @relation(fields: [levelId], references: [id])
+  roleId         Int?
+  roleRelation   Role?     @relation(fields: [roleId], references: [id])
+  levelId        Int?
+  levelRelation  Level?    @relation(fields: [levelId], references: [id])
   
-  tickets          Ticket[]  @relation("CreatedBy")
-  assignedTickets  Ticket[]  @relation("AssignedTo")
-  comments         Comment[]
+  tickets         Ticket[]  @relation("CreatedBy")
+  assignedTickets Ticket[]  @relation("AssignedTo")
+  comments        Comment[]
 
   accounts         Account[]
   sessions         Session[]
@@ -50,14 +50,14 @@ model User {
 // --- CONFIGURAÇÕES DE CHAMADO ---
 
 model Category {
-  id      String   @id // Removido default para aceitar cat_1, cat_2 do seu SQL
+  id      String   @id
   name    String
   icon    String   @default("Wrench")
   tickets Ticket[]
 }
 
 model Department {
-  id      String   @id // Removido default para aceitar dept_1, dept_2 do seu SQL
+  id      String   @id
   name    String
   tickets Ticket[]
 }
@@ -65,29 +65,32 @@ model Department {
 // --- O CHAMADO (TICKET) ---
 
 model Ticket {
-  id            String     @id @default(cuid())
-  protocol      String     @unique 
-  subject       String
-  description   String
-  location      String?    // ADICIONADO para bater com o formulário
-  status        String     @default("ABERTO") 
-  priority      String     @default("NORMAL") 
+  id           String   @id @default(cuid())
+  protocol     String   @unique 
+  subject      String
+  description  String
+  location     String?  
+  status       String   @default("ABERTO") // Aceita: ABERTO, EM_ANDAMENTO, EM_PAUSA, CONCLUIDO
+  priority     String   @default("NORMAL") 
   
-  category      Category   @relation(fields: [categoryId], references: [id])
-  categoryId    String
-  department    Department @relation(fields: [departmentId], references: [id])
-  departmentId  String
+  // Campo para armazenar a URL da foto de conclusão/anexo
+  proofImage   String?  @db.Text 
+
+  category     Category @relation(fields: [categoryId], references: [id])
+  categoryId   String
+  department   Department @relation(fields: [departmentId], references: [id])
+  departmentId String
   
-  requester     User       @relation("CreatedBy", fields: [requesterId], references: [id])
-  requesterId   String
+  requester    User     @relation("CreatedBy", fields: [requesterId], references: [id])
+  requesterId  String
 
-  assignedTo    User?      @relation("AssignedTo", fields: [assignedToId], references: [id])
-  assignedToId  String?
+  assignedTo   User?    @relation("AssignedTo", fields: [assignedToId], references: [id])
+  assignedToId String?
 
-  comments      Comment[]
+  comments     Comment[]
 
-  createdAt     DateTime   @default(now())
-  updatedAt     DateTime   @updatedAt
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 }
 
 // --- CHAT / COMENTÁRIOS ---

@@ -5,7 +5,6 @@ import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 
 /**
  * GET: Retorna os detalhes completos do chamado + Comentários
- * Usado na página de Detalhes do Chamado
  */
 export async function GET(req: Request, props: { params: Promise<{ id: string }> }) {
     try {
@@ -37,7 +36,7 @@ export async function GET(req: Request, props: { params: Promise<{ id: string }>
 }
 
 /**
- * POST: Adiciona uma nova mensagem (comentário) ao chamado
+ * POST: Adiciona uma nova mensagem (comentário/nota técnica) ao chamado
  */
 export async function POST(req: Request, props: { params: Promise<{ id: string }> }) {
     try {
@@ -67,7 +66,7 @@ export async function POST(req: Request, props: { params: Promise<{ id: string }
 }
 
 /**
- * PATCH: Atualiza o status ou assume o chamado
+ * PATCH: Atualiza o status, assume, pausa ou devolve o chamado
  */
 export async function PATCH(req: Request, props: { params: Promise<{ id: string }> }) {
     try {
@@ -78,18 +77,38 @@ export async function PATCH(req: Request, props: { params: Promise<{ id: string 
         const body = await req.json();
         const user = session.user as any;
 
-        // Lógica de Atualização Flexível
+        // Lógica de Atualização Baseada em Ações
         const updateData: any = {};
 
-        if (body.action === 'ASSUMIR') {
-            updateData.status = 'EM_ANDAMENTO';
-            updateData.assignedToId = user.id;
-        } else if (body.action === 'FINALIZAR') {
-            updateData.status = 'CONCLUIDO';
-        } else {
-            // Se não for uma ação rápida, aceita o que vier no body
-            if (body.status) updateData.status = body.status;
-            if (body.assignedToId) updateData.assignedToId = body.assignedToId;
+        switch (body.action) {
+            case 'ASSUMIR':
+                updateData.status = 'EM_ANDAMENTO';
+                updateData.assignedToId = user.id;
+                break;
+
+            case 'FINALIZAR':
+                updateData.status = 'CONCLUIDO';
+                // Salva o link da imagem se enviado no corpo da requisição
+                if (body.proofImage) {
+                    updateData.proofImage = body.proofImage;
+                }
+                break;
+
+            case 'PAUSAR':
+                updateData.status = 'EM_PAUSA';
+                // Mantém o técnico atribuído, apenas muda o status
+                break;
+
+            case 'DEVOLVER':
+                updateData.status = 'ABERTO';
+                updateData.assignedToId = null; // Remove o técnico (torna o chamado disponível)
+                break;
+
+            default:
+                // Fallback para atualizações genéricas (campos manuais)
+                if (body.status) updateData.status = body.status;
+                if (body.assignedToId !== undefined) updateData.assignedToId = body.assignedToId;
+                if (body.priority) updateData.priority = body.priority;
         }
 
         const updatedTicket = await (prisma as any).ticket.update({
