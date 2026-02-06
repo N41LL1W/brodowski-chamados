@@ -56,33 +56,38 @@ export default function NovoChamadoPage() {
     };
 
     return (
-        <div className="p-4 md:p-8 max-w-3xl mx-auto">
-            <header className="mb-8 flex justify-between items-center">
+        <div className="p-4 md:p-8 max-w-3xl mx-auto min-h-screen">
+            <header className="mb-10 flex justify-between items-center">
                 <div>
-                    <h1 className="text-3xl font-black text-gray-900 uppercase italic">Suporte TI</h1>
-                    <p className="text-gray-500 font-medium">Passo {step} de 2</p>
+                    <h1 className="text-3xl font-black text-foreground uppercase italic tracking-tighter">
+                        Novo <span className="text-blue-600">Chamado</span>
+                    </h1>
+                    <p className="text-muted-foreground font-medium text-sm">Passo {step} de 2</p>
                 </div>
                 {step === 2 && (
-                    <button onClick={() => setStep(1)} className="flex items-center gap-2 text-blue-600 font-bold text-sm">
+                    <button 
+                        onClick={() => setStep(1)} 
+                        className="flex items-center gap-2 text-blue-500 hover:text-blue-600 font-bold text-sm transition-colors"
+                    >
                         <ArrowLeft size={18}/> Voltar
                     </button>
                 )}
             </header>
 
             {step === 1 && (
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-4 animate-in fade-in zoom-in duration-300">
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-6 animate-in fade-in zoom-in duration-300">
                     {categories.map((cat: any) => {
                         const Icon = IconMap[cat.icon] || Monitor;
                         return (
                             <button 
                                 key={cat.id}
                                 onClick={() => { setForm({...form, categoryId: cat.id}); setStep(2); }}
-                                className="p-8 bg-white border-2 border-slate-100 rounded-3xl hover:border-blue-500 transition-all flex flex-col items-center gap-4 group"
+                                className="p-8 bg-card border-2 border-border rounded-3xl hover:border-blue-500 hover:shadow-xl hover:shadow-blue-500/10 transition-all flex flex-col items-center gap-4 group"
                             >
-                                <div className="p-5 bg-slate-50 rounded-2xl group-hover:bg-blue-600 group-hover:text-white transition-colors">
+                                <div className="p-5 bg-secondary rounded-2xl group-hover:bg-blue-600 group-hover:text-white transition-all duration-300">
                                     <Icon size={40} />
                                 </div>
-                                <span className="font-black text-slate-700 uppercase text-xs tracking-widest">{cat.name}</span>
+                                <span className="font-black text-foreground uppercase text-xs tracking-widest">{cat.name}</span>
                             </button>
                         );
                     })}
@@ -90,13 +95,13 @@ export default function NovoChamadoPage() {
             )}
 
             {step === 2 && (
-                <Card className="p-8 shadow-2xl border-0 rounded-3xl animate-in fade-in slide-in-from-right-8 duration-300">
+                <Card className="p-8 shadow-2xl border-none rounded-4xl animate-in fade-in slide-in-from-right-8 duration-300">
                     <form className="space-y-6">
                         <div className="grid md:grid-cols-2 gap-6">
-                            <div>
-                                <label className="block text-[10px] font-black text-blue-600 uppercase mb-2 tracking-widest">Sua Secretaria</label>
+                            <div className="space-y-2">
+                                <label className="block text-[10px] font-black text-blue-600 uppercase tracking-widest ml-1">Sua Secretaria</label>
                                 <select 
-                                    className="w-full p-4 border-2 border-slate-100 rounded-2xl bg-slate-50 text-black outline-none focus:border-blue-500"
+                                    className="w-full p-4 border-2 border-border rounded-2xl bg-secondary text-foreground outline-none focus:border-blue-500 transition-all appearance-none"
                                     value={form.departmentId}
                                     onChange={e => setForm({...form, departmentId: e.target.value})}
                                 >
@@ -104,28 +109,28 @@ export default function NovoChamadoPage() {
                                     {departments.map((dept: any) => <option key={dept.id} value={dept.id}>{dept.name}</option>)}
                                 </select>
                             </div>
-                            <div>
-                                <label className="block text-[10px] font-black text-blue-600 uppercase mb-2 tracking-widest">Urgência</label>
-                                <div className="flex gap-2">
+                            <div className="space-y-2">
+                                <label className="block text-[10px] font-black text-blue-600 uppercase tracking-widest ml-1">Urgência</label>
+                                <div className="flex gap-2 p-1 bg-secondary rounded-2xl">
                                     {['BAIXA', 'NORMAL', 'ALTA'].map(p => (
                                         <button 
                                             key={p}
                                             type="button"
                                             onClick={() => setForm({...form, priority: p})}
-                                            className={`flex-1 p-3 rounded-xl text-[10px] font-bold border-2 transition-all 
-                                                ${form.priority === p ? 'bg-blue-600 border-blue-600 text-white' : 'bg-white border-slate-100 text-slate-400'}`}
+                                            className={`flex-1 py-3 rounded-xl text-[10px] font-bold transition-all 
+                                                ${form.priority === p ? 'bg-blue-600 text-white shadow-lg' : 'text-muted-foreground hover:bg-background'}`}
                                         >{p}</button>
                                     ))}
                                 </div>
                             </div>
                         </div>
 
-                        <div>
-                            <label className="block text-[10px] font-black text-blue-600 uppercase mb-2 tracking-widest">Localização Exata</label>
+                        <div className="space-y-2">
+                            <label className="block text-[10px] font-black text-blue-600 uppercase tracking-widest ml-1">Localização Exata</label>
                             <div className="relative">
-                                <MapPin className="absolute left-4 top-4 text-slate-400" size={20} />
+                                <MapPin className="absolute left-4 top-4 text-muted-foreground" size={20} />
                                 <input 
-                                    className="w-full p-4 pl-12 border-2 border-slate-100 rounded-2xl bg-slate-50 text-black outline-none focus:border-blue-500"
+                                    className="w-full p-4 pl-12 border-2 border-border rounded-2xl bg-secondary text-foreground outline-none focus:border-blue-500 transition-all"
                                     placeholder="Ex: Recepção, Sala 02"
                                     value={form.location}
                                     onChange={e => setForm({...form, location: e.target.value})}
@@ -133,20 +138,20 @@ export default function NovoChamadoPage() {
                             </div>
                         </div>
 
-                        <div>
-                            <label className="block text-[10px] font-black text-blue-600 uppercase mb-2 tracking-widest">Assunto</label>
+                        <div className="space-y-2">
+                            <label className="block text-[10px] font-black text-blue-600 uppercase tracking-widest ml-1">Assunto</label>
                             <input 
-                                className="w-full p-4 border-2 border-slate-100 rounded-2xl bg-slate-50 text-black outline-none focus:border-blue-500"
+                                className="w-full p-4 border-2 border-border rounded-2xl bg-secondary text-foreground outline-none focus:border-blue-500 transition-all"
                                 placeholder="Resumo do problema"
                                 value={form.subject}
                                 onChange={e => setForm({...form, subject: e.target.value})}
                             />
                         </div>
 
-                        <div>
-                            <label className="block text-[10px] font-black text-blue-600 uppercase mb-2 tracking-widest">Descrição</label>
+                        <div className="space-y-2">
+                            <label className="block text-[10px] font-black text-blue-600 uppercase tracking-widest ml-1">Descrição</label>
                             <textarea 
-                                className="w-full p-4 border-2 border-slate-100 rounded-2xl bg-slate-50 text-black h-32 outline-none focus:border-blue-500"
+                                className="w-full p-4 border-2 border-border rounded-2xl bg-secondary text-foreground h-32 outline-none focus:border-blue-500 transition-all resize-none"
                                 placeholder="Detalhes..."
                                 value={form.description}
                                 onChange={e => setForm({...form, description: e.target.value})}
@@ -157,7 +162,7 @@ export default function NovoChamadoPage() {
                             type="button"
                             onClick={handleSubmit}
                             disabled={loading || !form.departmentId || !form.subject}
-                            className={`w-full flex items-center justify-center gap-3 p-5 bg-blue-600 text-white rounded-2xl font-black uppercase transition-all ${loading ? 'opacity-50' : 'hover:bg-blue-700'}`}
+                            className={`w-full flex items-center justify-center gap-3 p-5 bg-blue-600 text-white rounded-2xl font-black uppercase transition-all shadow-lg shadow-blue-500/20 ${loading ? 'opacity-50' : 'hover:bg-blue-700 active:scale-[0.98]'}`}
                         >
                             <Send size={20} />
                             {loading ? 'Enviando...' : 'Finalizar Chamado'}

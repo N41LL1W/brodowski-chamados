@@ -1,33 +1,47 @@
-/* Tailwind v4 */
-@import "tailwindcss/preflight";
 @import "tailwindcss";
 
-/* ===========================
-   VARIÁVEIS DO TEMA
-   =========================== */
+@theme {
+  /* Mapeando as variáveis do CSS para o Tailwind */
+  --color-background: var(--bg-primary);
+  --color-foreground: var(--text-primary);
+  --color-card: var(--bg-secondary);
+  --color-border: var(--border-color);
+  --color-primary: var(--brand-color);
+}
+
 :root {
-  --surface: #ffffff;
-  --text: #1f2937;
-  --card-border: #e5e7eb;
+  /* TEMA CLARO (Default) */
+  --bg-primary: #f9fafb;     /* Cinza bem claro */
+  --bg-secondary: #ffffff;   /* Branco */
+  --text-primary: #111827;   /* Quase preto */
+  --text-secondary: #4b5563; /* Cinza médio */
+  --border-color: #e5e7eb;   /* Borda suave */
+  --brand-color: #2563eb;    /* Azul Principal */
 }
 
 .dark {
-  --surface: #111827;
-  --text: #f3f4f6;
-  --card-border: #374151;
+  /* TEMA ESCURO */
+  --bg-primary: #0f172a;     /* Slate 900 */
+  --bg-secondary: #1e293b;   /* Slate 800 */
+  --text-primary: #f8fafc;   /* Branco gelo */
+  --text-secondary: #94a3b8; /* Cinza azulado */
+  --border-color: #334155;   /* Borda escura */
+  --brand-color: #3b82f6;    /* Azul brilhante */
 }
 
-/* ===========================
-   ESTILOS GLOBAIS
-   =========================== */
-
-html,
-body {
-  height: 100%;
+/* Base Styles */
+@layer base {
+  body {
+    @apply bg-background text-foreground transition-colors duration-300;
+  }
 }
 
-body {
-  background-color: var(--surface);
-  color: var(--text);
-  font-family: sans-serif;
+/* Componentes Utilitários para facilitar sua vida */
+@layer components {
+  .card-base {
+    @apply bg-card border border-border rounded-xl shadow-sm p-6 hover:shadow-md transition-all;
+  }
+  .btn-primary {
+    @apply bg-primary text-white font-semibold py-2 px-4 rounded-lg hover:opacity-90 transition-opacity disabled:opacity-50;
+  }
 }

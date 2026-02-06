@@ -26,7 +26,7 @@ export async function PATCH(request: Request) {
             data: {
                 assignedToId: technicianId || null,
                 // CORREÇÃO: Usando os status em MAIÚSCULO para bater com o Schema e a Barra de Progresso
-                status: technicianId ? "ATENDIMENTO" : "ABERTO"
+                status: technicianId ? "EM_ANDAMENTO" : "ABERTO"
             }
         });
 

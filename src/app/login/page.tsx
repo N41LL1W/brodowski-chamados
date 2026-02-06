@@ -1,21 +1,19 @@
 "use client";
 
 import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
 import { signIn, useSession } from 'next-auth/react';
 import { Button } from '@/components/ui/Button';
 import Card from '@/components/ui/Card';
 import Link from 'next/link';
+import { LogIn } from 'lucide-react';
 
 export default function LoginPage() {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
-    const { data: session, status } = useSession();
-    const router = useRouter();
+    const { status } = useSession();
 
-    // Se já estiver logado, redireciona automaticamente para a home
     useEffect(() => {
         if (status === "authenticated") {
             window.location.href = "/";
@@ -29,73 +27,80 @@ export default function LoginPage() {
 
         try {
             const result = await signIn('credentials', {
-                redirect: false, // Mantemos false para tratar o erro aqui
+                redirect: false,
                 email,
                 password,
             });
 
             if (result?.error) {
-                setError('Email ou senha incorretos.');
+                setError('As credenciais informadas não coincidem com nossos registros.');
                 setIsLoading(false);
             } else if (result?.ok) {
-                // Forçamos o reload completo para garantir que o Middleware reconheça a sessão
                 window.location.href = "/";
             }
         } catch (err) {
-            setError('Ocorreu um erro ao tentar entrar.');
+            setError('Falha na comunicação com o servidor.');
             setIsLoading(false);
         }
     };
 
-    if (status === "loading") return <div className="flex justify-center p-10">Carregando...</div>;
+    if (status === "loading") return <div className="flex justify-center items-center min-h-screen font-bold text-slate-400">Verificando sessão...</div>;
 
     return (
-        <div className="flex justify-center items-center min-h-[80vh]">
-            <Card className="w-full max-w-md p-8 shadow-2xl border-t-4 border-blue-600">
-                <h1 className="text-3xl font-bold mb-2 text-center text-gray-800">Brodowski Chamados</h1>
-                <p className="text-center text-gray-500 mb-8">Entre com suas credenciais</p>
+        <div className="flex justify-center items-center min-h-[90vh] bg-gray-50 p-4">
+            <Card className="w-full max-w-md p-10 shadow-2xl border-none bg-white rounded-3xl">
+                <div className="flex flex-col items-center mb-10">
+                    <div className="bg-blue-600 text-white p-4 rounded-2xl shadow-lg mb-4">
+                        <LogIn size={32} />
+                    </div>
+                    <h1 className="text-3xl font-black text-gray-900 tracking-tighter uppercase">Brodowski</h1>
+                    <p className="text-gray-400 font-medium text-sm">Sistema Central de Chamados</p>
+                </div>
                 
                 {error && (
-                    <div className="bg-red-50 border-l-4 border-red-500 text-red-700 p-4 mb-6" role="alert">
-                        <p className="font-bold">Erro</p>
-                        <p>{error}</p>
+                    <div className="bg-red-50 border-2 border-red-100 text-red-600 p-4 rounded-xl mb-6 text-xs font-bold italic">
+                        ⚠️ {error}
                     </div>
                 )}
 
-                <form onSubmit={handleSubmit} className="space-y-5">
+                <form onSubmit={handleSubmit} className="space-y-6">
                     <div>
-                        <label className="block text-sm font-semibold text-gray-700 mb-1">E-mail</label>
+                        <label className="block text-[10px] font-black text-gray-400 uppercase mb-2 ml-1 tracking-widest">E-mail Corporativo</label>
                         <input
                             type="email"
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
                             required
-                            className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition-all"
-                            placeholder="exemplo@brodowski.sp.gov.br"
+                            className="w-full p-4 border border-gray-100 rounded-2xl bg-gray-50 focus:ring-4 focus:ring-blue-100 outline-none transition-all font-medium"
+                            placeholder="seu@email.com"
                             disabled={isLoading}
                         />
                     </div>
                     <div>
-                        <label className="block text-sm font-semibold text-gray-700 mb-1">Senha</label>
+                        <label className="block text-[10px] font-black text-gray-400 uppercase mb-2 ml-1 tracking-widest">Senha de Acesso</label>
                         <input
                             type="password"
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
                             required
-                            className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition-all"
+                            className="w-full p-4 border border-gray-100 rounded-2xl bg-gray-50 focus:ring-4 focus:ring-blue-100 outline-none transition-all font-medium"
                             placeholder="••••••••"
                             disabled={isLoading}
                         />
                     </div>
                     
-                    <Button type="submit" className="w-full py-6 text-lg font-bold" disabled={isLoading}>
-                        {isLoading ? 'Autenticando...' : 'Entrar no Sistema'}
+                    <Button 
+                        type="submit" 
+                        className="w-full py-7 text-sm font-black uppercase tracking-widest bg-slate-900 hover:bg-blue-600 shadow-xl"
+                        disabled={isLoading}
+                    >
+                        {isLoading ? 'CARREGANDO...' : 'ACESSAR PAINEL'}
                     </Button>
                 </form>
 
-                <div className="text-center mt-6">
-                    <Link href="/registro" className="text-blue-600 hover:text-blue-800 font-medium">
-                        Criar nova conta institucional
+                <div className="text-center mt-10">
+                    <Link href="/registro" className="text-xs text-blue-600 hover:underline font-bold uppercase tracking-widest">
+                        Criar conta institucional
                     </Link>
                 </div>
             </Card>
