@@ -1,12 +1,10 @@
-// src/app/registro/page.tsx
-
 "use client";
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import Card from '@/components/ui/Card'; // Componente Card
+import Card from '@/components/ui/Card';
 import Link from 'next/link';
-// Nota: O Button foi substituído por uma tag <button> nativa para evitar bugs de UI.
+import { UserPlus, ArrowRight, ShieldCheck } from 'lucide-react';
 
 export default function RegisterPage() {
     const [name, setName] = useState('');
@@ -19,123 +17,99 @@ export default function RegisterPage() {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        console.log("-> Tentativa de Registro Iniciada."); 
-        
-        // Verifica se os inputs estão preenchidos antes de tentar o fetch
         if (!name || !email || !password) {
-            setError("Por favor, preencha todos os campos obrigatórios.");
+            setError("Preencha todos os campos para continuar.");
             return;
         }
 
         setError(null);
-        setSuccess(null);
         setIsLoading(true);
-
-        const role = "FUNCIONARIO"; 
         
         try {
             const response = await fetch('/api/register', {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ name, email, password, role }),
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name, email, password, role: "FUNCIONARIO" }),
             });
 
-            // CORREÇÃO ESSENCIAL: Tenta ler a resposta JSON.
-            // Se a API retornar um erro não-JSON (como no 400), o catch será acionado.
-            const contentType = response.headers.get("content-type");
-            const isJson = contentType && contentType.includes("application/json");
-            const data = isJson ? await response.json() : await response.text();
+            const data = await response.json();
 
             if (!response.ok) {
-                // Trata erro de API (409, 500, etc.)
-                const errorMessage = (isJson && data.message) || data || 'Erro desconhecido ao registrar usuário.';
-                setError(String(errorMessage));
+                setError(data.message || 'Erro ao criar conta.');
             } else {
-                setSuccess('Usuário registrado com sucesso! Redirecionando para o login...');
-                
-                setTimeout(() => {
-                    router.push('/login');
-                }, 2000);
+                setSuccess('Conta criada com sucesso! Redirecionando...');
+                setTimeout(() => router.push('/login'), 2000);
             }
         } catch (err) {
-            console.error('Erro de conexão ou JSON inválido:', err);
-            setError('Erro de conexão com o servidor ou resposta inválida. Tente novamente.');
+            setError('Falha na conexão com o servidor.');
         } finally {
             setIsLoading(false);
         }
     };
 
     return (
-        <div className="flex justify-center items-center h-full">
-            <Card className="w-full max-w-md p-6 shadow-xl">
-                <h1 className="text-3xl font-bold mb-6 text-center">Registrar Usuário</h1>
-                
-                {/* Mensagens de Feedback */}
-                {success && (
-                    <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative mb-4">
-                        {success}
+        <div className="min-h-[80vh] flex items-center justify-center p-6">
+            <Card className="w-full max-w-md p-10 shadow-[0_32px_64px_-15px_rgba(0,0,0,0.1)] rounded-[3rem] border-none">
+                <div className="text-center mb-10">
+                    <div className="w-16 h-16 bg-blue-600 rounded-3xl flex items-center justify-center text-white mx-auto mb-6 shadow-xl shadow-blue-200">
+                        <UserPlus size={32} />
                     </div>
-                )}
-                {error && (
-                    <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4">
-                        {error}
-                    </div>
-                )}
+                    <h1 className="text-3xl font-black text-slate-800 tracking-tighter uppercase">Criar Conta</h1>
+                    <p className="text-slate-500 font-medium mt-2">Inicie seu acesso ao sistema de suporte.</p>
+                </div>
 
-                <form onSubmit={handleSubmit} className="space-y-4">
-                    
-                    {/* INPUT NOME */}
-                    <div>
-                        <label className="block mb-2 font-medium">Nome</label>
+                {success && <div className="mb-6 p-4 bg-emerald-50 text-emerald-700 text-sm font-bold rounded-2xl border border-emerald-100 animate-bounce">{success}</div>}
+                {error && <div className="mb-6 p-4 bg-red-50 text-red-700 text-sm font-bold rounded-2xl border border-red-100">{error}</div>}
+
+                <form onSubmit={handleSubmit} className="space-y-5">
+                    <div className="space-y-1">
+                        <label className="text-[10px] font-black uppercase text-slate-400 tracking-widest ml-4">Nome Completo</label>
                         <input
                             type="text"
                             value={name}
                             onChange={(e) => setName(e.target.value)}
-                            required
-                            className="w-full p-2 border border-gray-300 rounded focus:ring-blue-500 focus:border-blue-500"
+                            className="w-full p-4 bg-slate-50 border-2 border-slate-100 rounded-2xl focus:border-blue-500 focus:bg-white transition-all outline-none font-bold"
+                            placeholder="Ex: João Silva"
                             disabled={isLoading}
                         />
                     </div>
                     
-                    {/* INPUT EMAIL */}
-                    <div>
-                        <label className="block mb-2 font-medium">Email</label>
+                    <div className="space-y-1">
+                        <label className="text-[10px] font-black uppercase text-slate-400 tracking-widest ml-4">E-mail Corporativo</label>
                         <input
                             type="email"
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
-                            required
-                            className="w-full p-2 border border-gray-300 rounded focus:ring-blue-500 focus:border-blue-500"
+                            className="w-full p-4 bg-slate-50 border-2 border-slate-100 rounded-2xl focus:border-blue-500 focus:bg-white transition-all outline-none font-bold"
+                            placeholder="email@empresa.com"
                             disabled={isLoading}
                         />
                     </div>
                     
-                    {/* INPUT SENHA */}
-                    <div>
-                        <label className="block mb-2 font-medium">Senha</label>
+                    <div className="space-y-1">
+                        <label className="text-[10px] font-black uppercase text-slate-400 tracking-widest ml-4">Senha de Acesso</label>
                         <input
                             type="password"
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
-                            required
-                            className="w-full p-2 border border-gray-300 rounded focus:ring-blue-500 focus:border-blue-500"
+                            className="w-full p-4 bg-slate-50 border-2 border-slate-100 rounded-2xl focus:border-blue-500 focus:bg-white transition-all outline-none font-bold"
+                            placeholder="••••••••"
                             disabled={isLoading}
                         />
                     </div>
                     
-                    {/* BOTÃO NATIVO (PARA EVITAR BUGS DE COMPONENTE) */}
                     <button type="submit" 
-                        className="w-full bg-blue-600 text-white p-3 rounded-lg shadow-md hover:bg-blue-700 transition duration-300"
+                        className="w-full bg-slate-900 text-white p-5 rounded-3xl font-black uppercase tracking-widest hover:bg-blue-600 transition-all shadow-xl shadow-slate-200 active:scale-95 flex items-center justify-center gap-3 disabled:opacity-50"
                         disabled={isLoading}>
-                        {isLoading ? 'Registrando...' : 'Registrar'}
+                        {isLoading ? 'Processando...' : (
+                            <>Cadastrar Sistema <ArrowRight size={20}/></>
+                        )}
                     </button>
                 </form>
 
-                <div className="text-center mt-4">
-                    <Link href="/login" className="text-sm text-blue-600 hover:underline">
-                        Já tem uma conta? Faça Login
+                <div className="text-center mt-8 pt-8 border-t border-slate-100">
+                    <Link href="/login" className="text-sm font-bold text-slate-400 hover:text-blue-600 transition-colors">
+                        Já possui uma credencial? <span className="text-blue-600 underline">Fazer Login</span>
                     </Link>
                 </div>
             </Card>

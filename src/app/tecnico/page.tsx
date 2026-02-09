@@ -1,15 +1,13 @@
 "use client";
 
 import { useEffect, useState } from 'react';
-import { Search, RefreshCw, LayoutDashboard, X, Inbox } from 'lucide-react';
+import { Search, RefreshCw, LayoutDashboard, X, Inbox, Filter } from 'lucide-react';
 import { useSession } from "next-auth/react";
 import TicketCard from '@/components/TicketCard';
 
 export default function PainelTecnicoPage() {
     const { data: session } = useSession();
-    const [disponiveis, setDisponiveis] = useState([]);
-    const [meusChamados, setMeusChamados] = useState([]);
-    const [finalizados, setFinalizados] = useState([]);
+    const [tickets, setTickets] = useState({ disponiveis: [], meusTrabalhos: [], finalizados: [] });
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState(""); 
 
@@ -18,28 +16,27 @@ export default function PainelTecnicoPage() {
         try {
             const res = await fetch('/api/admin/tickets');
             const data = await res.json();
-            setDisponiveis(data.disponiveis || []);
-            setMeusChamados(data.meusTrabalhos || []);
-            setFinalizados(data.finalizados || []); 
+            setTickets({
+                disponiveis: data.disponiveis || [],
+                meusTrabalhos: data.meusTrabalhos || [],
+                finalizados: data.finalizados || []
+            });
         } catch (error) {
-            console.error("Erro ao buscar tickets:", error);
+            console.error("Erro na sincronização:", error);
         } finally {
             setLoading(false);
         }
     };
 
-    useEffect(() => { 
-        fetchTickets(); 
-    }, []);
+    useEffect(() => { fetchTickets(); }, []);
 
-    const filterTickets = (list: any[]) => {
+    const filterList = (list: any[]) => {
         if (!searchTerm.trim()) return list;
         const term = searchTerm.toLowerCase();
         return list.filter(t => 
             t.protocol?.toLowerCase().includes(term) ||
             t.subject?.toLowerCase().includes(term) ||
-            t.requester?.name?.toLowerCase().includes(term) ||
-            t.location?.toLowerCase().includes(term)
+            t.requester?.name?.toLowerCase().includes(term)
         );
     };
 
@@ -52,81 +49,79 @@ export default function PainelTecnicoPage() {
         if (res.ok) fetchTickets();
     };
 
-    if (loading && disponiveis.length === 0) {
+    if (loading && tickets.disponiveis.length === 0) {
         return (
-            <div className="flex h-screen items-center justify-center bg-slate-50">
-                <div className="text-center space-y-4">
-                    <RefreshCw className="w-12 h-12 text-blue-600 animate-spin mx-auto" />
-                    <p className="font-black text-slate-400 uppercase tracking-widest animate-pulse">Sincronizando Central...</p>
+            <div className="h-screen flex items-center justify-center bg-slate-50">
+                <div className="text-center space-y-6">
+                    <div className="relative">
+                        <RefreshCw className="w-16 h-16 text-blue-600 animate-spin mx-auto" />
+                        <div className="absolute inset-0 bg-blue-600/10 blur-2xl rounded-full"></div>
+                    </div>
+                    <p className="font-black text-slate-400 uppercase tracking-[0.3em] animate-pulse">Sincronizando Central</p>
                 </div>
             </div>
         );
     }
 
     return (
-        <div className="max-w-7xl mx-auto p-6 space-y-10">
-            {/* CABEÇALHO */}
-            <header className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 border-b border-slate-100 pb-10">
+        <div className="max-w-7xl mx-auto p-8 space-y-12">
+            <header className="flex flex-col xl:flex-row justify-between items-start xl:items-center gap-8 border-b border-slate-100 pb-12">
                 <div>
-                    <h1 className="text-4xl font-black text-slate-800 uppercase tracking-tighter flex items-center gap-3">
-                        <div className="p-2 bg-blue-600 rounded-xl text-white">
-                            <LayoutDashboard size={28} />
+                    <h1 className="text-5xl font-black text-slate-900 uppercase tracking-tighter flex items-center gap-4">
+                        <div className="p-3 bg-blue-600 rounded-3xl text-white shadow-2xl shadow-blue-200">
+                            <LayoutDashboard size={32} />
                         </div>
-                        Painel Técnico
+                        Central Técnica
                     </h1>
-                    <p className="text-slate-500 mt-2 italic">
-                        Bem-vindo, <span className="font-bold text-blue-600 not-italic">{session?.user?.name}</span>
+                    <p className="text-slate-500 mt-3 font-medium text-lg">
+                        Operador: <span className="text-blue-600 font-black italic">{session?.user?.name}</span>
                     </p>
                 </div>
                 
-                <div className="flex items-center gap-3 w-full md:w-auto">
-                    <div className="relative flex-1 md:w-96">
-                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+                <div className="flex items-center gap-4 w-full xl:w-auto">
+                    <div className="relative flex-1 xl:w-[450px] group">
+                        <Search className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-blue-500 transition-colors" size={20} />
                         <input 
                             type="text" 
                             value={searchTerm}
-                            placeholder="Buscar protocolo, nome ou local..."
-                            className="w-full pl-12 pr-12 py-4 bg-white border border-slate-200 rounded-2xl text-sm focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 outline-none shadow-sm transition-all"
+                            placeholder="Buscar protocolo ou solicitante..."
+                            className="w-full pl-14 pr-12 py-5 bg-white border-2 border-slate-100 rounded-4xl text-sm font-bold focus:ring-8 focus:ring-blue-500/5 focus:border-blue-500 outline-none shadow-sm transition-all"
                             onChange={(e) => setSearchTerm(e.target.value)}
                         />
                         {searchTerm && (
-                            <button onClick={() => setSearchTerm("")} className="absolute right-4 top-1/2 -translate-y-1/2 bg-slate-100 p-1 rounded-full text-slate-500 hover:bg-slate-200 transition-colors">
-                                <X size={14} />
+                            <button onClick={() => setSearchTerm("")} className="absolute right-5 top-1/2 -translate-y-1/2 bg-slate-100 p-1.5 rounded-full text-slate-500 hover:bg-red-50 hover:text-red-500 transition-all">
+                                <X size={16} />
                             </button>
                         )}
                     </div>
-                    <button 
-                        onClick={fetchTickets} 
-                        className="p-4 bg-white border border-slate-200 hover:border-blue-400 hover:text-blue-600 rounded-2xl shadow-sm transition-all active:scale-95 group"
-                    >
-                        <RefreshCw size={24} className={loading ? "animate-spin" : "group-hover:rotate-180 transition-transform duration-500"} />
+                    <button onClick={fetchTickets} className="p-5 bg-white border-2 border-slate-100 hover:border-blue-500 hover:text-blue-600 rounded-3xl shadow-sm transition-all active:scale-95">
+                        <RefreshCw size={24} className={loading ? "animate-spin" : ""} />
                     </button>
                 </div>
             </header>
 
-            {/* SEÇÕES */}
-            <main className="space-y-16">
-                {/* 1. CHAMADOS LIVRES */}
+            <main className="grid gap-16">
                 <TicketSection 
-                    title="Aguardando Atendimento" 
-                    tickets={filterTickets(disponiveis)} 
+                    title="Chamados em Aberto" 
+                    count={tickets.disponiveis.length}
+                    tickets={filterList(tickets.disponiveis)} 
                     onAction={(id: string) => handleAction(id, 'ASSUMIR')}
                     actionLabel="Assumir Chamado"
                     color="amber"
                 />
 
-                {/* 2. MEUS CHAMADOS - Sem onAction pois a finalização é interna */}
                 <TicketSection 
-                    title="Meus Chamados em Curso" 
-                    tickets={filterTickets(meusChamados)} 
+                    title="Meus Atendimentos" 
+                    count={tickets.meusTrabalhos.length}
+                    tickets={filterList(tickets.meusTrabalhos)} 
                     color="blue"
                     isMine
                 />
 
-                {/* 3. HISTÓRICO DE HOJE */}
                 <TicketSection 
-                    title="Histórico de Hoje" 
-                    tickets={filterTickets(finalizados)} 
+                    title="Concluídos Hoje" 
+                    count={tickets.finalizados.length}
+                    tickets={filterList(tickets.finalizados)} 
                     color="slate"
                     isDisabled
                 />
@@ -135,40 +130,31 @@ export default function PainelTecnicoPage() {
     );
 }
 
-interface TicketSectionProps {
-    title: string;
-    tickets: any[];
-    onAction?: (id: string) => void;
-    actionLabel?: string;
-    color: 'amber' | 'blue' | 'slate';
-    isMine?: boolean;
-    isDisabled?: boolean;
-}
-
-function TicketSection({ title, tickets, onAction, actionLabel, color, isMine, isDisabled }: TicketSectionProps) {
-    const colors = { 
-        amber: 'bg-amber-500', 
-        blue: 'bg-blue-600', 
-        slate: 'bg-slate-400' 
-    };
+// Subcomponente de Seção para Organização
+function TicketSection({ title, count, tickets, onAction, actionLabel, color, isMine, isDisabled }: any) {
+    const theme = {
+        amber: 'bg-amber-500 text-amber-500 border-amber-100',
+        blue: 'bg-blue-600 text-blue-600 border-blue-100',
+        slate: 'bg-slate-400 text-slate-400 border-slate-100'
+    }[color as 'amber' | 'blue' | 'slate'];
 
     return (
-        <section className="animate-in fade-in slide-in-from-bottom-4 duration-700">
-            <div className="flex items-center justify-between mb-8 border-b border-slate-100 pb-4">
-                <div className="flex items-center gap-3">
-                    <div className={`w-2 h-8 rounded-full ${colors[color]}`}></div>
-                    <h2 className="text-2xl font-black text-slate-800 uppercase tracking-tight">{title}</h2>
+        <section className="space-y-8 animate-in fade-in slide-in-from-bottom-6 duration-700">
+            <div className="flex items-center justify-between">
+                <div className="flex items-center gap-4">
+                    <div className={`w-3 h-10 rounded-full ${theme.split(' ')[0]}`}></div>
+                    <h2 className="text-3xl font-black text-slate-800 uppercase tracking-tighter">{title}</h2>
                 </div>
-                <span className="bg-slate-100 text-slate-600 px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest">
-                    {tickets.length} chamados
-                </span>
+                <div className={`px-6 py-2 rounded-full border-2 font-black text-xs uppercase tracking-widest ${theme.split(' ').slice(1).join(' ')}`}>
+                    {count} registros
+                </div>
             </div>
             
             <div className="grid gap-6">
                 {tickets.length === 0 ? (
-                    <div className="py-20 border-2 border-dashed border-slate-200 rounded-[3rem] text-center bg-slate-50/50">
-                        <Inbox className="mx-auto text-slate-300 mb-4" size={48} strokeWidth={1} />
-                        <p className="text-slate-400 font-bold uppercase text-[10px] tracking-[0.2em]">Nenhum registro encontrado</p>
+                    <div className="py-24 border-4 border-dashed border-slate-100 rounded-[4rem] text-center bg-slate-50/30">
+                        <Inbox className="mx-auto text-slate-200 mb-6" size={64} strokeWidth={1} />
+                        <p className="text-slate-400 font-black uppercase text-xs tracking-[0.3em]">Fila de processamento vazia</p>
                     </div>
                 ) : (
                     tickets.map((t: any) => (

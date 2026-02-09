@@ -9,89 +9,161 @@ import {
   CheckCircle2, 
   AlertCircle,
   ChevronRight,
-  TrendingUp
+  ShieldCheck,
+  History
 } from "lucide-react";
+import SLAAnalytics from "@/components/controlador/SLAAnalytics";
+import AuditLog from "@/components/controlador/AudiLog";
 
 export default async function ControladorDashboard() {
+    // 1. Busca estatísticas baseadas nos enums do seu Schema
     const stats = await prisma.ticket.groupBy({
         by: ['status'],
         _count: { id: true }
     });
 
+    // 2. Busca os últimos chamados incluindo o RELACIONAMENTO CORRETO (requester)
+    const recentes = await prisma.ticket.findMany({
+        take: 6,
+        orderBy: { updatedAt: 'desc' },
+        include: { 
+            requester: true, // Nome conforme seu schema
+            assignedTo: true // Para saber qual técnico está atuando
+        }
+    });
+
     const getCount = (status: string) => stats.find(s => s.status === status)?._count.id || 0;
     
-    const abertos = getCount('Aberto');
-    const emAtendimento = getCount('Em Atendimento');
-    const concluidos = getCount('Concluído');
+    // Ajustado para bater com os valores @default do seu Prisma
+    const abertos = getCount('ABERTO');
+    const emAtendimento = getCount('EM_ANDAMENTO');
+    const concluidos = getCount('CONCLUIDO');
     const totalChamados = abertos + emAtendimento + concluidos;
 
+    // 3. Mapeando dados para o componente AuditLog (Tratando os nomes corretamente)
+    const auditData = recentes.map(t => ({
+        id: t.id,
+        action: t.status,
+        userName: t.requester?.name || "Usuário Externo",
+        ticketProtocol: t.protocol,
+        timestamp: t.updatedAt.toISOString(),
+        details: t.assignedTo 
+            ? `Técnico ${t.assignedTo.name} atualizou este chamado.` 
+            : `Chamado aguardando atribuição técnica.`
+    }));
+
     return (
-        <div className="p-4 md:p-8 max-w-7xl mx-auto space-y-10 min-h-screen">
-            <header className="flex flex-col md:flex-row md:items-center justify-between gap-6 border-b border-border pb-8">
+        <div className="p-4 md:p-8 max-w-7xl mx-auto space-y-12 min-h-screen">
+            {/* Header com estilo Prefeitura de Brodowski */}
+            <header className="flex flex-col md:flex-row md:items-end justify-between gap-6">
                 <div>
-                    <h1 className="text-4xl font-black italic tracking-tighter uppercase">
+                    <div className="flex items-center gap-2 mb-2">
+                        <div className="h-2 w-2 bg-blue-600 rounded-full animate-pulse" />
+                        <span className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-400">Monitoramento de Sistema</span>
+                    </div>
+                    <h1 className="text-5xl font-black tracking-tighter uppercase leading-none">
                         Painel de <span className="text-blue-600">Gestão</span>
                     </h1>
-                    <p className="text-muted-foreground font-medium">Acompanhamento em tempo real do fluxo de TI.</p>
                 </div>
-                <Link href="/novo-chamado" className="bg-foreground text-background px-8 py-3 rounded-2xl text-xs font-black uppercase tracking-widest hover:scale-105 transition-all shadow-xl active:scale-95 text-center">
-                    Abrir Chamado
+                
+                <Link href="/controlador/chamados" className="bg-slate-900 dark:bg-white text-white dark:text-slate-900 px-8 py-4 rounded-2xl text-[10px] font-black uppercase tracking-widest hover:scale-105 transition-all shadow-xl">
+                    Visualizar Todos os Tickets
                 </Link>
             </header>
 
-            <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-                <MetricCard title="Pendentes" value={abertos} icon={<AlertCircle />} color="text-amber-500" bgColor="bg-amber-500/5" borderColor="border-amber-500/20" />
-                <MetricCard title="Em Curso" value={emAtendimento} icon={<Clock />} color="text-blue-500" bgColor="bg-blue-500/5" borderColor="border-blue-500/20" />
-                <MetricCard title="Finalizados" value={concluidos} icon={<CheckCircle2 />} color="text-emerald-500" bgColor="bg-emerald-500/5" borderColor="border-emerald-500/20" />
-            </section>
+            {/* KPIs de Performance */}
+            <SLAAnalytics total={totalChamados} />
 
             <section className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                <Card className="lg:col-span-2 p-8 border-none bg-card shadow-2xl rounded-[2.5rem] group relative overflow-hidden">
-                    <div className="absolute top-0 right-0 p-8 opacity-5 group-hover:opacity-10 transition-opacity">
-                        <TrendingUp size={120} />
-                    </div>
-                    
-                    <div className="relative z-10">
-                        <div className="flex items-start justify-between mb-8">
-                            <div className="p-4 bg-blue-600 rounded-2xl text-white shadow-lg shadow-blue-500/20 group-hover:scale-110 transition-transform duration-500">
-                                <TicketIcon className="w-8 h-8" />
+                
+                {/* Lado Esquerdo: Auditoria */}
+                <div className="lg:col-span-2 space-y-8">
+                    <Card className="p-8 border-none bg-blue-600 text-white rounded-[2.5rem] relative overflow-hidden shadow-2xl shadow-blue-200 dark:shadow-none group">
+                        <div className="relative z-10">
+                            <h2 className="text-3xl font-black uppercase tracking-tight mb-3">Auditoria de Fluxo</h2>
+                            <p className="text-blue-100 text-sm font-medium max-w-md mb-8 leading-relaxed">
+                                Você está visualizando o fluxo de trabalho em tempo real. Verifique protocolos, prazos e a qualidade dos atendimentos realizados.
+                            </p>
+                            <div className="flex gap-4">
+                                <div className="bg-white/10 px-4 py-2 rounded-xl backdrop-blur-md">
+                                    <p className="text-[10px] font-bold uppercase opacity-70">Total Hoje</p>
+                                    <p className="text-xl font-black">{totalChamados}</p>
+                                </div>
+                                <div className="bg-white/10 px-4 py-2 rounded-xl backdrop-blur-md">
+                                    <p className="text-[10px] font-bold uppercase opacity-70">SLA Global</p>
+                                    <p className="text-xl font-black">98%</p>
+                                </div>
                             </div>
-                            <span className="text-[10px] font-black text-blue-600 bg-blue-600/10 px-4 py-1.5 rounded-full uppercase tracking-widest">Performance</span>
                         </div>
-                        
-                        <h2 className="text-3xl font-black mb-4 text-foreground uppercase tracking-tight">Central de Tickets</h2>
-                        <p className="text-muted-foreground mb-8 text-lg max-w-xl leading-relaxed">
-                            Existem atualmente <strong className="text-foreground">{totalChamados} chamados</strong> registrados. Gerencie atribuições, escale prioridades e monitore o SLA da equipe.
-                        </p>
-                        
-                        <Link href="/controlador/chamados" className="inline-flex items-center gap-3 bg-secondary text-foreground px-6 py-4 rounded-2xl font-black uppercase text-xs tracking-widest hover:bg-blue-600 hover:text-white transition-all group/btn">
-                            Acessar Central <ChevronRight size={18} className="group-hover/btn:translate-x-1 transition-transform"/>
-                        </Link>
-                    </div>
-                </Card>
+                        <ShieldCheck className="absolute -right-12 -bottom-12 w-64 h-64 text-white/10 -rotate-12 group-hover:rotate-0 transition-transform duration-700" />
+                    </Card>
 
-                <div className="space-y-8">
-                    <Card className="p-8 border-none bg-secondary/50 rounded-4xl">
-                        <h3 className="text-sm font-black uppercase tracking-widest text-muted-foreground mb-4">Total Acumulado</h3>
-                        <p className="text-5xl font-black text-foreground">{totalChamados}</p>
-                        <div className="mt-4 h-2 w-full bg-border rounded-full overflow-hidden">
-                            <div className="h-full bg-blue-600 w-full opacity-50"></div>
+                    <div className="space-y-4">
+                        <div className="flex items-center justify-between px-2">
+                            <div className="flex items-center gap-2">
+                                <History size={18} className="text-blue-600" />
+                                <h3 className="font-black uppercase text-xs tracking-widest">Logs de Atividade</h3>
+                            </div>
+                            <span className="text-[10px] font-bold text-slate-400">Últimas 24 horas</span>
                         </div>
+                        <AuditLog logs={auditData} />
+                    </div>
+                </div>
+
+                {/* Lado Direito: Cards Rápidos */}
+                <div className="space-y-6">
+                    <h3 className="font-black uppercase text-xs tracking-widest px-2 text-slate-400">Fila de Trabalho</h3>
+                    
+                    <MetricMiniCard 
+                        title="Pendentes" 
+                        value={abertos} 
+                        icon={<AlertCircle size={20}/>} 
+                        color="text-amber-600" 
+                        bgColor="bg-amber-100/50 dark:bg-amber-900/20"
+                    />
+                    <MetricMiniCard 
+                        title="Em Andamento" 
+                        value={emAtendimento} 
+                        icon={<Clock size={20}/>} 
+                        color="text-blue-600" 
+                        bgColor="bg-blue-100/50 dark:bg-blue-900/20"
+                    />
+                    <MetricMiniCard 
+                        title="Concluídos" 
+                        value={concluidos} 
+                        icon={<CheckCircle2 size={20}/>} 
+                        color="text-emerald-600" 
+                        bgColor="bg-emerald-100/50 dark:bg-emerald-900/20"
+                    />
+
+                    <Card className="p-8 border-none bg-slate-900 text-white rounded-[2.5rem]">
+                        <h4 className="font-black text-[10px] uppercase tracking-widest mb-4 text-slate-400">Dica do Sistema</h4>
+                        <p className="text-xs font-medium leading-relaxed opacity-80">
+                            Chamados com prioridade <span className="text-red-400 font-bold underline">ALTA</span> que ultrapassarem 4 horas sem atendimento geram alerta crítico no relatório de produtividade.
+                        </p>
                     </Card>
                 </div>
+
             </section>
         </div>
     );
 }
 
-function MetricCard({ title, value, icon, color, bgColor, borderColor }: any) {
+function MetricMiniCard({ title, value, icon, color, bgColor }: any) {
     return (
-        <div className={`${bgColor} ${borderColor} border-2 p-8 rounded-4xl transition-all hover:shadow-2xl hover:-translate-y-1 group`}>
-            <div className="flex items-center justify-between mb-4">
-                <span className={`font-black text-[10px] uppercase tracking-[0.2em] ${color} opacity-80`}>{title}</span>
-                <div className={`${color} group-hover:scale-125 transition-transform duration-300`}>{icon}</div>
+        <div className="bg-white dark:bg-slate-900 p-6 rounded-4xl border border-slate-100 dark:border-slate-800 flex items-center justify-between group hover:shadow-xl transition-all cursor-default">
+            <div className="flex items-center gap-4">
+                <div className={`${bgColor} ${color} p-4 rounded-2xl transition-transform group-hover:scale-110`}>
+                    {icon}
+                </div>
+                <div>
+                    <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">{title}</p>
+                    <p className="text-3xl font-black tracking-tighter">{value}</p>
+                </div>
             </div>
-            <p className="text-5xl font-black text-foreground tracking-tighter">{value}</p>
+            <div className="h-8 w-8 rounded-full bg-slate-50 dark:bg-slate-800 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                <ChevronRight size={14} />
+            </div>
         </div>
     );
 }
