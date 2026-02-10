@@ -15,13 +15,13 @@ export const metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
+    // suppressHydrationWarning é necessário para o ThemeToggle não dar erro
     <html lang="pt-BR" suppressHydrationWarning className="antialiased">
-      <body className={`${inter.className} bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100`}>
+      <body className={`${inter.variable} font-sans bg-background text-foreground`}>
         <AuthProvider>
           <div className="relative min-h-screen flex flex-col">
             <Navbar /> 
-            {/* O pt-16 compensa a altura da Navbar fixa */}
-            <main className="flex-1 pt-16 md:pt-20">
+            <main className="flex-1">
               {children}
             </main>
           </div>
