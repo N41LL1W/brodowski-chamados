@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Card from "@/components/ui/Card";
-import { Camera, ExternalLink, ShieldCheck, Eye } from "lucide-react";
+import { Camera, ExternalLink, ShieldCheck, Eye, Download } from "lucide-react";
 
 interface EvidenceGalleryProps {
   proofImage: string | null;
@@ -10,20 +10,44 @@ interface EvidenceGalleryProps {
 }
 
 export default function EvidenceGallery({ proofImage, protocol }: EvidenceGalleryProps) {
-  // Caso não haja imagem, exibe um placeholder elegante para o controlador
+  
+  // Função para abrir a imagem em tela cheia, mesmo sendo Base64
+  const handleExpandImage = () => {
+    if (!proofImage) return;
+    
+    const newWindow = window.open();
+    if (newWindow) {
+      newWindow.document.write(`
+        <html>
+          <head>
+            <title>Evidência - Protocolo ${protocol}</title>
+            <style>
+              body { margin: 0; background: #0f172a; display: flex; align-items: center; justify-content: center; height: 100vh; }
+              img { max-width: 100%; max-height: 100%; border-radius: 8px; box-shadow: 0 20px 50px rgba(0,0,0,0.5); }
+            </style>
+          </head>
+          <body>
+            <img src="${proofImage}" alt="Evidência ${protocol}" />
+          </body>
+        </html>
+      `);
+      newWindow.document.close();
+    }
+  };
+
   if (!proofImage) {
     return (
       <div className="p-12 border-4 border-dashed border-slate-100 dark:border-slate-800 rounded-[3rem] flex flex-col items-center justify-center text-slate-300 dark:text-slate-700">
         <div className="bg-slate-50 dark:bg-slate-900 p-6 rounded-full mb-4">
           <Camera size={48} className="opacity-20" />
         </div>
-        <p className="text-[10px] font-black uppercase tracking-[0.2em]">Sem evidência de conclusão anexada</p>
+        <p className="text-[10px] font-black uppercase tracking-[0.2em]">Sem evidência de conclusão</p>
       </div>
     );
   }
 
   return (
-    <Card className="p-8 border-none bg-white dark:bg-slate-900 shadow-2xl shadow-slate-200/50 dark:shadow-none rounded-[3rem] overflow-hidden group">
+    <Card className="p-8 border-none bg-white dark:bg-slate-900 shadow-2xl rounded-[3rem] overflow-hidden group">
       <div className="flex items-center justify-between mb-8">
         <div className="flex items-center gap-3">
           <div className="bg-emerald-100 dark:bg-emerald-900/30 p-2 rounded-xl">
@@ -35,38 +59,40 @@ export default function EvidenceGallery({ proofImage, protocol }: EvidenceGaller
           </div>
         </div>
         
-        <a 
-          href={proofImage} 
-          target="_blank" 
-          rel="noopener noreferrer"
+        {/* Botão de Expandir corrigido */}
+        <button 
+          onClick={handleExpandImage}
           className="flex items-center gap-2 px-4 py-2 bg-slate-100 dark:bg-slate-800 hover:bg-blue-600 hover:text-white rounded-xl transition-all text-[10px] font-black uppercase tracking-widest"
         >
-          <ExternalLink size={14} /> Expandir
-        </a>
+          <Eye size={14} /> Expandir Detalhes
+        </button>
       </div>
 
-      <div className="relative aspect-video rounded-4xl overflow-hidden border-4 border-slate-50 dark:border-slate-800 shadow-inner group-hover:border-blue-500/20 transition-colors">
-        <Image 
+      <div className="relative aspect-video rounded-4x1 overflow-hidden border-4 border-slate-50 dark:border-slate-800">
+        <img 
           src={proofImage} 
           alt={`Evidência do chamado ${protocol}`}
-          fill
-          className="object-cover group-hover:scale-105 transition-transform duration-700 ease-in-out"
-          sizes="(max-width: 768px) 100vw, 600px"
+          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
         />
-        
-        {/* Overlay de hover */}
-        <div className="absolute inset-0 bg-blue-600/10 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center pointer-events-none">
-            <div className="bg-white/90 p-4 rounded-full shadow-2xl transform scale-50 group-hover:scale-100 transition-transform">
-                <Eye className="text-blue-600" size={32} />
-            </div>
-        </div>
       </div>
       
-      <div className="mt-6 flex items-center justify-center gap-2">
-        <span className="h-1.5 w-1.5 bg-emerald-500 rounded-full animate-pulse" />
-        <p className="text-[9px] text-slate-400 font-bold uppercase tracking-widest">
-            Arquivo verificado via protocolo: <span className="text-slate-600 dark:text-slate-200 font-black">{protocol}</span>
-        </p>
+      <div className="mt-6 flex items-center justify-between">
+         <div className="flex items-center gap-2">
+            <span className="h-1.5 w-1.5 bg-emerald-500 rounded-full animate-pulse" />
+            <p className="text-[9px] text-slate-400 font-bold uppercase tracking-widest">
+                Verificado via: <span className="text-slate-600 dark:text-slate-200 font-black">{protocol}</span>
+            </p>
+         </div>
+         
+         {/* Opção extra: Download da imagem */}
+         <a 
+            href={proofImage} 
+            download={`evidencia-${protocol}.jpg`}
+            className="text-slate-400 hover:text-blue-600 transition-colors"
+            title="Baixar Imagem"
+         >
+            <Download size={18} />
+         </a>
       </div>
     </Card>
   );
