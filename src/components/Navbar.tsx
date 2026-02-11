@@ -5,7 +5,11 @@ import { usePathname } from "next/navigation";
 import { useSession } from "next-auth/react";
 import ThemeToggle from "./ThemeToggle";
 import AuthButton from "./AuthButton";
-import { LayoutDashboard, PlusCircle, History, Settings, ShieldCheck } from "lucide-react";
+import { 
+  LayoutDashboard, PlusCircle, History, 
+  Settings, ShieldCheck, Briefcase, 
+  Terminal 
+} from "lucide-react";
 
 export default function Navbar() {
   const pathname = usePathname();
@@ -49,6 +53,17 @@ export default function Navbar() {
             {isLogged && ["CONTROLADOR", "ADMIN", "MASTER"].includes(role) && (
               <Link href="/controlador" className={isActive("/controlador")}>Gestão</Link>
             )}
+
+            {/* LINK MASTER - VISÍVEL APENAS PARA MASTER */}
+            {isLogged && role === "MASTER" && (
+              <Link 
+                href="/admin" 
+                className={`${isActive("/admin")} flex items-center gap-1.5 text-red-600 dark:text-red-500`}
+              >
+                <ShieldCheck size={14} />
+                ADMIN MASTER
+              </Link>
+            )}
           </nav>
 
           <div className="flex items-center gap-4">
@@ -59,15 +74,18 @@ export default function Navbar() {
         </div>
       </div>
       
-      {/* Navegação Mobile Inferior (Estilo App) */}
+      {/* Navegação Mobile Inferior */}
       <nav className="md:hidden flex items-center justify-around border-t dark:border-slate-800 py-3 bg-white dark:bg-slate-900">
           <MobileNavLink href="/" icon={<History size={20}/>} active={pathname === "/"} />
           <MobileNavLink href="/chamados/novo" icon={<PlusCircle size={20}/>} active={pathname === "/chamados/novo"} />
+          
           {isLogged && ["TECNICO", "ADMIN", "MASTER"].includes(role) && (
             <MobileNavLink href="/tecnico" icon={<LayoutDashboard size={20}/>} active={pathname === "/tecnico"} />
           )}
+
+          {/* Mobile: Link Master usa ícone de Terminal ou Settings */}
           {isLogged && role === "MASTER" && (
-            <MobileNavLink href="/config" icon={<Settings size={20}/>} active={pathname === "/config"} />
+            <MobileNavLink href="/admin" icon={<Terminal size={20} className="text-red-500" />} active={pathname.startsWith("/admin")} />
           )}
       </nav>
     </header>
