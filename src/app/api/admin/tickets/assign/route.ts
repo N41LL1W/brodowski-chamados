@@ -4,35 +4,47 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 
 export async function PATCH(request: Request) {
-    const session = await getServerSession(authOptions);
-    const userRole = (session?.user as any)?.role;
-
-    // 1. Verificação de Autorização
-    if (!session || !['MASTER', 'CONTROLADOR'].includes(userRole)) {
-        return new NextResponse('Não autorizado', { status: 403 });
-    }
-
     try {
+        const session = await getServerSession(authOptions);
+        const userRole = (session?.user as any)?.role;
+
+        // 1. Verificação de Autorização (Apenas Master e Controlador podem delegar)
+        if (!session || !['MASTER', 'CONTROLADOR'].includes(userRole)) {
+            return new NextResponse('Acesso negado: permissão insuficiente.', { status: 403 });
+        }
+
         const body = await request.json();
         const { ticketId, technicianId } = body;
 
+        // 2. Validação de dados básicos
         if (!ticketId) {
-            return new NextResponse('ID do ticket é obrigatório', { status: 400 });
+            return new NextResponse('O ID do chamado é obrigatório.', { status: 400 });
         }
 
+        // 3. Atualização no Banco de Dados
+        // Se technicianId for null, o chamado volta para "ABERTO"
+        // Se houver technicianId, o status vai para "EM_ANDAMENTO"
         const updatedTicket = await prisma.ticket.update({
-            // CORREÇÃO: Removido o Number(), pois ticketId agora é String
             where: { id: ticketId }, 
             data: {
                 assignedToId: technicianId || null,
-                // CORREÇÃO: Usando os status em MAIÚSCULO para bater com o Schema e a Barra de Progresso
-                status: technicianId ? "EM_ANDAMENTO" : "ABERTO"
+                status: technicianId ? "EM_ANDAMENTO" : "ABERTO",
+                updatedAt: new Date()
+            },
+            include: {
+                assignedTo: {
+                    select: { name: true, email: true }
+                }
             }
         });
 
-        return NextResponse.json(updatedTicket);
+        return NextResponse.json({
+            message: technicianId ? "Técnico atribuído com sucesso." : "Chamado liberado para fila de espera.",
+            ticket: updatedTicket
+        });
+
     } catch (error: any) {
-        console.error("Erro na atribuição:", error);
-        return new NextResponse('Erro ao atribuir técnico: ' + error.message, { status: 500 });
+        console.error("ERRO_ASSIGN_TICKET:", error);
+        return new NextResponse('Erro interno ao processar atribuição.', { status: 500 });
     }
 }

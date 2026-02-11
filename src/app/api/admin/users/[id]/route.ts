@@ -3,37 +3,37 @@ import prisma from '@/lib/prisma';
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 
-// Observe que a função continua async
-export async function DELETE(
-    request: Request,
-    { params }: { params: Promise<{ id: string }> } // Tipamos como Promise
-) {
+export async function DELETE(request: Request, { params }: { params: Promise<{ id: string }> }) {
     const session = await getServerSession(authOptions);
-    const userRole = (session?.user as any)?.role;
+    const { id } = await params;
 
-    // 1. Unwraps (desembrulha) o params primeiro
-    const { id } = await params; 
+    if (!session || (session.user as any).role !== 'MASTER') {
+        return new NextResponse('Apenas o MASTER pode excluir usuários.', { status: 403 });
+    }
 
-    // Segurança: Apenas MASTER pode deletar usuários
-    if (!session || userRole !== 'MASTER') {
-        return new NextResponse('Não autorizado', { status: 403 });
+    if (id === (session.user as any).id) {
+        return new NextResponse('Erro: Você não pode se auto-excluir.', { status: 400 });
     }
 
     try {
-        // 2. Impede que o Master se exclua acidentalmente
-        // Convertemos ambos para String para garantir a comparação
-        if (id === String((session.user as any).id)) {
-            return new NextResponse('Você não pode excluir sua própria conta.', { status: 400 });
-        }
+        await prisma.user.delete({ where: { id } });
+        return new NextResponse('Usuário removido.', { status: 200 });
+    } catch (e) { return new NextResponse('Erro ao remover.', { status: 500 }); }
+}
 
-        // 3. Agora o 'id' existe e não é undefined
-        await prisma.user.delete({
-            where: { id: id },
+export async function PATCH(request: Request, { params }: { params: Promise<{ id: string }> }) {
+    const { id } = await params;
+    const body = await request.json();
+    
+    try {
+        const user = await prisma.user.update({
+            where: { id },
+            data: {
+                role: body.role,
+                roleId: body.roleId ? Number(body.roleId) : undefined,
+                levelId: body.levelId ? Number(body.levelId) : undefined,
+            }
         });
-
-        return new NextResponse('Usuário removido com sucesso', { status: 200 });
-    } catch (error) {
-        console.error("Erro no Prisma:", error);
-        return new NextResponse('Erro interno ao excluir', { status: 500 });
-    }
+        return NextResponse.json(user);
+    } catch (e) { return new NextResponse('Erro ao atualizar.', { status: 500 }); }
 }
