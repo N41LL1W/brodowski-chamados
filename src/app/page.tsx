@@ -56,16 +56,16 @@ function HomeCard({ icon, title, desc, link, label }: any) {
   return (
     <Card className="p-8 border-none ring-1 ring-slate-200 dark:ring-slate-800 flex flex-col justify-between hover:shadow-2xl transition-all group">
       <div>
-        <div className="mb-4 p-3 bg-slate-50 dark:bg-slate-800 w-fit rounded-2xl group-hover:scale-110 transition-transform">
+        <div className="mb-4 p-3 w-fit rounded-2xl group-hover:scale-110 transition-transform">
           {icon}
         </div>
-        <h2 className="text-2xl font-black text-slate-800 dark:text-white uppercase tracking-tighter mb-3">{title}</h2>
-        <p className="text-slate-500 dark:text-slate-400 text-sm font-medium leading-relaxed mb-6">
+        <h2 className="text-2xl font-black uppercase tracking-tighter mb-3">{title}</h2>
+        <p className="text-sm font-medium leading-relaxed mb-6">
           {desc}
         </p>
       </div>
       <Link href={link}>
-        <Button variant="ghost" className="w-full justify-between font-black uppercase text-[10px] tracking-widest border-2 border-slate-100 dark:border-slate-800 hover:bg-slate-900 hover:text-white dark:hover:bg-white dark:hover:text-black">
+        <Button variant="ghost" className="w-full justify-between font-black uppercase text-[10px] tracking-widest border-2 border-slate-100 dark:border-slate-800">
           {label} <ArrowRight size={14}/>
         </Button>
       </Link>

@@ -24,7 +24,7 @@ export default function Navbar() {
       : "opacity-70 hover:opacity-100 hover:text-blue-500 transition-all";
 
   return (
-    <header className="sticky top-0 w-full z-50 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-b border-gray-200 dark:border-slate-800">
+    <header className="sticky top-0 w-full z-50 backdrop-blur-md border-b border-gray-200 dark:border-slate-800">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           

@@ -47,14 +47,14 @@ export default function LoginPage() {
     if (status === "loading") return <div className="flex justify-center items-center min-h-screen font-bold text-slate-400">Verificando sessão...</div>;
 
     return (
-        <div className="flex justify-center items-center min-h-[90vh] bg-gray-50 p-4">
-            <Card className="w-full max-w-md p-10 shadow-2xl border-none bg-white rounded-3xl">
+        <div className="flex justify-center items-center min-h-[90vh] p-4">
+            <Card className="w-full max-w-md p-10 shadow-2xl border-none rounded-3xl">
                 <div className="flex flex-col items-center mb-10">
                     <div className="bg-blue-600 text-white p-4 rounded-2xl shadow-lg mb-4">
                         <LogIn size={32} />
                     </div>
-                    <h1 className="text-3xl font-black text-gray-900 tracking-tighter uppercase">Brodowski</h1>
-                    <p className="text-gray-400 font-medium text-sm">Sistema Central de Chamados</p>
+                    <h1 className="text-3xl font-black tracking-tighter uppercase">Brodowski</h1>
+                    <p className="font-medium text-sm">Sistema Central de Chamados</p>
                 </div>
                 
                 {error && (
@@ -65,25 +65,25 @@ export default function LoginPage() {
 
                 <form onSubmit={handleSubmit} className="space-y-6">
                     <div>
-                        <label className="block text-[10px] font-black text-gray-400 uppercase mb-2 ml-1 tracking-widest">E-mail Corporativo</label>
+                        <label className="block text-[10px] font-black uppercase mb-2 ml-1 tracking-widest">E-mail Corporativo</label>
                         <input
                             type="email"
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
                             required
-                            className="w-full p-4 border border-gray-100 rounded-2xl bg-gray-50 focus:ring-4 focus:ring-blue-100 outline-none transition-all font-medium"
+                            className="w-full p-4 border border-gray-100 rounded-2xl focus:ring-4 focus:ring-blue-100 outline-none transition-all font-medium"
                             placeholder="seu@email.com"
                             disabled={isLoading}
                         />
                     </div>
                     <div>
-                        <label className="block text-[10px] font-black text-gray-400 uppercase mb-2 ml-1 tracking-widest">Senha de Acesso</label>
+                        <label className="block text-[10px] font-black uppercase mb-2 ml-1 tracking-widest">Senha de Acesso</label>
                         <input
                             type="password"
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
                             required
-                            className="w-full p-4 border border-gray-100 rounded-2xl bg-gray-50 focus:ring-4 focus:ring-blue-100 outline-none transition-all font-medium"
+                            className="w-full p-4 border border-gray-100 rounded-2xl focus:ring-4 focus:ring-blue-100 outline-none transition-all font-medium"
                             placeholder="••••••••"
                             disabled={isLoading}
                         />
@@ -99,7 +99,7 @@ export default function LoginPage() {
                 </form>
 
                 <div className="text-center mt-10">
-                    <Link href="/registro" className="text-xs text-blue-600 hover:underline font-bold uppercase tracking-widest">
+                    <Link href="/registro" className="text-xs hover:underline font-bold uppercase tracking-widest">
                         Criar conta institucional
                     </Link>
                 </div>
