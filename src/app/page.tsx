@@ -10,10 +10,10 @@ export default function Home() {
         <div className="inline-block px-4 py-1.5 bg-blue-50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-800 rounded-full">
           <span className="text-[10px] font-black uppercase tracking-[0.2em] text-blue-600 dark:text-blue-400">Prefeitura de Brodowski</span>
         </div>
-        <h1 className="text-5xl md:text-7xl font-black text-slate-900 dark:text-white tracking-tighter leading-tight">
-          Gestão Inteligente <br/>de <span className="text-blue-600">Suporte TI</span>
+        <h1 className="text-5xl md:text-7xl font-black text-slate-900 tracking-tighter leading-tight">
+          Gestão Inteligente <br/>de <span>Suporte TI</span>
         </h1>
-        <p className="text-lg md:text-xl text-slate-500 dark:text-slate-400 max-w-2xl mx-auto font-medium">
+        <p className="text-lg md:text-xl max-w-2xl mx-auto font-medium">
           Centralize solicitações, acompanhe atendimentos em tempo real e garanta a eficiência tecnológica de cada secretaria.
         </p>
         <div className="pt-6 flex flex-wrap justify-center gap-4">
@@ -65,7 +65,8 @@ function HomeCard({ icon, title, desc, link, label }: any) {
         </p>
       </div>
       <Link href={link}>
-        <Button variant="ghost" className="w-full justify-between font-black uppercase text-[10px] tracking-widest border-2 border-slate-100 dark:border-slate-800">
+        <Button variant="ghost" className="w-full justify-between font-black uppercase text-[10px] tracking-widest border-2 border-slate-100 dark:border-slate-800
+        ">
           {label} <ArrowRight size={14}/>
         </Button>
       </Link>
