@@ -46,11 +46,11 @@ export default function Navbar() {
               </>
             )}
 
-            {isLogged && ["TECNICO", "ADMIN", "MASTER"].includes(role) && (
+            {isLogged && ["TECNICO"].includes(role) && (
               <Link href="/tecnico" className={isActive("/tecnico")}>Painel Técnico</Link>
             )}
 
-            {isLogged && ["CONTROLADOR", "ADMIN", "MASTER"].includes(role) && (
+            {isLogged && ["CONTROLADOR"].includes(role) && (
               <Link href="/controlador" className={isActive("/controlador")}>Gestão</Link>
             )}
 
