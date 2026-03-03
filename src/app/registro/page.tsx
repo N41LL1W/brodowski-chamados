@@ -54,8 +54,8 @@ export default function RegisterPage() {
                     <div className="w-16 h-16 bg-blue-600 rounded-3xl flex items-center justify-center text-white mx-auto mb-6 shadow-xl shadow-blue-200">
                         <UserPlus size={32} />
                     </div>
-                    <h1 className="text-3xl font-black text-slate-800 tracking-tighter uppercase">Criar Conta</h1>
-                    <p className="text-slate-500 font-medium mt-2">Inicie seu acesso ao sistema de suporte.</p>
+                    <h1 className="text-3xl font-black tracking-tighter uppercase">Criar Conta</h1>
+                    <p className="font-medium mt-2">Inicie seu acesso ao sistema de suporte.</p>
                 </div>
 
                 {success && <div className="mb-6 p-4 bg-emerald-50 text-emerald-700 text-sm font-bold rounded-2xl border border-emerald-100 animate-bounce">{success}</div>}
@@ -63,43 +63,43 @@ export default function RegisterPage() {
 
                 <form onSubmit={handleSubmit} className="space-y-5">
                     <div className="space-y-1">
-                        <label className="text-[10px] font-black uppercase text-slate-400 tracking-widest ml-4">Nome Completo</label>
+                        <label className="text-[10px] font-black uppercase tracking-widest ml-4">Nome Completo</label>
                         <input
                             type="text"
                             value={name}
                             onChange={(e) => setName(e.target.value)}
-                            className="w-full p-4 bg-slate-50 border-2 border-slate-100 rounded-2xl focus:border-blue-500 focus:bg-white transition-all outline-none font-bold"
+                            className="w-full p-4 border-2 rounded-2xl transition-all outline-none font-bold"
                             placeholder="Ex: João Silva"
                             disabled={isLoading}
                         />
                     </div>
                     
                     <div className="space-y-1">
-                        <label className="text-[10px] font-black uppercase text-slate-400 tracking-widest ml-4">E-mail Corporativo</label>
+                        <label className="text-[10px] font-black uppercase tracking-widest ml-4">E-mail Corporativo</label>
                         <input
                             type="email"
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
-                            className="w-full p-4 bg-slate-50 border-2 border-slate-100 rounded-2xl focus:border-blue-500 focus:bg-white transition-all outline-none font-bold"
+                            className="w-full p-4 border-2 rounded-2xl transition-all outline-none font-bold"
                             placeholder="email@empresa.com"
                             disabled={isLoading}
                         />
                     </div>
                     
                     <div className="space-y-1">
-                        <label className="text-[10px] font-black uppercase text-slate-400 tracking-widest ml-4">Senha de Acesso</label>
+                        <label className="text-[10px] font-black uppercase tracking-widest ml-4">Senha de Acesso</label>
                         <input
                             type="password"
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
-                            className="w-full p-4 bg-slate-50 border-2 border-slate-100 rounded-2xl focus:border-blue-500 focus:bg-white transition-all outline-none font-bold"
+                            className="w-full p-4 border-2 rounded-2xl transition-all outline-none font-bold"
                             placeholder="••••••••"
                             disabled={isLoading}
                         />
                     </div>
                     
                     <button type="submit" 
-                        className="w-full bg-slate-900 text-white p-5 rounded-3xl font-black uppercase tracking-widest hover:bg-blue-600 transition-all shadow-xl shadow-slate-200 active:scale-95 flex items-center justify-center gap-3 disabled:opacity-50"
+                        className="w-full p-5 rounded-3xl font-black uppercase tracking-widest transition-all shadow-xl active:scale-95 flex items-center justify-center gap-3 disabled:opacity-50"
                         disabled={isLoading}>
                         {isLoading ? 'Processando...' : (
                             <>Cadastrar Sistema <ArrowRight size={20}/></>
@@ -107,9 +107,9 @@ export default function RegisterPage() {
                     </button>
                 </form>
 
-                <div className="text-center mt-8 pt-8 border-t border-slate-100">
-                    <Link href="/login" className="text-sm font-bold text-slate-400 hover:text-blue-600 transition-colors">
-                        Já possui uma credencial? <span className="text-blue-600 underline">Fazer Login</span>
+                <div className="text-center mt-8 pt-8 border-t">
+                    <Link href="/login" className="text-sm font-bold transition-colors">
+                        Já possui uma credencial? <span className="underline">Fazer Login</span>
                     </Link>
                 </div>
             </Card>

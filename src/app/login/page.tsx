@@ -71,7 +71,7 @@ export default function LoginPage() {
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
                             required
-                            className="w-full p-4 border border-gray-100 rounded-2xl focus:ring-4 focus:ring-blue-100 outline-none transition-all font-medium"
+                            className="w-full p-4 border rounded-2xl focus:ring-4 focus:ring-blue-100 outline-none transition-all font-medium"
                             placeholder="seu@email.com"
                             disabled={isLoading}
                         />
@@ -83,7 +83,7 @@ export default function LoginPage() {
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
                             required
-                            className="w-full p-4 border border-gray-100 rounded-2xl focus:ring-4 focus:ring-blue-100 outline-none transition-all font-medium"
+                            className="w-full p-4 border rounded-2xl focus:ring-4 focus:ring-blue-100 outline-none transition-all font-medium"
                             placeholder="••••••••"
                             disabled={isLoading}
                         />
@@ -91,7 +91,7 @@ export default function LoginPage() {
                     
                     <Button 
                         type="submit" 
-                        className="w-full py-7 text-sm font-black uppercase tracking-widest bg-slate-900 hover:bg-blue-600 shadow-xl"
+                        className="w-full py-7 text-sm font-black uppercase tracking-widest shadow-xl"
                         disabled={isLoading}
                     >
                         {isLoading ? 'CARREGANDO...' : 'ACESSAR PAINEL'}
