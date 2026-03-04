@@ -4,14 +4,15 @@ import { useState, useEffect, use } from 'react';
 import Link from "next/link";
 import { 
     Clock, Wrench, CheckCircle2, ArrowLeft, 
-    Tag, MapPin, Send, MessageSquare, User
-} from "lucide-react";
+    Tag, MapPin, Send, MessageSquare, User, Lock
+} from "lucide-react"; // Caso o seu import seja lucide-react, mantenha react
 
 export default function TicketDetailPage({ params }: { params: Promise<{ id: string }> }) {
     const { id } = use(params);
     const [ticket, setTicket] = useState<any>(null);
     const [newComment, setNewComment] = useState("");
     const [loading, setLoading] = useState(true);
+    const [errorStatus, setErrorStatus] = useState<number | null>(null);
 
     const loadData = async () => {
         try {
@@ -19,6 +20,8 @@ export default function TicketDetailPage({ params }: { params: Promise<{ id: str
             if (res.ok) {
                 const data = await res.json();
                 setTicket(data);
+            } else {
+                setErrorStatus(res.status);
             }
         } catch (err) {
             console.error("Erro ao carregar dados:", err);
@@ -55,9 +58,25 @@ export default function TicketDetailPage({ params }: { params: Promise<{ id: str
         </div>
     );
 
+    // Caso de Acesso Negado (Técnico tentando ver chamado de outro aqui)
+    if (errorStatus === 403) return (
+        <div className="min-h-screen flex flex-col items-center justify-center p-6 text-center">
+            <div className="bg-red-50 p-8 rounded-full mb-6">
+                <Lock size={64} className="text-red-500" />
+            </div>
+            <h1 className="text-3xl font-black text-slate-800 uppercase tracking-tighter">Acesso Restrito</h1>
+            <p className="text-slate-500 mt-2 max-w-md italic">
+                Este chamado não pertence a você. Por segurança, você não pode visualizar estes detalhes nesta página.
+            </p>
+            <Link href="/meus-chamados" className="mt-8 bg-slate-900 text-white px-8 py-3 rounded-2xl font-bold hover:scale-105 transition-all">
+                Voltar aos meus pedidos
+            </Link>
+        </div>
+    );
+
     if (!ticket) return (
         <div className="p-20 text-center">
-            <h1 className="text-2xl font-black text-red-500 uppercase">Chamado não localizado</h1>
+            <h1 className="text-2xl font-black text-red-500 uppercase italic">Chamado não localizado</h1>
             <Link href="/meus-chamados" className="text-blue-600 font-bold hover:underline mt-4 block">Voltar à lista</Link>
         </div>
     );
@@ -75,7 +94,6 @@ export default function TicketDetailPage({ params }: { params: Promise<{ id: str
             </Link>
 
             <div className="grid lg:grid-cols-3 gap-8">
-                {/* Coluna Principal: Detalhes */}
                 <div className="lg:col-span-2 space-y-6">
                     <div className="bg-white rounded-[3rem] shadow-2xl shadow-slate-200/50 border border-slate-100 overflow-hidden">
                         <div className="bg-slate-900 p-10 text-white flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
@@ -83,16 +101,12 @@ export default function TicketDetailPage({ params }: { params: Promise<{ id: str
                                 <p className="text-blue-400 text-[10px] font-black uppercase tracking-[0.3em] mb-2">Protocolo Oficial</p>
                                 <h1 className="text-3xl font-mono font-bold tracking-tighter">{ticket.protocol}</h1>
                             </div>
-                            <div className="flex flex-col items-end">
-                                <span className="bg-blue-600 px-6 py-2.5 rounded-2xl text-xs font-black uppercase shadow-xl shadow-blue-900/40">
-                                    {ticket.status.replace('_', ' ')}
-                                </span>
-                            </div>
+                            <span className="bg-blue-600 px-6 py-2.5 rounded-2xl text-xs font-black uppercase shadow-xl shadow-blue-900/40">
+                                {ticket.status.replace('_', ' ')}
+                            </span>
                         </div>
 
-                        {/* Barra de Progresso Customizada */}
                         <div className="p-10 bg-slate-50/50 border-b border-slate-100 relative">
-                            <div className="absolute top-[50px] left-20 right-20 h-1 bg-slate-200 z-0 hidden md:block"></div>
                             <div className="flex justify-between relative z-10">
                                 {statusSteps.map((step, idx) => {
                                     const isActive = idx <= currentStep;
@@ -140,15 +154,11 @@ export default function TicketDetailPage({ params }: { params: Promise<{ id: str
                                     </div>
                                 </div>
                                 <div className="flex items-center gap-6 p-8 bg-blue-600 text-white rounded-[2.5rem] md:col-span-2 shadow-2xl shadow-blue-200 overflow-hidden relative group">
-                                    <div className="absolute right-0 top-0 opacity-10 group-hover:rotate-12 transition-transform">
-                                        <User size={120} />
-                                    </div>
+                                    <div className="absolute right-0 top-0 opacity-10 group-hover:rotate-12 transition-transform"><User size={120} /></div>
                                     <div className="p-4 bg-white/20 rounded-2xl backdrop-blur-md relative z-10"><Wrench size={28}/></div>
                                     <div className="relative z-10">
                                         <p className="text-[10px] font-black text-blue-100 uppercase tracking-[0.2em] mb-1">Especialista Atribuído</p>
-                                        <p className="text-xl font-black italic">
-                                            {ticket.assignedTo?.name || "Aguardando triagem técnica..."}
-                                        </p>
+                                        <p className="text-xl font-black italic">{ticket.assignedTo?.name || "Aguardando triagem técnica..."}</p>
                                     </div>
                                 </div>
                             </div>
@@ -156,46 +166,34 @@ export default function TicketDetailPage({ params }: { params: Promise<{ id: str
                     </div>
                 </div>
 
-                {/* Coluna lateral: Chat */}
                 <div className="lg:col-span-1">
-                    <div className="bg-white rounded-[3rem] shadow-2xl shadow-slate-200/50 border border-slate-100 overflow-hidden flex flex-col h-[750px]">
+                    <div className="bg-white rounded-[3rem] shadow-2xl border border-slate-100 overflow-hidden flex flex-col h-[750px]">
                         <div className="p-8 bg-slate-900 text-white flex items-center justify-between">
                             <div className="flex items-center gap-3">
                                 <MessageSquare className="text-blue-400" size={20} />
                                 <h2 className="text-xs font-black uppercase tracking-widest">Atendimento</h2>
                             </div>
-                            <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
                         </div>
 
                         <div className="flex-1 overflow-y-auto p-8 space-y-6 bg-slate-50/30">
-                            {ticket.comments?.length === 0 && (
-                                <div className="text-center py-10">
-                                    <p className="text-slate-400 text-xs font-bold uppercase tracking-widest">Nenhuma mensagem ainda.</p>
-                                </div>
-                            )}
                             {ticket.comments?.map((c: any) => {
-                                const isMe = c.user?.role !== 'ADMIN' && c.user?.role !== 'TECNICO';
+                                const isMe = c.userId === ticket.requesterId;
                                 return (
                                     <div key={c.id} className={`flex flex-col ${isMe ? 'items-end' : 'items-start'}`}>
                                         <div className={`max-w-[90%] p-5 rounded-3xl text-sm ${
-                                            isMe ? 'bg-blue-600 text-white rounded-tr-none shadow-lg shadow-blue-100' 
+                                            isMe ? 'bg-blue-600 text-white rounded-tr-none shadow-lg' 
                                                  : 'bg-white text-slate-800 rounded-tl-none border border-slate-100 shadow-sm'
                                         }`}>
-                                            <p className={`text-[8px] font-black uppercase mb-2 ${isMe ? 'text-blue-100' : 'text-slate-400'}`}>
-                                                {c.user?.name}
-                                            </p>
-                                            <p className="font-semibold leading-relaxed">{c.content}</p>
+                                            <p className={`text-[8px] font-black uppercase mb-2 ${isMe ? 'text-blue-100' : 'text-slate-400'}`}>{c.user?.name}</p>
+                                            <p className="font-semibold">{c.content}</p>
                                         </div>
-                                        <span className="text-[9px] text-slate-400 mt-2 font-black px-2 uppercase">
-                                            {new Date(c.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                                        </span>
                                     </div>
                                 );
                             })}
                         </div>
 
                         <div className="p-6 bg-white border-t border-slate-100">
-                            <div className="flex gap-3 bg-slate-50 p-2 rounded-4xl border-2 border-slate-100 focus-within:border-blue-500 focus-within:bg-white transition-all shadow-inner">
+                            <div className="flex gap-3 bg-slate-50 p-2 rounded-4xl border-2 border-slate-100 focus-within:border-blue-500 transition-all">
                                 <input 
                                     className="flex-1 bg-transparent px-4 outline-none text-sm font-bold text-slate-700"
                                     placeholder="Digite sua dúvida..."
@@ -203,7 +201,7 @@ export default function TicketDetailPage({ params }: { params: Promise<{ id: str
                                     onChange={(e) => setNewComment(e.target.value)}
                                     onKeyDown={(e) => e.key === 'Enter' && handleSendComment()}
                                 />
-                                <button onClick={handleSendComment} className="p-4 bg-blue-600 text-white rounded-2xl hover:bg-blue-700 transition-all shadow-lg shadow-blue-200 active:scale-95">
+                                <button onClick={handleSendComment} className="p-4 bg-blue-600 text-white rounded-2xl hover:bg-blue-700 transition-all active:scale-95">
                                     <Send size={18} />
                                 </button>
                             </div>

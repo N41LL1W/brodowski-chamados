@@ -16,10 +16,10 @@ export async function GET(req: Request, props: { params: Promise<{ id: string }>
         const ticket = await prisma.ticket.findUnique({
             where: { id },
             include: {
-                requester: { select: { name: true, email: true } },
+                requester: { select: { id: true, name: true, email: true } },
                 category: true,
                 department: true,
-                assignedTo: { select: { name: true } },
+                assignedTo: { select: { id: true, name: true } },
                 comments: {
                     include: { user: { select: { name: true, role: true } } },
                     orderBy: { createdAt: 'asc' }
@@ -31,12 +31,14 @@ export async function GET(req: Request, props: { params: Promise<{ id: string }>
             return NextResponse.json({ message: "Chamado não encontrado" }, { status: 404 });
         }
 
-        // --- VALIDAÇÃO DE PRIVACIDADE ---
+        // --- VALIDAÇÃO DE PRIVACIDADE REFEITA ---
         const isOwner = ticket.requesterId === userId;
-        const isStaff = ["MASTER", "CONTROLADOR", "TECNICO", "ADMIN"].includes(userRole);
+        const isAssignedToMe = ticket.assignedToId === userId;
+        const isManager = ["MASTER", "CONTROLADOR"].includes(userRole);
 
-        if (!isOwner && !isStaff) {
-            return NextResponse.json({ message: "Acesso negado: Este chamado pertence a outro usuário." }, { status: 403 });
+        // O Técnico só vê se ele for o dono OU se o chamado estiver atribuído a ele
+        if (!isOwner && !isAssignedToMe && !isManager) {
+            return NextResponse.json({ message: "Acesso negado" }, { status: 403 });
         }
 
         return NextResponse.json(ticket);
@@ -55,13 +57,15 @@ export async function POST(req: Request, props: { params: Promise<{ id: string }
         if (!session?.user) return new NextResponse('Não autorizado', { status: 401 });
 
         const userId = (session.user as any).id;
-
-        // Verifica se o usuário tem permissão para comentar neste chamado
-        const ticket = await prisma.ticket.findUnique({ where: { id }, select: { requesterId: true } });
         const userRole = (session.user as any).role;
-        const isStaff = ["MASTER", "CONTROLADOR", "TECNICO", "ADMIN"].includes(userRole);
 
-        if (ticket?.requesterId !== userId && !isStaff) {
+        const ticket = await prisma.ticket.findUnique({ where: { id }, select: { requesterId: true, assignedToId: true } });
+        
+        const isOwner = ticket?.requesterId === userId;
+        const isAssignedToMe = ticket?.assignedToId === userId;
+        const isManager = ["MASTER", "CONTROLADOR"].includes(userRole);
+
+        if (!isOwner && !isAssignedToMe && !isManager) {
             return new NextResponse('Acesso negado', { status: 403 });
         }
 
