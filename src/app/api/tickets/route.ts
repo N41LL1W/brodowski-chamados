@@ -3,7 +3,6 @@ import prisma from '@/lib/prisma';
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 
-// GET: Lista chamados (Funcionário vê só os dele / Admin vê todos sem dono)
 export async function GET() {
     const session = await getServerSession(authOptions);
 
@@ -13,14 +12,11 @@ export async function GET() {
 
     const user = session.user as any;
 
-    // Regra: Se for USER/FUNCIONARIO, filtra apenas os chamados que ele abriu
-    const whereClause: any = {};
-    if (user.role === 'FUNCIONARIO' || user.role === 'USER') {
-        whereClause.requesterId = user.id;
-    }
-
+    // Filtro estrito: independente da role, busca apenas o que o usuário logado abriu
     const tickets = await prisma.ticket.findMany({
-        where: whereClause,
+        where: {
+            requesterId: user.id
+        },
         include: {
             requester: { select: { name: true } },
             category: { select: { name: true } },
@@ -33,18 +29,13 @@ export async function GET() {
     return NextResponse.json(tickets);
 }
 
-// POST: Abre um novo chamado
 export async function POST(req: Request) {
     const session = await getServerSession(authOptions);
-
-    if (!session || !session.user) {
-        return new NextResponse('Não autorizado', { status: 401 });
-    }
+    if (!session || !session.user) return new NextResponse('Não autorizado', { status: 401 });
 
     try {
         const { subject, description, priority, categoryId, departmentId, location } = await req.json();
         const userId = (session.user as any).id;
-
         const protocol = `${new Date().toISOString().slice(0,10).replace(/-/g, '')}-${Math.floor(1000 + Math.random() * 9000)}`;
 
         const newTicket = await (prisma as any).ticket.create({
@@ -60,10 +51,8 @@ export async function POST(req: Request) {
                 departmentId: departmentId,
             }
         });
-
         return NextResponse.json(newTicket, { status: 201 });
-    } catch (error: any) {
-        console.error("Erro ao criar chamado:", error);
+    } catch (error) {
         return NextResponse.json({ message: "Erro ao abrir chamado" }, { status: 500 });
     }
 }

@@ -5,22 +5,24 @@ import Link from 'next/link';
 import { Clock, Tag, MapPin, Plus } from 'lucide-react';
 
 export default function MeusChamadosPage() {
-    const [tickets, setTickets] = useState([]);
+    // CORREÇÃO DO ERRO TS2345: Definindo o estado como uma lista de qualquer tipo
+    const [tickets, setTickets] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         fetch('/api/tickets')
             .then(res => res.json())
             .then(data => {
-                setTickets(data);
+                setTickets(Array.isArray(data) ? data : []);
                 setLoading(false);
-            });
+            })
+            .catch(() => setLoading(false));
     }, []);
 
     const getStatusColor = (status: string) => {
-        const s = status.toUpperCase();
+        const s = status?.toUpperCase() || '';
         if (s === 'ABERTO') return 'bg-emerald-100 text-emerald-700';
-        if (s === 'EM ATENDIMENTO' || s === 'ATENDIMENTO') return 'bg-amber-100 text-amber-700';
+        if (s.includes('ATENDIMENTO')) return 'bg-amber-100 text-amber-700';
         return 'bg-blue-100 text-blue-700';
     };
 
@@ -38,7 +40,7 @@ export default function MeusChamadosPage() {
                     <h1 className="text-4xl font-black text-slate-800 tracking-tighter uppercase">Meus Chamados</h1>
                     <p className="text-slate-400 font-medium">Acompanhe suas solicitações em tempo real.</p>
                 </div>
-                <Link href="/meus-chamados/create" className="bg-slate-900 text-white px-8 py-4 rounded-2xl font-black uppercase tracking-widest hover:bg-blue-600 transition-all flex items-center gap-2 shadow-lg active:scale-95 text-xs">
+                <Link href="/chamados/novo" className="bg-slate-900 text-white px-8 py-4 rounded-2xl font-black uppercase tracking-widest hover:bg-blue-600 transition-all flex items-center gap-2 shadow-lg active:scale-95 text-xs">
                     <Plus size={18} /> Novo Chamado
                 </Link>
             </div>
@@ -59,14 +61,10 @@ export default function MeusChamadosPage() {
                                                 {ticket.status}
                                             </span>
                                             <span className="text-[10px] font-black px-4 py-1.5 rounded-full bg-slate-100 text-slate-500 uppercase tracking-widest">
-                                                PROT: {ticket.protocol || ticket.id}
+                                                PROT: {ticket.protocol}
                                             </span>
                                         </div>
-                                        
-                                        <h3 className="font-black text-2xl text-slate-800 group-hover:text-blue-600 transition-colors leading-tight">
-                                            {ticket.subject || ticket.title}
-                                        </h3>
-                                        
+                                        <h3 className="font-black text-2xl text-slate-800 group-hover:text-blue-600 transition-colors leading-tight">{ticket.subject}</h3>
                                         <div className="flex gap-6 text-slate-400">
                                             <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-wider">
                                                 <Tag size={16} className="text-blue-500" /> {ticket.category?.name || 'Geral'}
@@ -76,15 +74,11 @@ export default function MeusChamadosPage() {
                                             </div>
                                         </div>
                                     </div>
-                                    
                                     <div className="text-right flex flex-col items-end">
                                         <div className="flex items-center gap-2 text-[10px] font-black text-slate-300 uppercase tracking-widest">
-                                            <Clock size={14} />
-                                            {new Date(ticket.createdAt).toLocaleDateString('pt-BR')}
+                                            <Clock size={14} /> {new Date(ticket.createdAt).toLocaleDateString('pt-BR')}
                                         </div>
-                                        <div className="mt-8 text-blue-600 font-black text-[10px] uppercase tracking-[0.2em] opacity-0 group-hover:opacity-100 transition-all translate-x-4 group-hover:translate-x-0">
-                                            Detalhes →
-                                        </div>
+                                        <div className="mt-8 text-blue-600 font-black text-[10px] uppercase tracking-[0.2em] opacity-0 group-hover:opacity-100 transition-all translate-x-4 group-hover:translate-x-0">Detalhes →</div>
                                     </div>
                                 </div>
                             </div>

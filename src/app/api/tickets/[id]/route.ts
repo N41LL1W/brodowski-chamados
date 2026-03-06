@@ -7,19 +7,17 @@ export async function GET(req: Request, props: { params: Promise<{ id: string }>
     try {
         const session = await getServerSession(authOptions);
         const { id } = await props.params;
-
         if (!session?.user) return new NextResponse('Não autorizado', { status: 401 });
 
         const userId = (session.user as any).id;
-        const userRole = (session.user as any).role;
 
         const ticket = await prisma.ticket.findUnique({
             where: { id },
             include: {
-                requester: { select: { id: true, name: true, email: true } },
+                requester: { select: { id: true, name: true } },
                 category: true,
                 department: true,
-                assignedTo: { select: { id: true, name: true } },
+                assignedTo: { select: { name: true } },
                 comments: {
                     include: { user: { select: { name: true, role: true } } },
                     orderBy: { createdAt: 'asc' }
@@ -27,24 +25,16 @@ export async function GET(req: Request, props: { params: Promise<{ id: string }>
             }
         });
 
-        if (!ticket) {
-            return NextResponse.json({ message: "Chamado não encontrado" }, { status: 404 });
-        }
+        if (!ticket) return NextResponse.json({ message: "Não encontrado" }, { status: 404 });
 
-        // --- VALIDAÇÃO DE PRIVACIDADE REFEITA ---
-        const isOwner = ticket.requesterId === userId;
-        const isAssignedToMe = ticket.assignedToId === userId;
-        const isManager = ["MASTER", "CONTROLADOR"].includes(userRole);
-
-        // O Técnico só vê se ele for o dono OU se o chamado estiver atribuído a ele
-        if (!isOwner && !isAssignedToMe && !isManager) {
+        // SEGURANÇA: Só quem abriu o chamado pode ver os detalhes nesta rota
+        if (ticket.requesterId !== userId) {
             return NextResponse.json({ message: "Acesso negado" }, { status: 403 });
         }
 
         return NextResponse.json(ticket);
-    } catch (error: any) {
-        console.error("Erro ao buscar detalhes:", error);
-        return NextResponse.json({ error: "Erro interno no servidor" }, { status: 500 });
+    } catch (error) {
+        return NextResponse.json({ error: "Erro interno" }, { status: 500 });
     }
 }
 
@@ -55,17 +45,12 @@ export async function POST(req: Request, props: { params: Promise<{ id: string }
         const { content } = await req.json();
 
         if (!session?.user) return new NextResponse('Não autorizado', { status: 401 });
-
         const userId = (session.user as any).id;
-        const userRole = (session.user as any).role;
 
-        const ticket = await prisma.ticket.findUnique({ where: { id }, select: { requesterId: true, assignedToId: true } });
+        const ticket = await prisma.ticket.findUnique({ where: { id }, select: { requesterId: true } });
         
-        const isOwner = ticket?.requesterId === userId;
-        const isAssignedToMe = ticket?.assignedToId === userId;
-        const isManager = ["MASTER", "CONTROLADOR"].includes(userRole);
-
-        if (!isOwner && !isAssignedToMe && !isManager) {
+        // Só comenta no PRÓPRIO chamado nesta página
+        if (ticket?.requesterId !== userId) {
             return new NextResponse('Acesso negado', { status: 403 });
         }
 
@@ -87,36 +72,11 @@ export async function PATCH(req: Request, props: { params: Promise<{ id: string 
         
         const { id } = await props.params;
         const body = await req.json();
-        const user = session.user as any;
 
-        const updateData: any = {};
-
-        switch (body.action) {
-            case 'ASSUMIR':
-                updateData.status = 'EM_ANDAMENTO';
-                updateData.assignedToId = user.id;
-                break;
-            case 'FINALIZAR':
-                updateData.status = 'CONCLUIDO';
-                if (body.proofImage) updateData.proofImage = body.proofImage;
-                break;
-            case 'PAUSAR':
-                updateData.status = 'EM_PAUSA';
-                break;
-            case 'DEVOLVER':
-                updateData.status = 'ABERTO';
-                updateData.assignedToId = null;
-                break;
-            default:
-                if (body.status) updateData.status = body.status;
-                if (body.assignedToId !== undefined) updateData.assignedToId = body.assignedToId;
-                if (body.priority) updateData.priority = body.priority;
-        }
-
+        // O PATCH aqui normalmente seria usado apenas pelo dono para cancelar ou atualizar algo
         const updatedTicket = await prisma.ticket.update({
             where: { id },
-            data: updateData,
-            include: { assignedTo: { select: { name: true } } }
+            data: body,
         });
 
         return NextResponse.json(updatedTicket);
