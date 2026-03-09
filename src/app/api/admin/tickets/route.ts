@@ -12,7 +12,7 @@ export async function GET() {
         // 1. Fila de Espera: ABERTOS e sem ninguém cuidando
         const disponiveis = await prisma.ticket.findMany({
             where: { 
-                status: 'ABERTO', 
+                status: 'OPEM', 
                 assignedToId: null 
             },
             include: { requester: true, category: true, department: true },
@@ -24,7 +24,7 @@ export async function GET() {
         const meusTrabalhos = await prisma.ticket.findMany({
             where: { 
                 assignedToId: user.id,
-                status: 'EM_ANDAMENTO' 
+                status: 'IN_PROGRESS' 
             },
             include: { requester: true, category: true, department: true },
             orderBy: { updatedAt: 'desc' }
