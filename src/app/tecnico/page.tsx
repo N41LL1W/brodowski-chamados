@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { Search, RefreshCw, LayoutDashboard, X, Inbox } from 'lucide-react';
 import { useSession } from "next-auth/react";
 import TicketCard from '@/components/TicketCard';
@@ -11,10 +11,11 @@ export default function PainelTecnicoPage() {
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState(""); 
 
-    const fetchTickets = async () => {
+    const fetchTickets = useCallback(async () => {
         setLoading(true);
         try {
-            const res = await fetch('/api/admin/tickets');
+            // Adicionado timestamp para evitar cache e garantir atualização
+            const res = await fetch(`/api/admin/tickets?t=${Date.now()}`);
             const data = await res.json();
             setTickets({
                 disponiveis: data.disponiveis || [],
@@ -26,9 +27,14 @@ export default function PainelTecnicoPage() {
         } finally {
             setLoading(false);
         }
-    };
+    }, []);
 
-    useEffect(() => { fetchTickets(); }, []);
+    useEffect(() => { 
+        fetchTickets();
+        // Atualiza ao focar na aba (útil se o técnico mudar de status em outra aba)
+        window.addEventListener('focus', fetchTickets);
+        return () => window.removeEventListener('focus', fetchTickets);
+    }, [fetchTickets]);
 
     const filterList = (list: any[]) => {
         if (!searchTerm.trim()) return list;
@@ -61,7 +67,7 @@ export default function PainelTecnicoPage() {
     }
 
     return (
-        <div className="max-w-7xl mx-auto p-4 md:p-8 space-y-8 md:space-y-12">
+        <div className="max-w-[1600px] mx-auto p-4 md:p-10 space-y-12">
             <header className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6">
                 <div>
                     <h1 className="text-3xl md:text-5xl font-black text-slate-900 dark:text-white uppercase tracking-tighter flex items-center gap-3 md:gap-4">
@@ -97,7 +103,7 @@ export default function PainelTecnicoPage() {
                 </div>
             </header>
 
-            <main className="space-y-12 md:space-y-20">
+            <main className="space-y-16">
                 <TicketSection 
                     title="Aguardando" 
                     count={tickets.disponiveis.length}
@@ -108,7 +114,7 @@ export default function PainelTecnicoPage() {
                 />
 
                 <TicketSection 
-                    title="Em Andamento" 
+                    title="Em Atendimento" 
                     count={tickets.meusTrabalhos.length}
                     tickets={filterList(tickets.meusTrabalhos)} 
                     color="blue"
@@ -128,29 +134,26 @@ export default function PainelTecnicoPage() {
 }
 
 function TicketSection({ title, count, tickets, onAction, actionLabel, color, isMine, isDisabled }: any) {
-    const colors = {
-        amber: 'bg-amber-500 text-amber-600',
-        blue: 'bg-blue-600 text-blue-600',
-        slate: 'bg-slate-400 text-slate-500'
+    const bgBadge = {
+        amber: 'bg-amber-500',
+        blue: 'bg-blue-600',
+        slate: 'bg-slate-400'
     }[color as 'amber' | 'blue' | 'slate'];
 
     return (
         <section className="space-y-6">
-            <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-4">
-                <div className="flex items-center gap-3">
-                    <div className={`w-2 h-6 rounded-full ${colors.split(' ')[0]}`}></div>
-                    <h2 className="text-xl md:text-2xl font-black text-slate-800 dark:text-white uppercase tracking-tight">{title}</h2>
-                </div>
-                <span className="text-[10px] font-black uppercase tracking-widest bg-slate-100 dark:bg-slate-800 px-3 py-1 rounded-lg text-slate-500">
-                    {count} chamados
-                </span>
+            <div className="flex items-center gap-4 border-b border-slate-100 dark:border-slate-800 pb-4">
+                <div className={`w-2 h-8 rounded-full ${bgBadge}`}></div>
+                <h2 className="text-2xl font-black text-slate-800 dark:text-white uppercase tracking-tighter">{title}</h2>
+                <span className="bg-slate-100 dark:bg-slate-800 px-3 py-1 rounded-lg text-xs font-bold text-slate-500">{count}</span>
             </div>
             
-            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 md:gap-6">
+            {/* GRID RESPONSIVA: 1 col no mobile, 2 no tablet, 3 no desktop, 4 em telas ultra-wide */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 gap-6">
                 {tickets.length === 0 ? (
-                    <div className="md:col-span-full py-12 text-center bg-slate-50/50 dark:bg-slate-900/20 border-2 border-dashed border-slate-100 dark:border-slate-800 rounded-4xl">
+                    <div className="col-span-full py-12 text-center bg-slate-50/50 dark:bg-slate-900/20 border-2 border-dashed border-slate-100 dark:border-slate-800 rounded-3xl">
                         <Inbox className="mx-auto text-slate-200 dark:text-slate-800 mb-2" size={40} />
-                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Vazio</p>
+                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest text-center">Nenhum chamado nesta categoria</p>
                     </div>
                 ) : (
                     tickets.map((t: any) => (

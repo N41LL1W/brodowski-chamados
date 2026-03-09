@@ -3,62 +3,75 @@
 import Link from "next/link";
 import Card from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
-import { Clock, User, MessageCircle, CheckCheck, MapPin, Wrench } from 'lucide-react';
-import { usePathname } from 'next/navigation';
+import { CheckCheck, MapPin, Wrench, Eye } from 'lucide-react';
 
 export default function TicketCard({ ticket, onAction, actionLabel, isMine, isDisabled }: any) {
-    const pathname = usePathname();
-    const isTecnicoPath = pathname?.includes('/tecnico');
-    const detailHref = isTecnicoPath 
-        ? `/tecnico/chamado/${ticket.id}` 
-        : `/meus-chamados/${ticket.id}`;
+    const detailHref = `/tecnico/chamado/${ticket.id}`;
 
     return (
-        <Card className={`group p-6 transition-all hover:scale-[1.01] border-l-[6px] ${isMine ? 'border-l-blue-600 bg-blue-50/30 dark:bg-blue-900/10' : (isDisabled ? 'border-l-slate-300 grayscale opacity-80' : 'border-l-amber-500 bg-white dark:bg-slate-900')}`}>
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
-                <div className="space-y-3 flex-1">
-                    <div className="flex flex-wrap items-center gap-2">
-                        <span className="text-[10px] font-black px-2 py-1 bg-slate-900 text-white rounded">{ticket.protocol}</span>
-                        <Badge variant="priority" value={ticket.priority}>{ticket.priority}</Badge>
-                        {isDisabled && (
-                            <span className="text-[10px] font-black text-emerald-600 uppercase flex items-center gap-1">
-                                <CheckCheck size={14}/> Finalizado
-                            </span>
-                        )}
-                    </div>
-                    
-                    <h3 className="font-black text-slate-800 dark:text-white text-xl tracking-tighter group-hover:text-blue-600 transition-colors">
-                        {ticket.subject}
-                    </h3>
-                    
-                    <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-[12px]">
-                        <span className="flex items-center gap-1.5 font-bold text-slate-600 dark:text-slate-400">
-                            <User size={14}/> {ticket.requester?.name}
-                        </span>
-                        <span className="flex items-center gap-1.5 text-slate-500">
-                            <MapPin size={14}/> {ticket.location || "Sem local"}
-                        </span>
-                    </div>
+        <Card className={`group p-5 flex flex-col h-full transition-all hover:shadow-xl border-l-[6px] ${
+            isMine 
+            ? 'border-l-blue-600 bg-blue-50/20 dark:bg-blue-900/10' 
+            : (isDisabled ? 'border-l-slate-300 opacity-80' : 'border-l-amber-500 bg-white dark:bg-slate-900')
+        }`}>
+            <div className="flex-1 space-y-4">
+                <div className="flex justify-between items-start">
+                    <span className="text-[10px] font-black px-2 py-1 bg-slate-900 text-white rounded uppercase tracking-tighter">
+                        {ticket.protocol}
+                    </span>
+                    <Badge variant="priority" value={ticket.priority}>{ticket.priority}</Badge>
                 </div>
                 
-                <div className="flex items-center gap-3 w-full md:w-auto">
-                    <Link 
-                        href={detailHref} 
-                        className={`flex-1 md:flex-none flex items-center justify-center gap-2 px-6 py-3 rounded-2xl font-black text-[10px] uppercase transition-all border-2 ${isMine ? 'bg-blue-600 border-blue-600 text-white' : 'border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:border-blue-600'}`}
-                    >
-                        {isMine ? <Wrench size={16}/> : <MessageCircle size={16}/>}
-                        {isMine ? "Trabalhar" : "Detalhes"}
-                    </Link>
-
-                    {!isDisabled && !isMine && onAction && (
-                        <button 
-                            onClick={() => onAction(ticket.id)} 
-                            className="flex-1 md:flex-none px-6 py-3 rounded-2xl font-black text-[10px] uppercase text-white bg-blue-600 hover:bg-blue-700 shadow-lg shadow-blue-200 dark:shadow-none"
-                        >
-                            {actionLabel}
-                        </button>
-                    )}
+                <h3 className="font-black text-slate-800 dark:text-white text-lg leading-tight line-clamp-2 uppercase">
+                    {ticket.subject}
+                </h3>
+                
+                <div className="space-y-2 border-t border-slate-50 dark:border-slate-800 pt-4">
+                    <div className="flex items-center gap-2 text-xs font-bold text-slate-600 dark:text-slate-400">
+                        <div className="w-6 h-6 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-[10px]">
+                            {ticket.requester?.name?.charAt(0)}
+                        </div>
+                        {ticket.requester?.name}
+                    </div>
+                    <div className="flex items-center gap-2 text-[11px] text-slate-500">
+                        <MapPin size={14} className="text-blue-500"/> 
+                        <span className="truncate">{ticket.location || "Local não informado"}</span>
+                    </div>
                 </div>
+            </div>
+
+            {/* ÁREA DE AÇÕES - BOTÕES CORRIGIDOS */}
+            <div className="mt-6 flex flex-col gap-2">
+                {isDisabled ? (
+                    <div className="flex items-center justify-center gap-2 text-[10px] font-black text-emerald-600 uppercase py-2">
+                        <CheckCheck size={16}/> Finalizado
+                    </div>
+                ) : (
+                    <div className="flex gap-2">
+                        {/* Botão de Ver Detalhes (Sempre Visível) */}
+                        <Link 
+                            href={detailHref} 
+                            className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-xl font-black text-[10px] uppercase transition-all border-2 ${
+                                isMine 
+                                ? 'bg-blue-600 border-blue-600 text-white shadow-lg shadow-blue-500/20' 
+                                : 'border-slate-100 dark:border-slate-800 text-slate-500 hover:border-blue-500 hover:text-blue-500'
+                            }`}
+                        >
+                            {isMine ? <Wrench size={14}/> : <Eye size={14}/>}
+                            {isMine ? "Trabalhar" : "Detalhes"}
+                        </Link>
+
+                        {/* Botão de Ação (Apenas se não for meu e estiver disponível) */}
+                        {!isMine && onAction && (
+                            <button 
+                                onClick={() => onAction(ticket.id)} 
+                                className="flex-1 py-3 rounded-xl font-black text-[10px] uppercase text-white bg-amber-500 hover:bg-amber-600 shadow-lg shadow-amber-500/20"
+                            >
+                                {actionLabel}
+                            </button>
+                        )}
+                    </div>
+                )}
             </div>
         </Card>
     );

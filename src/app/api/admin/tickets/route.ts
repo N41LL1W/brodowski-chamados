@@ -9,7 +9,7 @@ export async function GET() {
     const user = session.user as any;
 
     try {
-        // 1. Fila de Espera: Apenas ABERTOS e sem técnico atribuído
+        // 1. Fila de Espera: ABERTOS e sem ninguém cuidando
         const disponiveis = await prisma.ticket.findMany({
             where: { 
                 status: 'ABERTO', 
@@ -19,25 +19,26 @@ export async function GET() {
             orderBy: { createdAt: 'desc' }
         });
 
-        // 2. Trabalhos Ativos: Chamados do técnico logado que estão EM ANDAMENTO
+        // 2. Trabalhos Ativos: EM_ANDAMENTO e atribuídos a MIM
+        // Nota: Se um chamado sumiu, verifique se ao 'PAUSAR' você não está mudando o status para algo diferente de EM_ANDAMENTO
         const meusTrabalhos = await prisma.ticket.findMany({
             where: { 
                 assignedToId: user.id,
-                status: 'EM_ANDAMENTO' // Filtro específico para o que está rolando agora
+                status: 'EM_ANDAMENTO' 
             },
             include: { requester: true, category: true, department: true },
-            orderBy: { createdAt: 'desc' }
+            orderBy: { updatedAt: 'desc' }
         });
 
-        // 3. Finalizados: Histórico de chamados CONCLUÍDOS pelo técnico logado
+        // 3. Finalizados: Apenas os CONCLUÍDOS por MIM
         const finalizados = await prisma.ticket.findMany({
             where: { 
                 assignedToId: user.id,
                 status: 'CONCLUIDO' 
             },
             include: { requester: true, category: true, department: true },
-            orderBy: { updatedAt: 'desc' }, // Ordenar pela data de conclusão (última atualização)
-            take: 10 // Opcional: Limitar aos últimos 10 para não sobrecarregar a tela
+            orderBy: { updatedAt: 'desc' },
+            take: 12
         });
 
         return NextResponse.json({ disponiveis, meusTrabalhos, finalizados });
@@ -47,15 +48,14 @@ export async function GET() {
     }
 }
 
+// O POST permanece igual, apenas garanto a estrutura
 export async function POST(req: Request) {
     try {
         const session = await getServerSession(authOptions);
         const body = await req.json();
-        
-        // Gerador de protocolo robusto
         const protocol = `${new Date().toISOString().slice(0,10).replace(/-/g, '')}-${Math.floor(1000 + Math.random() * 9000)}`;
 
-        const newTicket = await (prisma as any).ticket.create({
+        const newTicket = await prisma.ticket.create({
             data: {
                 protocol,
                 subject: body.subject,
@@ -71,7 +71,6 @@ export async function POST(req: Request) {
 
         return NextResponse.json(newTicket);
     } catch (error: any) {
-        console.error("Erro ao criar chamado:", error);
         return NextResponse.json({ message: "Erro ao criar", details: error.message }, { status: 500 });
     }
 }
