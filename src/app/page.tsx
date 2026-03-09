@@ -27,8 +27,8 @@ export default async function Home() {
                     MEUS CHAMADOS
                 </Link>
 
-                {(session?.user as any).role !== "USER" && (
-                    <Link href="/painel-tecnico" 
+                {(session?.user as any).role == "TECNICO" && (
+                    <Link href="/tecnico" 
                         className="md:col-span-2 p-6 bg-slate-900 text-white rounded-4xl hover:bg-slate-800 transition-all flex items-center justify-center gap-3 font-bold">
                         <LayoutDashboard size={20} />
                         PAINEL TÉCNICO DE GESTÃO

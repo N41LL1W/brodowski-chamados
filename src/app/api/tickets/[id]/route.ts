@@ -9,7 +9,7 @@ export async function GET(req: Request, props: { params: Promise<{ id: string }>
         const { id } = await props.params;
         if (!session?.user) return new NextResponse('Não autorizado', { status: 401 });
 
-        const userId = (session.user as any).id;
+        const user = session.user as any;
 
         const ticket = await prisma.ticket.findUnique({
             where: { id },
@@ -17,7 +17,7 @@ export async function GET(req: Request, props: { params: Promise<{ id: string }>
                 requester: { select: { id: true, name: true } },
                 category: true,
                 department: true,
-                assignedTo: { select: { name: true } },
+                assignedTo: { select: { id: true, name: true } },
                 comments: {
                     include: { user: { select: { name: true, role: true } } },
                     orderBy: { createdAt: 'asc' }
@@ -27,8 +27,11 @@ export async function GET(req: Request, props: { params: Promise<{ id: string }>
 
         if (!ticket) return NextResponse.json({ message: "Não encontrado" }, { status: 404 });
 
-        // SEGURANÇA: Só quem abriu o chamado pode ver os detalhes nesta rota
-        if (ticket.requesterId !== userId) {
+        // SEGURANÇA: Dono do chamado OU Técnico/Admin podem ver
+        const isOwner = ticket.requesterId === user.id;
+        const isStaff = ['TECNICO', 'ADMIN', 'MASTER'].includes(user.role);
+
+        if (!isOwner && !isStaff) {
             return NextResponse.json({ message: "Acesso negado" }, { status: 403 });
         }
 
@@ -47,13 +50,6 @@ export async function POST(req: Request, props: { params: Promise<{ id: string }
         if (!session?.user) return new NextResponse('Não autorizado', { status: 401 });
         const userId = (session.user as any).id;
 
-        const ticket = await prisma.ticket.findUnique({ where: { id }, select: { requesterId: true } });
-        
-        // Só comenta no PRÓPRIO chamado nesta página
-        if (ticket?.requesterId !== userId) {
-            return new NextResponse('Acesso negado', { status: 403 });
-        }
-
         const comment = await prisma.comment.create({
             data: { content, ticketId: id, userId },
             include: { user: { select: { name: true, role: true } } }
@@ -68,15 +64,32 @@ export async function POST(req: Request, props: { params: Promise<{ id: string }
 export async function PATCH(req: Request, props: { params: Promise<{ id: string }> }) {
     try {
         const session = await getServerSession(authOptions);
-        if (!session) return new NextResponse('Não autorizado', { status: 401 });
+        if (!session?.user) return new NextResponse('Não autorizado', { status: 401 });
         
         const { id } = await props.params;
-        const body = await req.json();
+        const { action, proofImage, ...body } = await req.json();
+        const user = session.user as any;
 
-        // O PATCH aqui normalmente seria usado apenas pelo dono para cancelar ou atualizar algo
+        let updateData: any = { ...body };
+
+        // Lógica de Fluxo de Trabalho (Workflow)
+        if (action === 'ASSUMIR') {
+            updateData.assignedToId = user.id;
+            updateData.status = 'IN_PROGRESS';
+        } else if (action === 'PAUSAR') {
+            updateData.status = 'OPEN'; // Ou um status 'PAUSED' se houver no seu Enum
+        } else if (action === 'DEVOLVER') {
+            updateData.assignedToId = null;
+            updateData.status = 'OPEN';
+        } else if (action === 'FINALIZAR') {
+            updateData.status = 'CONCLUDED';
+            updateData.proofImage = proofImage; // String Base64 da foto
+            updateData.finishedAt = new Date();
+        }
+
         const updatedTicket = await prisma.ticket.update({
             where: { id },
-            data: body,
+            data: updateData,
         });
 
         return NextResponse.json(updatedTicket);
