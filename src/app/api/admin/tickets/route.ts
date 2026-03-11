@@ -9,66 +9,40 @@ export async function GET() {
     const user = session.user as any;
 
     try {
-        // 1. Fila de Espera: ABERTOS (OPEN) e sem técnico
+        // 1. DISPONÍVEIS: Status 'OPEN' e ninguém assumiu
         const disponiveis = await prisma.ticket.findMany({
-            where: { 
-                status: 'OPEN', 
-                assignedToId: null 
-            },
+            where: { status: 'OPEN', assignedToId: null },
             include: { requester: true, category: true, department: true },
             orderBy: { createdAt: 'desc' }
         });
 
-        // 2. Trabalhos Ativos: EM ANDAMENTO (IN_PROGRESS) do técnico logado
+        // 2. EM ATENDIMENTO: Status 'IN_PROGRESS' e atribuído a MIM
         const meusTrabalhos = await prisma.ticket.findMany({
-            where: { 
-                assignedToId: user.id,
-                status: 'IN_PROGRESS' 
-            },
+            where: { status: 'IN_PROGRESS', assignedToId: user.id },
             include: { requester: true, category: true, department: true },
             orderBy: { updatedAt: 'desc' }
         });
 
-        // 3. Finalizados: CONCLUÍDOS (CONCLUDED) pelo técnico logado
+        // 3. PAUSADOS: Status 'EM_PAUSA' e atribuído a MIM
+        const pausados = await prisma.ticket.findMany({
+            where: { status: 'EM_PAUSA', assignedToId: user.id },
+            include: { requester: true, category: true, department: true },
+            orderBy: { updatedAt: 'desc' }
+        });
+
+        // 4. FINALIZADOS: Status 'CONCLUDED' ou 'CONCLUIDO' (adicionei ambos por segurança)
         const finalizados = await prisma.ticket.findMany({
             where: { 
                 assignedToId: user.id,
-                status: 'CONCLUDED' 
+                status: { in: ['CONCLUDED', 'CONCLUIDO'] } 
             },
             include: { requester: true, category: true, department: true },
             orderBy: { updatedAt: 'desc' },
-            take: 12
+            take: 10
         });
 
-        return NextResponse.json({ disponiveis, meusTrabalhos, finalizados });
+        return NextResponse.json({ disponiveis, meusTrabalhos, pausados, finalizados });
     } catch (error) {
-        console.error("ERRO API ADMIN:", error);
-        return NextResponse.json({ error: "Erro ao carregar painel" }, { status: 500 });
-    }
-}
-
-export async function POST(req: Request) {
-    try {
-        const session = await getServerSession(authOptions);
-        const body = await req.json();
-        const protocol = `${new Date().toISOString().slice(0,10).replace(/-/g, '')}-${Math.floor(1000 + Math.random() * 9000)}`;
-
-        const newTicket = await prisma.ticket.create({
-            data: {
-                protocol,
-                subject: body.subject,
-                description: body.description,
-                location: body.location,
-                priority: body.priority || "NORMAL",
-                status: "OPEN", // Criar como OPEN para aparecer na lista 'disponiveis'
-                requesterId: body.requesterId || (session?.user as any).id,
-                categoryId: body.categoryId,
-                departmentId: body.departmentId,
-            },
-        });
-
-        return NextResponse.json(newTicket);
-    } catch (error: any) {
-        return NextResponse.json({ message: "Erro ao criar", details: error.message }, { status: 500 });
+        return NextResponse.json({ error: "Erro ao carregar" }, { status: 500 });
     }
 }
