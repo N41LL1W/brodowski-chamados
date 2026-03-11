@@ -61,6 +61,8 @@ export async function POST(req: Request, props: { params: Promise<{ id: string }
     }
 }
 
+// ... Mantenha os GET e POST originais e substitua apenas o PATCH:
+
 export async function PATCH(req: Request, props: { params: Promise<{ id: string }> }) {
     try {
         const session = await getServerSession(authOptions);
@@ -72,19 +74,19 @@ export async function PATCH(req: Request, props: { params: Promise<{ id: string 
 
         let updateData: any = { ...body };
 
-        // Lógica de Fluxo de Trabalho (Workflow)
+        // Lógica de Status Sincronizada com o Banco Neon
         if (action === 'ASSUMIR') {
             updateData.assignedToId = user.id;
             updateData.status = 'IN_PROGRESS';
         } else if (action === 'PAUSAR') {
-            updateData.status = 'OPEN'; // Ou um status 'PAUSED' se houver no seu Enum
+            updateData.status = 'EM_PAUSA'; // Agora bate com seu NeonDB
         } else if (action === 'DEVOLVER') {
             updateData.assignedToId = null;
             updateData.status = 'OPEN';
         } else if (action === 'FINALIZAR') {
             updateData.status = 'CONCLUDED';
-            updateData.proofImage = proofImage; // String Base64 da foto
-            updateData.finishedAt = new Date();
+            updateData.proofImage = proofImage;
+            updateData.updatedAt = new Date();
         }
 
         const updatedTicket = await prisma.ticket.update({

@@ -9,37 +9,36 @@ export async function GET() {
     const user = session.user as any;
 
     try {
-        // 1. DISPONÍVEIS: Status 'OPEN' e ninguém assumiu
-        const disponiveis = await prisma.ticket.findMany({
-            where: { status: 'OPEN', assignedToId: null },
-            include: { requester: true, category: true, department: true },
-            orderBy: { createdAt: 'desc' }
-        });
-
-        // 2. EM ATENDIMENTO: Status 'IN_PROGRESS' e atribuído a MIM
-        const meusTrabalhos = await prisma.ticket.findMany({
-            where: { status: 'IN_PROGRESS', assignedToId: user.id },
-            include: { requester: true, category: true, department: true },
-            orderBy: { updatedAt: 'desc' }
-        });
-
-        // 3. PAUSADOS: Status 'EM_PAUSA' e atribuído a MIM
-        const pausados = await prisma.ticket.findMany({
-            where: { status: 'EM_PAUSA', assignedToId: user.id },
-            include: { requester: true, category: true, department: true },
-            orderBy: { updatedAt: 'desc' }
-        });
-
-        // 4. FINALIZADOS: Status 'CONCLUDED' ou 'CONCLUIDO' (adicionei ambos por segurança)
-        const finalizados = await prisma.ticket.findMany({
-            where: { 
-                assignedToId: user.id,
-                status: { in: ['CONCLUDED', 'CONCLUIDO'] } 
-            },
-            include: { requester: true, category: true, department: true },
-            orderBy: { updatedAt: 'desc' },
-            take: 10
-        });
+        const [disponiveis, meusTrabalhos, pausados, finalizados] = await Promise.all([
+            // 1. Aguardando (Novos chamados na fila)
+            prisma.ticket.findMany({
+                where: { status: 'OPEN', assignedToId: null },
+                include: { requester: true, category: true, department: true },
+                orderBy: { createdAt: 'desc' }
+            }),
+            // 2. Em Andamento (Atribuídos a mim e ativos)
+            prisma.ticket.findMany({
+                where: { status: 'IN_PROGRESS', assignedToId: user.id },
+                include: { requester: true, category: true, department: true },
+                orderBy: { updatedAt: 'desc' }
+            }),
+            // 3. Pausados (Atribuídos a mim e em pausa)
+            prisma.ticket.findMany({
+                where: { status: 'EM_PAUSA', assignedToId: user.id },
+                include: { requester: true, category: true, department: true },
+                orderBy: { updatedAt: 'desc' }
+            }),
+            // 4. Finalizados (Histórico recente)
+            prisma.ticket.findMany({
+                where: { 
+                    assignedToId: user.id,
+                    status: { in: ['CONCLUDED', 'CONCLUIDO'] } 
+                },
+                include: { requester: true, category: true, department: true },
+                orderBy: { updatedAt: 'desc' },
+                take: 6 // Apenas os últimos 6 para não poluir
+            })
+        ]);
 
         return NextResponse.json({ disponiveis, meusTrabalhos, pausados, finalizados });
     } catch (error) {

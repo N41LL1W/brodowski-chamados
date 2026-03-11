@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useState, useCallback } from 'react';
-import { Search, RefreshCw, LayoutDashboard, X, Inbox, ListChecks, Timer, Coffee, CheckCircle2 } from 'lucide-react';
+import { Search, RefreshCw, LayoutDashboard, ListChecks, Timer, Coffee, CheckCircle2 } from 'lucide-react';
 import { useSession } from "next-auth/react";
 import TicketCard from '@/components/TicketCard';
 
@@ -15,12 +15,7 @@ export default function PainelTecnicoPage() {
         try {
             const res = await fetch(`/api/admin/tickets?t=${Date.now()}`);
             const data = await res.json();
-            setTickets({
-                disponiveis: data.disponiveis || [],
-                meusTrabalhos: data.meusTrabalhos || [],
-                pausados: data.pausados || [],
-                finalizados: data.finalizados || []
-            });
+            setTickets(data);
         } catch (error) { console.error(error); } finally { setLoading(false); }
     }, []);
 
@@ -46,72 +41,73 @@ export default function PainelTecnicoPage() {
     };
 
     return (
-        <div className="min-h-screen bg-slate-50 dark:bg-slate-950 p-4 md:p-10">
-            <div className="max-w-[1700px] mx-auto space-y-12">
-                <header className="flex flex-col lg:flex-row justify-between items-center gap-6">
+        <div className="min-h-screen bg-slate-50 dark:bg-slate-950 p-4 md:p-8">
+            <div className="max-w-[1400px] mx-auto space-y-12">
+                <header className="flex flex-col md:flex-row justify-between items-center gap-6">
                     <div className="flex items-center gap-4">
-                        <div className="p-4 bg-blue-600 rounded-3xl text-white shadow-xl"><LayoutDashboard size={28} /></div>
+                        <div className="p-3 bg-blue-600 rounded-2xl text-white shadow-lg"><LayoutDashboard size={24} /></div>
                         <div>
-                            <h1 className="text-3xl font-black uppercase tracking-tighter">Central de Chamados</h1>
-                            <p className="text-slate-400 text-sm font-bold">Técnico: <span className="text-blue-600">{session?.user?.name}</span></p>
+                            <h1 className="text-2xl font-black uppercase tracking-tight">Painel de Chamados</h1>
+                            <p className="text-slate-400 text-xs font-bold uppercase">Técnico: <span className="text-blue-600">{session?.user?.name}</span></p>
                         </div>
                     </div>
-                    <div className="flex gap-3 w-full lg:w-auto">
-                        <div className="relative flex-1 lg:w-[400px]">
-                            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+                    <div className="flex gap-2 w-full md:w-auto">
+                        <div className="relative flex-1 md:w-80">
+                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
                             <input 
-                                className="w-full pl-12 pr-4 py-4 bg-white dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-800 rounded-2xl outline-none focus:border-blue-500 font-bold"
-                                placeholder="Buscar chamado..."
+                                className="w-full pl-10 pr-4 py-3 bg-white dark:bg-slate-900 border rounded-xl outline-none focus:ring-2 ring-blue-500/20 font-bold text-sm"
+                                placeholder="Buscar protocolo ou assunto..."
                                 onChange={(e) => setSearchTerm(e.target.value)}
                             />
                         </div>
-                        <button onClick={fetchTickets} className="p-4 bg-white dark:bg-slate-900 border-2 border-slate-200 rounded-2xl hover:text-blue-600">
-                            <RefreshCw size={24} className={loading ? "animate-spin" : ""} />
+                        <button onClick={fetchTickets} className="p-3 bg-white dark:bg-slate-900 border rounded-xl hover:bg-slate-50 transition-colors">
+                            <RefreshCw size={20} className={loading ? "animate-spin" : ""} />
                         </button>
                     </div>
                 </header>
 
                 <main className="space-y-16">
-                    {/* GRID DE 4 COLUNAS PARA PC */}
-                    <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-4 gap-8">
-                        <TicketColumn title="Aguardando" icon={<ListChecks size={18}/>} color="amber" tickets={filterList(tickets.disponiveis)} onAction={handleAction} actionLabel="Assumir" />
-                        <TicketColumn title="Em Andamento" icon={<Timer size={18}/>} color="blue" tickets={filterList(tickets.meusTrabalhos)} isMine />
-                        <TicketColumn title="Pausados" icon={<Coffee size={18}/>} color="purple" tickets={filterList(tickets.pausados)} isMine />
-                        <TicketColumn title="Concluídos" icon={<CheckCircle2 size={18}/>} color="slate" tickets={filterList(tickets.finalizados)} isDisabled />
-                    </div>
+                    <Section title="Aguardando" icon={<ListChecks size={20}/>} color="amber" 
+                        tickets={filterList(tickets.disponiveis)} onAction={handleAction} actionLabel="Assumir" />
+                    
+                    <Section title="Em Atendimento" icon={<Timer size={20}/>} color="blue" 
+                        tickets={filterList(tickets.meusTrabalhos)} isMine />
+
+                    <Section title="Pausados" icon={<Coffee size={20}/>} color="purple" 
+                        tickets={filterList(tickets.pausados)} isMine />
+
+                    <Section title="Concluídos" icon={<CheckCircle2 size={20}/>} color="slate" 
+                        tickets={filterList(tickets.finalizados)} isDisabled />
                 </main>
             </div>
         </div>
     );
 }
 
-function TicketColumn({ title, icon, color, tickets, onAction, actionLabel, isMine, isDisabled }: any) {
+function Section({ title, icon, color, tickets, onAction, actionLabel, isMine, isDisabled }: any) {
     const colors: any = {
-        amber: 'text-amber-500 bg-amber-50',
-        blue: 'text-blue-600 bg-blue-50',
-        purple: 'text-purple-600 bg-purple-50',
-        slate: 'text-slate-500 bg-slate-50'
+        amber: 'bg-amber-500 text-white',
+        blue: 'bg-blue-600 text-white',
+        purple: 'bg-purple-600 text-white',
+        slate: 'bg-slate-500 text-white'
     };
 
     return (
-        <div className="flex flex-col h-full bg-slate-100/40 dark:bg-slate-900/40 p-4 rounded-[2.5rem] border border-slate-200 dark:border-slate-800">
-            <div className="flex items-center justify-between mb-6 px-2">
-                <div className="flex items-center gap-2">
-                    <div className={`p-2 rounded-xl ${colors[color]}`}>{icon}</div>
-                    <h2 className="font-black uppercase text-xs tracking-widest text-slate-600">{title}</h2>
-                </div>
-                <span className="text-[10px] font-black bg-white dark:bg-slate-800 px-2 py-1 rounded-md shadow-sm">{tickets.length}</span>
+        <div className="space-y-6">
+            <div className="flex items-center gap-3 border-b border-slate-200 dark:border-slate-800 pb-4">
+                <div className={`p-2 rounded-lg ${colors[color]}`}>{icon}</div>
+                <h2 className="font-black uppercase text-sm tracking-widest">{title} <span className="ml-2 text-slate-400">({tickets.length})</span></h2>
             </div>
 
-            <div className="space-y-4 overflow-y-auto max-h-[700px] pr-2 custom-scrollbar">
-                {tickets.length === 0 ? (
-                    <div className="text-center py-10 opacity-30 font-black text-[10px] uppercase">Vazio</div>
-                ) : (
-                    tickets.map((t: any) => (
+            {tickets.length === 0 ? (
+                <div className="py-6 text-slate-400 font-bold text-xs uppercase italic">Nenhum chamado nesta categoria.</div>
+            ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {tickets.map((t: any) => (
                         <TicketCard key={t.id} ticket={t} onAction={onAction} actionLabel={actionLabel} isMine={isMine} isDisabled={isDisabled} />
-                    ))
-                )}
-            </div>
+                    ))}
+                </div>
+            )}
         </div>
     );
 }
