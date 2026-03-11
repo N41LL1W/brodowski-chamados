@@ -9,7 +9,7 @@ export async function GET() {
     const user = session.user as any;
 
     try {
-        // 1. Fila de Espera: ABERTOS e sem ninguém cuidando
+        // 1. Fila de Espera: ABERTOS (OPEN) e sem técnico
         const disponiveis = await prisma.ticket.findMany({
             where: { 
                 status: 'OPEN', 
@@ -19,8 +19,7 @@ export async function GET() {
             orderBy: { createdAt: 'desc' }
         });
 
-        // 2. Trabalhos Ativos: EM_ANDAMENTO e atribuídos a MIM
-        // Nota: Se um chamado sumiu, verifique se ao 'PAUSAR' você não está mudando o status para algo diferente de EM_ANDAMENTO
+        // 2. Trabalhos Ativos: EM ANDAMENTO (IN_PROGRESS) do técnico logado
         const meusTrabalhos = await prisma.ticket.findMany({
             where: { 
                 assignedToId: user.id,
@@ -30,11 +29,11 @@ export async function GET() {
             orderBy: { updatedAt: 'desc' }
         });
 
-        // 3. Finalizados: Apenas os CONCLUÍDOS por MIM
+        // 3. Finalizados: CONCLUÍDOS (CONCLUDED) pelo técnico logado
         const finalizados = await prisma.ticket.findMany({
             where: { 
                 assignedToId: user.id,
-                status: 'CONCLUIDO' 
+                status: 'CONCLUDED' 
             },
             include: { requester: true, category: true, department: true },
             orderBy: { updatedAt: 'desc' },
@@ -43,12 +42,11 @@ export async function GET() {
 
         return NextResponse.json({ disponiveis, meusTrabalhos, finalizados });
     } catch (error) {
-        console.error("Erro na API de Admin:", error);
+        console.error("ERRO API ADMIN:", error);
         return NextResponse.json({ error: "Erro ao carregar painel" }, { status: 500 });
     }
 }
 
-// O POST permanece igual, apenas garanto a estrutura
 export async function POST(req: Request) {
     try {
         const session = await getServerSession(authOptions);
@@ -62,7 +60,7 @@ export async function POST(req: Request) {
                 description: body.description,
                 location: body.location,
                 priority: body.priority || "NORMAL",
-                status: "ABERTO",
+                status: "OPEN", // Criar como OPEN para aparecer na lista 'disponiveis'
                 requesterId: body.requesterId || (session?.user as any).id,
                 categoryId: body.categoryId,
                 departmentId: body.departmentId,
