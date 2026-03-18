@@ -61,7 +61,7 @@ export async function POST(req: Request, props: { params: Promise<{ id: string }
     }
 }
 
-// ... Mantenha os GET e POST originais e substitua apenas o PATCH:
+// ... Mantenha GET e POST como estão ...
 
 export async function PATCH(req: Request, props: { params: Promise<{ id: string }> }) {
     try {
@@ -74,16 +74,20 @@ export async function PATCH(req: Request, props: { params: Promise<{ id: string 
 
         let updateData: any = { ...body };
 
-        // Lógica de Status Sincronizada com o Banco Neon
-        if (action === 'ASSUMIR') {
+        // WORKFLOW DE STATUS (Sincronizado com NeonDB)
+        if (action === 'ASSUMIR' || action === 'RETOMAR') {
+            // Ao assumir ou retomar, o chamado fica Ativo e atribuído ao técnico
             updateData.assignedToId = user.id;
             updateData.status = 'IN_PROGRESS';
         } else if (action === 'PAUSAR') {
-            updateData.status = 'EM_PAUSA'; // Agora bate com seu NeonDB
+            // Pausa o chamado mantendo o técnico atribuído
+            updateData.status = 'EM_PAUSA';
         } else if (action === 'DEVOLVER') {
+            // Libera o chamado para qualquer técnico assumir novamente
             updateData.assignedToId = null;
             updateData.status = 'OPEN';
         } else if (action === 'FINALIZAR') {
+            // Finaliza o chamado
             updateData.status = 'CONCLUDED';
             updateData.proofImage = proofImage;
             updateData.updatedAt = new Date();

@@ -3,7 +3,7 @@
 import Link from "next/link";
 import Card from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
-import { CheckCheck, MapPin, Wrench, Eye, Clock, ArrowRight } from 'lucide-react';
+import { CheckCheck, MapPin, Wrench, Eye, Clock, ArrowRight, Play } from 'lucide-react';
 
 export default function TicketCard({ ticket, onAction, actionLabel, isMine, isDisabled }: any) {
     const detailHref = `/tecnico/chamado/${ticket.id}`;
@@ -16,11 +16,9 @@ export default function TicketCard({ ticket, onAction, actionLabel, isMine, isDi
         }`}>
             <div className="flex-1 space-y-5">
                 <div className="flex justify-between items-center">
-                    <div className="flex items-center gap-2">
-                         <span className="text-[10px] font-black px-2.5 py-1 bg-slate-900 text-white rounded-md uppercase">
-                            {ticket.protocol}
-                        </span>
-                    </div>
+                    <span className="text-[10px] font-black px-2.5 py-1 bg-slate-900 text-white rounded-md uppercase">
+                        {ticket.protocol}
+                    </span>
                     <Badge variant="priority" value={ticket.priority}>{ticket.priority}</Badge>
                 </div>
                 
@@ -40,9 +38,7 @@ export default function TicketCard({ ticket, onAction, actionLabel, isMine, isDi
                     </div>
 
                     <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-full bg-slate-50 dark:bg-slate-800/50 flex items-center justify-center">
-                            <MapPin size={14} className="text-slate-400"/>
-                        </div>
+                        <MapPin size={14} className="text-slate-400"/>
                         <div className="flex flex-col">
                             <span className="text-[10px] uppercase font-black text-slate-400 leading-none">Localização</span>
                             <span className="text-xs font-bold text-slate-500 truncate max-w-[150px]">{ticket.location || "N/A"}</span>
@@ -57,25 +53,27 @@ export default function TicketCard({ ticket, onAction, actionLabel, isMine, isDi
                         <CheckCheck size={16} className="text-emerald-500"/> Atendimento Finalizado
                     </div>
                 ) : (
-                    <div className="flex gap-3">
+                    <div className="flex gap-2">
+                        {/* Botão Ver Detalhes / Trabalhar */}
                         <Link 
                             href={detailHref} 
-                            className={`flex-[1.5] flex items-center justify-center gap-2 py-4 rounded-2xl font-black text-[10px] uppercase transition-all shadow-md ${
-                                isMine 
-                                ? 'bg-blue-600 text-white hover:bg-blue-700 shadow-blue-500/20' 
-                                : 'bg-slate-900 text-white hover:bg-slate-800'
+                            className={`flex-2 flex items-center justify-center gap-2 py-4 rounded-2xl font-black text-[10px] uppercase transition-all shadow-md ${
+                                isMine ? 'bg-blue-600 text-white hover:bg-blue-700' : 'bg-slate-900 text-white hover:bg-slate-800'
                             }`}
                         >
                             {isMine ? <Wrench size={14}/> : <Eye size={14}/>}
                             {isMine ? "Trabalhar Agora" : "Ver Detalhes"}
                         </Link>
 
-                        {!isMine && onAction && (
+                        {/* Botão de Ação (Assumir ou Retomar) */}
+                        {onAction && actionLabel && (
                             <button 
                                 onClick={() => onAction(ticket.id)} 
-                                className="flex-1 flex items-center justify-center bg-white dark:bg-slate-800 border-2 border-amber-500 text-amber-500 hover:bg-amber-500 hover:text-white py-4 rounded-2xl font-black text-[10px] uppercase transition-all"
+                                className="flex-1 flex items-center justify-center gap-2 bg-white dark:bg-slate-800 border-2 border-amber-500 text-amber-500 hover:bg-amber-500 hover:text-white py-4 rounded-2xl font-black text-[10px] uppercase transition-all"
+                                title={actionLabel}
                             >
-                                <ArrowRight size={14}/>
+                                {actionLabel === "Retomar" ? <Play size={14}/> : <ArrowRight size={14}/>}
+                                <span className="hidden sm:inline">{actionLabel}</span>
                             </button>
                         )}
                     </div>

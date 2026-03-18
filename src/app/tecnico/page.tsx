@@ -25,7 +25,8 @@ export default function PainelTecnicoPage() {
         return () => window.removeEventListener('focus', fetchTickets);
     }, [fetchTickets]);
 
-    const handleAction = async (ticketId: string, action: 'ASSUMIR') => {
+    // Aceita qualquer ação (ASSUMIR, RETOMAR, etc) enviada pelo Card
+    const handleAction = async (ticketId: string, action: string) => {
         const res = await fetch(`/api/tickets/${ticketId}`, {
             method: 'PATCH',
             headers: { 'Content-Type': 'application/json' },
@@ -56,7 +57,7 @@ export default function PainelTecnicoPage() {
                             <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
                             <input 
                                 className="w-full pl-10 pr-4 py-3 bg-white dark:bg-slate-900 border rounded-xl outline-none focus:ring-2 ring-blue-500/20 font-bold text-sm"
-                                placeholder="Buscar protocolo ou assunto..."
+                                placeholder="Buscar..."
                                 onChange={(e) => setSearchTerm(e.target.value)}
                             />
                         </div>
@@ -67,15 +68,24 @@ export default function PainelTecnicoPage() {
                 </header>
 
                 <main className="space-y-16">
+                    {/* SEÇÃO AGUARDANDO: Botão ASSUMIR */}
                     <Section title="Aguardando" icon={<ListChecks size={20}/>} color="amber" 
-                        tickets={filterList(tickets.disponiveis)} onAction={handleAction} actionLabel="Assumir" />
+                        tickets={filterList(tickets.disponiveis)} 
+                        onAction={(id: string) => handleAction(id, 'ASSUMIR')} 
+                        actionLabel="Assumir" />
                     
+                    {/* SEÇÃO EM ANDAMENTO */}
                     <Section title="Em Atendimento" icon={<Timer size={20}/>} color="blue" 
                         tickets={filterList(tickets.meusTrabalhos)} isMine />
 
+                    {/* SEÇÃO PAUSADOS: Botão RETOMAR */}
                     <Section title="Pausados" icon={<Coffee size={20}/>} color="purple" 
-                        tickets={filterList(tickets.pausados)} isMine />
+                        tickets={filterList(tickets.pausados)} 
+                        onAction={(id: string) => handleAction(id, 'RETOMAR')} 
+                        actionLabel="Retomar"
+                        isMine />
 
+                    {/* SEÇÃO CONCLUÍDOS */}
                     <Section title="Concluídos" icon={<CheckCircle2 size={20}/>} color="slate" 
                         tickets={filterList(tickets.finalizados)} isDisabled />
                 </main>
@@ -100,7 +110,7 @@ function Section({ title, icon, color, tickets, onAction, actionLabel, isMine, i
             </div>
 
             {tickets.length === 0 ? (
-                <div className="py-6 text-slate-400 font-bold text-xs uppercase italic">Nenhum chamado nesta categoria.</div>
+                <div className="py-6 text-slate-400 font-bold text-xs uppercase italic text-center border-2 border-dashed border-slate-200 rounded-3xl">Nenhum chamado aqui</div>
             ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     {tickets.map((t: any) => (
