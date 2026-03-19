@@ -4,8 +4,10 @@ import { useState, useEffect, use } from 'react';
 import Link from "next/link";
 import { 
     Clock, Wrench, CheckCircle2, ArrowLeft, 
-    Tag, MapPin, Send, MessageSquare, User, Lock
-} from "lucide-react"; // Caso o seu import seja lucide-react, mantenha react
+    Tag, MapPin, Send, MessageSquare, User, Lock, Download 
+} from "lucide-react";
+import { PDFDownloadLink } from '@react-pdf/renderer'; // Importar o renderer
+import { TicketPDF } from '@/components/TicketPDF'; // Importar o seu modelo de PDF
 
 export default function TicketDetailPage({ params }: { params: Promise<{ id: string }> }) {
     const { id } = use(params);
@@ -58,7 +60,6 @@ export default function TicketDetailPage({ params }: { params: Promise<{ id: str
         </div>
     );
 
-    // Caso de Acesso Negado (Técnico tentando ver chamado de outro aqui)
     if (errorStatus === 403) return (
         <div className="min-h-screen flex flex-col items-center justify-center p-6 text-center">
             <div className="bg-red-50 p-8 rounded-full mb-6">
@@ -96,11 +97,27 @@ export default function TicketDetailPage({ params }: { params: Promise<{ id: str
             <div className="grid lg:grid-cols-3 gap-8">
                 <div className="lg:col-span-2 space-y-6">
                     <div className="bg-white rounded-[3rem] shadow-2xl shadow-slate-200/50 border border-slate-100 overflow-hidden">
+                        
+                        {/* HEADER DO CARD COM BOTÃO DE PDF */}
                         <div className="bg-slate-900 p-10 text-white flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
-                            <div>
-                                <p className="text-blue-400 text-[10px] font-black uppercase tracking-[0.3em] mb-2">Protocolo Oficial</p>
-                                <h1 className="text-3xl font-mono font-bold tracking-tighter">{ticket.protocol}</h1>
+                            <div className="flex flex-col md:flex-row md:items-center gap-6">
+                                <div>
+                                    <p className="text-blue-400 text-[10px] font-black uppercase tracking-[0.3em] mb-2">Protocolo Oficial</p>
+                                    <h1 className="text-3xl font-mono font-bold tracking-tighter">{ticket.protocol}</h1>
+                                </div>
+                                
+                                {/* BOTÃO DE DOWNLOAD PDF */}
+                                <PDFDownloadLink 
+                                    document={<TicketPDF ticket={ticket} />} 
+                                    fileName={`comprovante-${ticket.protocol}.pdf`}
+                                    className="flex items-center gap-2 bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white px-4 py-2 rounded-xl border border-slate-700 transition-all text-[10px] font-black uppercase tracking-widest mt-2 md:mt-6"
+                                >
+                                    {({ loading }) => (
+                                        loading ? '...' : <><Download size={14} /> PDF</>
+                                    )}
+                                </PDFDownloadLink>
                             </div>
+                            
                             <span className="bg-blue-600 px-6 py-2.5 rounded-2xl text-xs font-black uppercase shadow-xl shadow-blue-900/40">
                                 {ticket.status.replace('_', ' ')}
                             </span>
@@ -167,6 +184,7 @@ export default function TicketDetailPage({ params }: { params: Promise<{ id: str
                 </div>
 
                 <div className="lg:col-span-1">
+                    {/* CHAT DE ATENDIMENTO (Mantido original) */}
                     <div className="bg-white rounded-[3rem] shadow-2xl border border-slate-100 overflow-hidden flex flex-col h-[750px]">
                         <div className="p-8 bg-slate-900 text-white flex items-center justify-between">
                             <div className="flex items-center gap-3">
