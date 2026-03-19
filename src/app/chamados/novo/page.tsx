@@ -4,9 +4,11 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { 
     Monitor, Wifi, Printer, ShieldAlert, 
-    FileText, Send, ArrowLeft, MapPin 
+    FileText, Send, ArrowLeft, MapPin, CheckCircle, Download, Home 
 } from 'lucide-react';
 import Card from '@/components/ui/Card';
+import { PDFDownloadLink } from '@react-pdf/renderer'; // Importação necessária
+import { TicketPDF } from '@/components/TicketPDF'; // O componente que criamos antes
 
 const IconMap: any = { Monitor, Wifi, Printer, ShieldAlert, FileText };
 
@@ -16,6 +18,7 @@ export default function NovoChamadoPage() {
     const [loading, setLoading] = useState(false);
     const [categories, setCategories] = useState([]);
     const [departments, setDepartments] = useState([]);
+    const [createdTicket, setCreatedTicket] = useState<any>(null); // Novo estado para o ticket criado
 
     const [form, setForm] = useState({
         categoryId: '',
@@ -48,11 +51,17 @@ export default function NovoChamadoPage() {
             });
 
             if (res.ok) {
-                router.push('/meus-chamados'); 
-                router.refresh();
-            } else { alert("Erro ao criar chamado."); }
-        } catch (error) { alert("Erro de conexão."); }
-        finally { setLoading(false); }
+                const ticketData = await res.json();
+                setCreatedTicket(ticketData); // Salva os dados do ticket para o PDF
+                setStep(3); // Vai para o novo passo de "Sucesso"
+            } else { 
+                alert("Erro ao criar chamado."); 
+            }
+        } catch (error) { 
+            alert("Erro de conexão."); 
+        } finally { 
+            setLoading(false); 
+        }
     };
 
     return (
@@ -62,7 +71,9 @@ export default function NovoChamadoPage() {
                     <h1 className="text-3xl font-black text-foreground uppercase italic tracking-tighter">
                         Novo <span className="text-blue-600">Chamado</span>
                     </h1>
-                    <p className="text-muted-foreground font-medium text-sm">Passo {step} de 2</p>
+                    <p className="text-muted-foreground font-medium text-sm">
+                        {step === 3 ? "Concluído" : `Passo ${step} de 2`}
+                    </p>
                 </div>
                 {step === 2 && (
                     <button 
@@ -74,6 +85,7 @@ export default function NovoChamadoPage() {
                 )}
             </header>
 
+            {/* PASSO 1: SELEÇÃO DE CATEGORIA */}
             {step === 1 && (
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-6 animate-in fade-in zoom-in duration-300">
                     {categories.map((cat: any) => {
@@ -87,13 +99,14 @@ export default function NovoChamadoPage() {
                                 <div className="p-5 bg-secondary rounded-2xl group-hover:bg-blue-600 group-hover:text-white transition-all duration-300">
                                     <Icon size={40} />
                                 </div>
-                                <span className="font-black text-foreground uppercase text-xs tracking-widest">{cat.name}</span>
+                                <span className="font-black text-foreground uppercase text-xs tracking-widest text-center">{cat.name}</span>
                             </button>
                         );
                     })}
                 </div>
             )}
 
+            {/* PASSO 2: FORMULÁRIO DETALHADO */}
             {step === 2 && (
                 <Card className="p-8 shadow-2xl border-none rounded-4xl animate-in fade-in slide-in-from-right-8 duration-300">
                     <form className="space-y-6">
@@ -169,6 +182,43 @@ export default function NovoChamadoPage() {
                         </button>
                     </form>
                 </Card>
+            )}
+
+            {/* PASSO 3: SUCESSO E DOWNLOAD DO PDF */}
+            {step === 3 && createdTicket && (
+                <div className="text-center space-y-8 animate-in fade-in zoom-in duration-500">
+                    <div className="flex flex-col items-center gap-4">
+                        <div className="p-6 bg-green-100 text-green-600 rounded-full shadow-inner">
+                            <CheckCircle size={80} />
+                        </div>
+                        <h2 className="text-4xl font-black uppercase italic tracking-tighter">Chamado <span className="text-green-600">Enviado!</span></h2>
+                        <p className="text-muted-foreground font-medium max-w-xs mx-auto">
+                            Seu protocolo é <span className="font-bold text-foreground">{createdTicket.protocol}</span>. Salve o comprovante abaixo.
+                        </p>
+                    </div>
+
+                    <div className="grid gap-4 max-w-sm mx-auto">
+                        <PDFDownloadLink 
+                            document={<TicketPDF ticket={createdTicket} />} 
+                            fileName={`protocolo-${createdTicket.protocol}.pdf`}
+                            className="flex items-center justify-center gap-3 p-5 bg-foreground text-background rounded-2xl font-black uppercase hover:opacity-90 transition-all"
+                        >
+                            {({ loading }) => (
+                                <>
+                                    <Download size={20} />
+                                    {loading ? 'Preparando PDF...' : 'Baixar Comprovante PDF'}
+                                </>
+                            )}
+                        </PDFDownloadLink>
+
+                        <button 
+                            onClick={() => router.push('/meus-chamados')}
+                            className="flex items-center justify-center gap-3 p-5 bg-secondary text-foreground rounded-2xl font-black uppercase hover:bg-border transition-all"
+                        >
+                            <Home size={20} /> Ir para meus chamados
+                        </button>
+                    </div>
+                </div>
             )}
         </div>
     );
