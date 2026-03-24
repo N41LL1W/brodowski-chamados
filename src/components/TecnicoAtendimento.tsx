@@ -1,6 +1,6 @@
 "use client";
 import { useState } from 'react';
-import { Send, FileText, History, User, MessageSquare, Terminal } from 'lucide-react';
+import { FileText, History, MessageSquare, Terminal, Image as ImageIcon } from 'lucide-react';
 
 export default function TecnicoAtendimento({ ticket, onUpdate }: any) {
     const [note, setNote] = useState("");
@@ -8,16 +8,18 @@ export default function TecnicoAtendimento({ ticket, onUpdate }: any) {
 
     const handleSave = async (isInternal: boolean) => {
         if (!note.trim()) return;
-        setLoading(true);
+        setLoading(false); // Inicia loading
         try {
             const res = await fetch(`/api/tickets/${ticket.id}`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ content: note, isInternal })
+                // Enviamos o proofImage como null aqui por enquanto, 
+                // ou você pode adicionar um input de arquivo depois
+                body: JSON.stringify({ content: note, isInternal, proofImage: null })
             });
             if (res.ok) {
                 setNote("");
-                onUpdate(); // Recarrega os dados no pai
+                onUpdate();
             }
         } catch (err) {
             console.error(err);
@@ -60,7 +62,7 @@ export default function TecnicoAtendimento({ ticket, onUpdate }: any) {
                 </div>
             </div>
 
-            {/* HISTÓRICO COM CORES DIFERENCIADAS */}
+            {/* HISTÓRICO COM FOTOS */}
             <div className="bg-white dark:bg-slate-900 rounded-[2.5rem] p-8 shadow-xl border border-slate-100 dark:border-slate-800 flex flex-col h-[500px]">
                 <div className="flex items-center gap-3 mb-6">
                     <div className="p-3 bg-slate-100 text-slate-600 rounded-2xl"><History size={24} /></div>
@@ -73,8 +75,7 @@ export default function TecnicoAtendimento({ ticket, onUpdate }: any) {
                         const cleanContent = c.content.replace("[INTERNO] ", "");
                         const isTecnico = ["TECNICO", "ADMIN", "MASTER"].includes(c.user?.role);
 
-                        // LÓGICA DE CORES
-                        let bgColor = "bg-blue-600 text-white"; // Cliente (Azul)
+                        let bgColor = "bg-blue-600 text-white"; 
                         let borderColor = "border-transparent";
                         let label = "Cliente";
 
@@ -88,12 +89,28 @@ export default function TecnicoAtendimento({ ticket, onUpdate }: any) {
                         }
 
                         return (
-                            <div key={c.id} className={`p-4 rounded-2xl border ${bgColor} ${borderColor} shadow-sm`}>
+                            <div key={c.id} className={`p-4 rounded-2xl border ${bgColor} ${borderColor} shadow-sm transition-all`}>
                                 <div className="flex justify-between items-center mb-1 opacity-80">
                                     <span className="text-[9px] font-black uppercase tracking-tighter">{label} • {c.user?.name}</span>
-                                    <span className="text-[9px] font-mono">{new Date(c.createdAt).toLocaleTimeString()}</span>
+                                    <span className="text-[9px] font-mono">{new Date(c.createdAt).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
                                 </div>
                                 <p className="text-sm font-medium leading-snug">{cleanContent}</p>
+
+                                {/* EXIBIÇÃO DA FOTO NO CHAT SE EXISTIR */}
+                                {c.proofImage && (
+                                    <div className="mt-3 relative group">
+                                        <a href={c.proofImage} target="_blank" rel="noopener noreferrer">
+                                            <img 
+                                                src={c.proofImage} 
+                                                alt="Anexo do técnico" 
+                                                className="rounded-xl border border-black/10 max-h-48 w-full object-cover hover:brightness-90 transition-all shadow-inner"
+                                            />
+                                            <div className="absolute top-2 right-2 p-1 bg-black/50 rounded-full text-white backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-opacity">
+                                                <ImageIcon size={14} />
+                                            </div>
+                                        </a>
+                                    </div>
+                                )}
                             </div>
                         );
                     })}

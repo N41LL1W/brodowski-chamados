@@ -96,13 +96,14 @@ model Ticket {
 // --- CHAT / COMENTÁRIOS ---
 
 model Comment {
-  id        String   @id @default(cuid())
-  content   String
-  createdAt DateTime @default(now())
-  ticketId  String
-  userId    String
-  ticket    Ticket   @relation(fields: [ticketId], references: [id], onDelete: Cascade)
-  user      User     @relation(fields: [userId], references: [id])
+  id         String   @id @default(cuid())
+  content    String
+  proofImage String?  @db.Text   // <--- ADICIONE ESTA LINHA
+  createdAt  DateTime @default(now())
+  ticketId   String
+  userId     String
+  ticket     Ticket   @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  user       User     @relation(fields: [userId], references: [id])
 }
 
 // --- NEXT AUTH ---

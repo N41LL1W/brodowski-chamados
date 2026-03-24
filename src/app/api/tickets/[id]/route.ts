@@ -26,7 +26,7 @@ export async function GET(req: Request, props: { params: Promise<{ id: string }>
                     include: { 
                         user: { select: { id: true, name: true, role: true, image: true } } 
                     },
-                    orderBy: { createdAt: 'desc' } // Crucial para o Diário de Atividades mostrar a última ação no topo
+                    orderBy: { createdAt: 'desc' }
                 }
             }
         });
@@ -35,12 +35,11 @@ export async function GET(req: Request, props: { params: Promise<{ id: string }>
             return NextResponse.json({ message: "Chamado não encontrado" }, { status: 404 });
         }
 
-        // Regra de Acesso: Apenas o dono do chamado ou equipe técnica/admin
         const isOwner = ticket.requesterId === user.id;
         const isStaff = ['TECNICO', 'ADMIN', 'MASTER'].includes(user.role);
 
         if (!isOwner && !isStaff) {
-            return NextResponse.json({ message: "Acesso negado a este documento" }, { status: 403 });
+            return NextResponse.json({ message: "Acesso negado" }, { status: 403 });
         }
 
         return NextResponse.json(ticket);
@@ -50,12 +49,12 @@ export async function GET(req: Request, props: { params: Promise<{ id: string }>
     }
 }
 
-// POST: Cria um novo comentário ou nota técnica
+// POST: Cria um novo comentário ou nota técnica (COM SUPORTE A FOTO)
 export async function POST(req: Request, props: { params: Promise<{ id: string }> }) {
     try {
         const session = await getServerSession(authOptions);
         const { id } = await props.params;
-        const { content, isInternal } = await req.json();
+        const { content, isInternal, proofImage } = await req.json();
 
         if (!session?.user) {
             return new NextResponse('Não autorizado', { status: 401 });
@@ -63,17 +62,17 @@ export async function POST(req: Request, props: { params: Promise<{ id: string }
 
         const user = session.user as any;
 
-        if (!content?.trim()) {
-            return NextResponse.json({ error: "O conteúdo não pode estar vazio" }, { status: 400 });
+        // Validamos se tem texto OU se tem imagem (pode enviar só a foto)
+        if (!content?.trim() && !proofImage) {
+            return NextResponse.json({ error: "O comentário não pode estar vazio" }, { status: 400 });
         }
 
-        // Lógica de diferenciação para o Diário Técnico (3 cores)
-        // Se isInternal for true, prefixamos para a UI identificar como "Nota de Manutenção"
-        const finalContent = isInternal ? `[INTERNO] ${content}` : content;
+        const finalContent = isInternal ? `[INTERNO] ${content || ''}` : content;
 
         const comment = await prisma.comment.create({
             data: { 
-                content: finalContent, 
+                content: finalContent || (proofImage ? "[FOTO ANEXADA]" : ""), 
+                proofImage: proofImage || null, // Novo campo
                 ticketId: id, 
                 userId: user.id 
             },
@@ -89,13 +88,11 @@ export async function POST(req: Request, props: { params: Promise<{ id: string }
     }
 }
 
-// PATCH: Atualiza o status e workflow do chamado
+// PATCH: Atualiza o status e workflow
 export async function PATCH(req: Request, props: { params: Promise<{ id: string }> }) {
     try {
         const session = await getServerSession(authOptions);
-        if (!session?.user) {
-            return new NextResponse('Não autorizado', { status: 401 });
-        }
+        if (!session?.user) return new NextResponse('Não autorizado', { status: 401 });
         
         const { id } = await props.params;
         const { action, proofImage, ...body } = await req.json();
@@ -103,37 +100,26 @@ export async function PATCH(req: Request, props: { params: Promise<{ id: string 
 
         let updateData: any = { ...body };
 
-        // WORKFLOW DE STATUS (TI BRODOWSKI)
         switch (action) {
             case 'ASSUMIR':
             case 'RETOMAR':
                 updateData.assignedToId = user.id;
                 updateData.status = 'IN_PROGRESS';
-                updateData.updatedAt = new Date();
                 break;
-            
             case 'PAUSAR':
                 updateData.status = 'EM_PAUSA';
-                updateData.updatedAt = new Date();
                 break;
-            
             case 'DEVOLVER':
-                // Libera o chamado para a fila comum novamente
                 updateData.assignedToId = null;
                 updateData.status = 'OPEN';
-                updateData.updatedAt = new Date();
                 break;
-            
             case 'FINALIZAR':
                 updateData.status = 'CONCLUDED';
-                updateData.proofImage = proofImage; // Salva a foto do serviço/conclusão se houver
-                updateData.updatedAt = new Date();
-                break;
-            
-            default:
-                // Se não houver action, apenas atualiza os campos enviados no body
+                updateData.proofImage = proofImage;
                 break;
         }
+
+        updateData.updatedAt = new Date();
 
         const updatedTicket = await prisma.ticket.update({
             where: { id },
