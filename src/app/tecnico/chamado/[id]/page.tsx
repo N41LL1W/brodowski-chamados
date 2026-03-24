@@ -4,8 +4,8 @@ import { useState, useEffect, use, useRef } from 'react';
 import { Badge } from '@/components/ui/Badge';
 import Card from '@/components/ui/Card';
 import { 
-  ArrowLeft, Clock, User, MapPin, 
-  CheckCircle, Loader2, Send, Undo2, PauseCircle, Camera, X, Building, Terminal, MessageSquare
+  ArrowLeft, User, MapPin, CheckCircle, Loader2, Send, Undo2, 
+  PauseCircle, Camera, X, Building, Terminal, MessageSquare, UploadCloud 
 } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -33,11 +33,8 @@ export default function DetalheChamadoPage({ params }: { params: Promise<{ id: s
         }
     };
 
-    useEffect(() => { 
-        if (id) loadTicket(); 
-    }, [id]);
+    useEffect(() => { if (id) loadTicket(); }, [id]);
 
-    // Scroll para o fim do chat quando carregar mensagens novas
     useEffect(() => {
         if (scrollRef.current) {
             scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
@@ -53,6 +50,29 @@ export default function DetalheChamadoPage({ params }: { params: Promise<{ id: s
         }
     };
 
+    // NOVA FUNÇÃO: Salva a foto como uma nota no diário sem finalizar
+    const handleSavePhotoOnly = async () => {
+        if (!imagePreview) return;
+        setIsSubmitting(true);
+        try {
+            const res = await fetch(`/api/tickets/${id}`, { 
+                method: 'POST', 
+                headers: {'Content-Type': 'application/json'}, 
+                body: JSON.stringify({ 
+                    content: "[FOTO ANEXADA]", 
+                    isInternal: true,
+                    proofImage: imagePreview // Enviando a imagem para o comentário/nota
+                }) 
+            });
+            if(res.ok) { 
+                setImagePreview(null); 
+                loadTicket(); 
+            }
+        } finally { 
+            setIsSubmitting(false); 
+        }
+    };
+
     const handleAction = async (isInternal: boolean) => {
         if (!nota.trim()) return;
         setIsSubmitting(true);
@@ -62,13 +82,8 @@ export default function DetalheChamadoPage({ params }: { params: Promise<{ id: s
                 headers: {'Content-Type': 'application/json'}, 
                 body: JSON.stringify({ content: nota, isInternal }) 
             });
-            if(res.ok) { 
-                setNota(""); 
-                loadTicket(); 
-            }
-        } finally { 
-            setIsSubmitting(false); 
-        }
+            if(res.ok) { setNota(""); loadTicket(); }
+        } finally { setIsSubmitting(false); }
     };
 
     const handleUpdateStatus = async (action: string) => {
@@ -87,17 +102,13 @@ export default function DetalheChamadoPage({ params }: { params: Promise<{ id: s
                 router.push('/tecnico');
                 router.refresh();
             }
-        } finally { 
-            setIsSubmitting(false); 
-        }
+        } finally { setIsSubmitting(false); }
     };
 
     if (loading) return <div className="h-screen flex items-center justify-center dark:bg-slate-950"><Loader2 className="animate-spin text-blue-600" size={40} /></div>;
-    if (!ticket) return <div className="p-20 text-center font-black text-slate-500 uppercase">Chamado não encontrado.</div>;
 
     return (
         <div className="max-w-5xl mx-auto p-4 md:p-8 space-y-6 bg-slate-50/50 dark:bg-transparent min-h-screen">
-            {/* Header Sticky */}
             <header className="flex justify-between items-center bg-white/80 dark:bg-slate-900/80 backdrop-blur-md p-4 rounded-3xl border border-slate-200 dark:border-slate-800 sticky top-4 z-20 shadow-lg">
                 <Link href="/tecnico" className="p-3 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-2xl transition-all">
                     <ArrowLeft size={24} className="text-slate-600" />
@@ -110,7 +121,7 @@ export default function DetalheChamadoPage({ params }: { params: Promise<{ id: s
 
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
                 
-                {/* Lado Esquerdo: Detalhes do Chamado */}
+                {/* Lado Esquerdo: Info e Upload de Foto */}
                 <div className="lg:col-span-4 space-y-6">
                     <Card className="p-6 rounded-[2.5rem] border-none shadow-xl ring-1 ring-slate-100 dark:ring-slate-800">
                         <h1 className="text-xl font-black text-slate-900 dark:text-white uppercase mb-4 leading-tight">{ticket.subject}</h1>
@@ -118,12 +129,6 @@ export default function DetalheChamadoPage({ params }: { params: Promise<{ id: s
                             <InfoItem icon={<User size={16}/>} label="Solicitante" value={ticket.requester?.name} />
                             <InfoItem icon={<Building size={16}/>} label="Setor" value={ticket.department?.name} />
                             <InfoItem icon={<MapPin size={16}/>} label="Local" value={ticket.location || "Não informado"} />
-                            <div className="pt-4 border-t border-slate-100 dark:border-slate-800">
-                                <p className="text-[10px] font-black text-slate-400 uppercase mb-2">Descrição</p>
-                                <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed bg-slate-50 dark:bg-slate-950 p-4 rounded-2xl italic">
-                                    "{ticket.description}"
-                                </p>
-                            </div>
                         </div>
 
                         <div className="grid grid-cols-2 gap-2 mt-6">
@@ -136,105 +141,81 @@ export default function DetalheChamadoPage({ params }: { params: Promise<{ id: s
                         </div>
                     </Card>
 
-                    {/* Finalização com Foto */}
-                    <Card className="p-6 rounded-[2.5rem] bg-emerald-50 dark:bg-emerald-950/20 border-2 border-emerald-100 dark:border-emerald-900/30">
-                         <div className={`relative border-2 border-dashed rounded-3xl p-4 text-center mb-4 transition-all ${imagePreview ? 'border-emerald-500 bg-white' : 'border-emerald-200'}`}>
-                            {!imagePreview ? (
-                                <label className="cursor-pointer block py-4">
-                                    <Camera className="text-emerald-500 mx-auto mb-2" size={32} />
-                                    <p className="text-[10px] font-black text-emerald-700 uppercase">Foto do Serviço</p>
-                                    <input type="file" className="hidden" accept="image/*" capture="environment" onChange={handleImageChange} />
-                                </label>
-                            ) : (
-                                <div className="relative group">
-                                    <img src={imagePreview} className="w-full h-40 object-cover rounded-2xl" alt="Preview" />
-                                    <button onClick={() => setImagePreview(null)} className="absolute -top-2 -right-2 bg-red-500 text-white p-1 rounded-full shadow-lg">
-                                        <X size={16}/>
+                    {/* SEÇÃO DE FOTOS INDEPENDENTE */}
+                    <Card className="p-6 rounded-[2.5rem] bg-slate-900 text-white shadow-2xl border-none">
+                        <div className="flex items-center gap-3 mb-4">
+                            <div className="p-2 bg-blue-600 rounded-lg"><Camera size={18}/></div>
+                            <h3 className="font-black uppercase text-[10px] tracking-widest">Registrar Evidência</h3>
+                        </div>
+
+                        {!imagePreview ? (
+                            <label className="cursor-pointer block border-2 border-dashed border-slate-700 rounded-2xl p-8 text-center hover:border-blue-500 transition-all">
+                                <UploadCloud className="mx-auto mb-2 text-slate-500" size={32} />
+                                <p className="text-[9px] font-black uppercase text-slate-400">Capturar Foto</p>
+                                <input type="file" className="hidden" accept="image/*" capture="environment" onChange={handleImageChange} />
+                            </label>
+                        ) : (
+                            <div className="space-y-3">
+                                <img src={imagePreview} className="w-full h-48 object-cover rounded-2xl border-2 border-blue-500" alt="Preview" />
+                                <div className="grid grid-cols-2 gap-2">
+                                    <button 
+                                        onClick={handleSavePhotoOnly}
+                                        disabled={isSubmitting}
+                                        className="bg-blue-600 p-3 rounded-xl font-black text-[9px] uppercase hover:bg-blue-700"
+                                    >
+                                        {isSubmitting ? "Salvando..." : "Anexar ao Diário"}
+                                    </button>
+                                    <button 
+                                        onClick={() => handleUpdateStatus('FINALIZAR')}
+                                        className="bg-emerald-600 p-3 rounded-xl font-black text-[9px] uppercase hover:bg-emerald-700 shadow-lg shadow-emerald-500/20"
+                                    >
+                                        Finalizar Com Foto
                                     </button>
                                 </div>
-                            )}
-                        </div>
-                        <button 
-                            onClick={() => handleUpdateStatus('FINALIZAR')} 
-                            disabled={!imagePreview || isSubmitting}
-                            className="w-full bg-emerald-600 text-white py-4 rounded-2xl font-black text-xs uppercase shadow-lg shadow-emerald-500/30 disabled:opacity-30"
-                        >
-                            Concluir Chamado
-                        </button>
+                                <button onClick={() => setImagePreview(null)} className="w-full text-slate-400 text-[8px] font-black uppercase">Cancelar</button>
+                            </div>
+                        )}
                     </Card>
                 </div>
 
-                {/* Lado Direito: Timeline de Interação (CHAT) */}
-                <div className="lg:col-span-8 space-y-4 h-[calc(100vh-160px)] flex flex-col">
+                {/* Lado Direito: Timeline de Interação */}
+                <div className="lg:col-span-8 h-[calc(100vh-160px)] flex flex-col">
                     <Card className="flex-1 flex flex-col p-0 rounded-[2.5rem] border-none shadow-2xl ring-1 ring-slate-100 dark:ring-slate-800 overflow-hidden bg-white dark:bg-slate-900">
-                        {/* Area de Mensagens */}
-                        <div ref={scrollRef} className="flex-1 overflow-y-auto p-6 space-y-6 scroll-smooth">
-                            {ticket.comments?.length === 0 && (
-                                <div className="h-full flex flex-col items-center justify-center opacity-30 italic">
-                                    <MessageSquare size={48} className="mb-2"/>
-                                    <p className="text-sm">Nenhuma interação registrada ainda.</p>
-                                </div>
-                            )}
-                            
+                        <div ref={scrollRef} className="flex-1 overflow-y-auto p-6 space-y-6">
                             {ticket.comments?.map((c: any) => {
                                 const isInternal = c.content.startsWith("[INTERNO]");
                                 const content = c.content.replace("[INTERNO] ", "");
                                 const isTecnico = ["TECNICO", "ADMIN", "MASTER"].includes(c.user?.role);
 
-                                if (isInternal) {
-                                    return (
-                                        <div key={c.id} className="flex flex-col items-center py-2">
-                                            <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800/50 text-amber-800 dark:text-amber-400 px-6 py-3 rounded-2xl text-xs font-bold max-w-md text-center shadow-sm">
-                                                <Terminal size={12} className="inline mr-2 mb-1"/>
-                                                {content}
-                                                <div className="text-[8px] mt-1 opacity-60 uppercase">{new Date(c.createdAt).toLocaleString('pt-BR')}</div>
-                                            </div>
-                                        </div>
-                                    );
-                                }
-
                                 return (
-                                    <div key={c.id} className={`flex flex-col ${isTecnico ? 'items-end' : 'items-start'}`}>
-                                        <div className={`max-w-[80%] p-4 rounded-3xl text-sm font-medium shadow-sm ${
-                                            isTecnico 
-                                            ? 'bg-blue-600 text-white rounded-tr-none' 
-                                            : 'bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 rounded-tl-none'
+                                    <div key={c.id} className={`flex flex-col ${isInternal ? 'items-center' : (isTecnico ? 'items-end' : 'items-start')}`}>
+                                        <div className={`p-4 rounded-3xl text-sm shadow-sm ${
+                                            isInternal ? 'bg-amber-50 border border-amber-200 text-amber-800 text-center max-w-md' :
+                                            isTecnico ? 'bg-blue-600 text-white rounded-tr-none' :
+                                            'bg-slate-100 text-slate-800 rounded-tl-none'
                                         }`}>
+                                            {/* Se o comentário tiver foto salva no banco (precisa ajustar API para retornar proofImage no comentário se desejar) */}
                                             {content}
                                         </div>
-                                        <span className="text-[9px] font-black text-slate-400 mt-2 px-2 uppercase tracking-tighter">
-                                            {isTecnico ? 'Você' : c.user?.name} • {new Date(c.createdAt).toLocaleTimeString('pt-BR', {hour: '2-digit', minute:'2-digit'})}
+                                        <span className="text-[8px] font-black text-slate-400 mt-1 uppercase">
+                                            {new Date(c.createdAt).toLocaleString()}
                                         </span>
                                     </div>
                                 );
                             })}
                         </div>
 
-                        {/* Input Area */}
-                        <div className="p-4 bg-slate-50 dark:bg-slate-950 border-t border-slate-100 dark:border-slate-800">
+                        <div className="p-4 bg-slate-50 dark:bg-slate-950 border-t border-slate-100">
                             <textarea 
                                 value={nota}
                                 onChange={(e) => setNota(e.target.value)}
-                                placeholder="Responda ao usuário ou salve uma nota técnica..."
-                                className="w-full bg-white dark:bg-slate-900 p-4 rounded-2xl border-2 border-slate-100 dark:border-slate-800 outline-none focus:border-blue-500 transition-all text-sm resize-none mb-3"
+                                placeholder="Descreva a ação ou responda..."
+                                className="w-full bg-white p-4 rounded-2xl border-2 border-slate-100 outline-none focus:border-blue-500 transition-all text-sm resize-none mb-3"
                                 rows={2}
                             />
                             <div className="flex gap-2">
-                                <button 
-                                    onClick={() => handleAction(false)}
-                                    disabled={isSubmitting || !nota.trim()}
-                                    className="flex-1 bg-blue-600 text-white py-4 rounded-xl font-black uppercase text-[10px] flex items-center justify-center gap-2 hover:bg-blue-700 transition-all shadow-lg shadow-blue-500/20"
-                                >
-                                    <Send size={14}/> Responder Usuário
-                                </button>
-                                <button 
-                                    onClick={() => handleAction(true)}
-                                    disabled={isSubmitting || !nota.trim()}
-                                    className="px-6 bg-amber-500 text-white py-4 rounded-xl font-black uppercase text-[10px] flex items-center justify-center gap-2 hover:bg-amber-600 transition-all shadow-lg shadow-amber-500/20"
-                                    title="Salvar apenas no Diário Interno"
-                                >
-                                    <Terminal size={14}/> Nota Interna
-                                </button>
+                                <button onClick={() => handleAction(false)} className="flex-1 bg-blue-600 text-white py-4 rounded-xl font-black uppercase text-[10px] shadow-lg shadow-blue-500/20"><Send size={14} className="inline mr-2"/> Falar com Usuário</button>
+                                <button onClick={() => handleAction(true)} className="px-6 bg-amber-500 text-white py-4 rounded-xl font-black uppercase text-[10px] shadow-lg shadow-amber-500/20"><Terminal size={14} className="inline mr-2"/> Nota Interna</button>
                             </div>
                         </div>
                     </Card>
@@ -246,8 +227,8 @@ export default function DetalheChamadoPage({ params }: { params: Promise<{ id: s
 
 function InfoItem({ icon, label, value }: { icon: any, label: string, value: string }) {
     return (
-        <div className="flex gap-3 items-start group">
-            <div className="mt-0.5 text-blue-500 bg-blue-50 dark:bg-blue-900/50 p-2 rounded-xl group-hover:scale-110 transition-transform">{icon}</div>
+        <div className="flex gap-3 items-start">
+            <div className="mt-0.5 text-blue-500 bg-blue-50 p-2 rounded-xl">{icon}</div>
             <div>
                 <p className="text-[9px] font-black text-slate-400 uppercase leading-none mb-1 tracking-widest">{label}</p>
                 <p className="text-xs font-bold text-slate-700 dark:text-slate-200">{value || "---"}</p>
