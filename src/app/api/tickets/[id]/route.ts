@@ -1,13 +1,17 @@
-import { NextResponse } from 'next/server';
+import { NextResponse, NextRequest } from 'next/server';
 import prisma from '@/lib/prisma';
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 
+type RouteContext = {
+    params: Promise<{ id: string }>;
+};
+
 // GET: Busca os detalhes de um chamado específico
-export async function GET(req: Request, { params }: { params: { id: string } }) {
+export async function GET(req: NextRequest, { params }: RouteContext) {
     try {
         const session = await getServerSession(authOptions);
-        const { id } = params;
+        const { id } = await params; // Aguarda o params conforme exigido pelo Next 16
 
         if (!session?.user) {
             return new NextResponse('Não autorizado', { status: 401 });
@@ -26,7 +30,7 @@ export async function GET(req: Request, { params }: { params: { id: string } }) 
                     select: { 
                         id: true,
                         content: true,
-                        proofImage: true, // GARANTE QUE A FOTO VEM DO BANCO
+                        proofImage: true,
                         createdAt: true,
                         user: { select: { id: true, name: true, role: true, image: true } } 
                     },
@@ -49,15 +53,15 @@ export async function GET(req: Request, { params }: { params: { id: string } }) 
         return NextResponse.json(ticket);
     } catch (error) {
         console.error("[TICKET_GET_ERROR]:", error);
-        return NextResponse.json({ error: "Erro interno ao buscar dados" }, { status: 500 });
+        return NextResponse.json({ error: "Erro interno" }, { status: 500 });
     }
 }
 
 // POST: Cria um novo comentário ou nota técnica
-export async function POST(req: Request, { params }: { params: { id: string } }) {
+export async function POST(req: NextRequest, { params }: RouteContext) {
     try {
         const session = await getServerSession(authOptions);
-        const { id } = params;
+        const { id } = await params;
         const { content, isInternal, proofImage } = await req.json();
 
         if (!session?.user) {
@@ -66,12 +70,10 @@ export async function POST(req: Request, { params }: { params: { id: string } })
 
         const user = session.user as any;
 
-        // Validação: precisa de texto OU imagem
         if (!content?.trim() && !proofImage) {
             return NextResponse.json({ error: "O comentário não pode estar vazio" }, { status: 400 });
         }
 
-        // Lógica de conteúdo: se for interno, prefixa. Se for só foto, avisa.
         const finalContent = isInternal 
             ? `[INTERNO] ${content || 'Anexo de imagem'}` 
             : (content || "Foto anexada ao chamado");
@@ -79,7 +81,7 @@ export async function POST(req: Request, { params }: { params: { id: string } })
         const comment = await prisma.comment.create({
             data: { 
                 content: finalContent, 
-                proofImage: proofImage || null, // Salva o Base64 aqui
+                proofImage: proofImage || null,
                 ticketId: id, 
                 userId: user.id 
             },
@@ -91,17 +93,17 @@ export async function POST(req: Request, { params }: { params: { id: string } })
         return NextResponse.json(comment);
     } catch (error: any) {
         console.error("[TICKET_POST_ERROR]:", error);
-        return NextResponse.json({ error: "Falha ao salvar comentário" }, { status: 500 });
+        return NextResponse.json({ error: "Falha ao salvar" }, { status: 500 });
     }
 }
 
-// PATCH: Atualiza o status e workflow (Ações de assumir, finalizar, etc)
-export async function PATCH(req: Request, { params }: { params: { id: string } }) {
+// PATCH: Atualiza o status e workflow
+export async function PATCH(req: NextRequest, { params }: RouteContext) {
     try {
         const session = await getServerSession(authOptions);
         if (!session?.user) return new NextResponse('Não autorizado', { status: 401 });
         
-        const { id } = params;
+        const { id } = await params;
         const { action, proofImage, ...body } = await req.json();
         const user = session.user as any;
 
@@ -121,7 +123,6 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
                 break;
             case 'FINALIZAR':
                 updateData.status = 'CONCLUDED';
-                // Salva a foto também no corpo do Ticket como prova final
                 if (proofImage) updateData.proofImage = proofImage;
                 break;
             case 'RETOMAR':
