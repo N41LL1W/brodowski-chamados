@@ -49,7 +49,7 @@ export async function GET(req: Request, props: { params: Promise<{ id: string }>
     }
 }
 
-// POST: Cria um novo comentário ou nota técnica (COM SUPORTE A FOTO)
+// POST: Cria um novo comentário ou nota técnica
 export async function POST(req: Request, props: { params: Promise<{ id: string }> }) {
     try {
         const session = await getServerSession(authOptions);
@@ -62,7 +62,6 @@ export async function POST(req: Request, props: { params: Promise<{ id: string }
 
         const user = session.user as any;
 
-        // Validamos se tem texto OU se tem imagem (pode enviar só a foto)
         if (!content?.trim() && !proofImage) {
             return NextResponse.json({ error: "O comentário não pode estar vazio" }, { status: 400 });
         }
@@ -72,7 +71,7 @@ export async function POST(req: Request, props: { params: Promise<{ id: string }
         const comment = await prisma.comment.create({
             data: { 
                 content: finalContent || (proofImage ? "[FOTO ANEXADA]" : ""), 
-                proofImage: proofImage || null, // Novo campo
+                proofImage: proofImage || null,
                 ticketId: id, 
                 userId: user.id 
             },

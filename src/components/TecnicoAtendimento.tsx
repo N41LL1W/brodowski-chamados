@@ -8,14 +8,16 @@ export default function TecnicoAtendimento({ ticket, onUpdate }: any) {
 
     const handleSave = async (isInternal: boolean) => {
         if (!note.trim()) return;
-        setLoading(false); // Inicia loading
+        setLoading(true);
         try {
             const res = await fetch(`/api/tickets/${ticket.id}`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                // Enviamos o proofImage como null aqui por enquanto, 
-                // ou você pode adicionar um input de arquivo depois
-                body: JSON.stringify({ content: note, isInternal, proofImage: null })
+                body: JSON.stringify({ 
+                    content: note, 
+                    isInternal, 
+                    proofImage: null // Aqui você passará o Base64 futuramente
+                })
             });
             if (res.ok) {
                 setNote("");
@@ -33,7 +35,9 @@ export default function TecnicoAtendimento({ ticket, onUpdate }: any) {
             {/* ENTRADA DE DADOS */}
             <div className="bg-white dark:bg-slate-900 rounded-[2.5rem] p-8 shadow-xl border border-slate-100 dark:border-slate-800">
                 <div className="flex items-center gap-3 mb-6">
-                    <div className="p-3 bg-blue-50 text-blue-600 rounded-2xl"><FileText size={24} /></div>
+                    <div className="p-3 bg-blue-50 text-blue-600 rounded-2xl">
+                        <FileText size={24} />
+                    </div>
                     <h2 className="text-sm font-black uppercase tracking-widest">Painel de Ações</h2>
                 </div>
 
@@ -48,31 +52,33 @@ export default function TecnicoAtendimento({ ticket, onUpdate }: any) {
                     <button 
                         onClick={() => handleSave(false)}
                         disabled={loading}
-                        className="flex items-center justify-center gap-2 p-4 bg-emerald-600 text-white rounded-2xl font-black uppercase text-[10px] hover:bg-emerald-700 transition-all"
+                        className="flex items-center justify-center gap-2 p-4 bg-emerald-600 text-white rounded-2xl font-black uppercase text-[10px] hover:bg-emerald-700 transition-all disabled:opacity-50"
                     >
                         <MessageSquare size={16} /> Enviar ao Cliente
                     </button>
                     <button 
                         onClick={() => handleSave(true)}
                         disabled={loading}
-                        className="flex items-center justify-center gap-2 p-4 bg-amber-500 text-white rounded-2xl font-black uppercase text-[10px] hover:bg-amber-600 transition-all"
+                        className="flex items-center justify-center gap-2 p-4 bg-amber-500 text-white rounded-2xl font-black uppercase text-[10px] hover:bg-amber-600 transition-all disabled:opacity-50"
                     >
                         <Terminal size={16} /> Salvar Nota Interna
                     </button>
                 </div>
             </div>
 
-            {/* HISTÓRICO COM FOTOS */}
+            {/* LINHA DO TEMPO */}
             <div className="bg-white dark:bg-slate-900 rounded-[2.5rem] p-8 shadow-xl border border-slate-100 dark:border-slate-800 flex flex-col h-[500px]">
                 <div className="flex items-center gap-3 mb-6">
-                    <div className="p-3 bg-slate-100 text-slate-600 rounded-2xl"><History size={24} /></div>
+                    <div className="p-3 bg-slate-100 text-slate-600 rounded-2xl">
+                        <History size={24} />
+                    </div>
                     <h2 className="text-sm font-black uppercase tracking-widest">Linha do Tempo</h2>
                 </div>
 
-                <div className="flex-1 overflow-y-auto space-y-4 pr-2">
+                <div className="flex-1 overflow-y-auto space-y-4 pr-2 custom-scrollbar">
                     {ticket.comments?.map((c: any) => {
-                        const isInternal = c.content.startsWith("[INTERNO]");
-                        const cleanContent = c.content.replace("[INTERNO] ", "");
+                        const isInternal = c.content?.startsWith("[INTERNO]");
+                        const cleanContent = c.content?.replace("[INTERNO] ", "");
                         const isTecnico = ["TECNICO", "ADMIN", "MASTER"].includes(c.user?.role);
 
                         let bgColor = "bg-blue-600 text-white"; 
@@ -85,25 +91,29 @@ export default function TecnicoAtendimento({ ticket, onUpdate }: any) {
                             label = "Nota de Manutenção";
                         } else if (isTecnico) {
                             bgColor = "bg-emerald-600 text-white";
-                            label = "Técnico (Resposta)";
+                            label = "Equipe Técnica";
                         }
 
                         return (
                             <div key={c.id} className={`p-4 rounded-2xl border ${bgColor} ${borderColor} shadow-sm transition-all`}>
                                 <div className="flex justify-between items-center mb-1 opacity-80">
-                                    <span className="text-[9px] font-black uppercase tracking-tighter">{label} • {c.user?.name}</span>
-                                    <span className="text-[9px] font-mono">{new Date(c.createdAt).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
+                                    <span className="text-[9px] font-black uppercase tracking-tighter">
+                                        {label} • {c.user?.name}
+                                    </span>
+                                    <span className="text-[9px] font-mono">
+                                        {new Date(c.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                    </span>
                                 </div>
                                 <p className="text-sm font-medium leading-snug">{cleanContent}</p>
 
-                                {/* EXIBIÇÃO DA FOTO NO CHAT SE EXISTIR */}
+                                {/* EXIBIÇÃO DA FOTO */}
                                 {c.proofImage && (
                                     <div className="mt-3 relative group">
                                         <a href={c.proofImage} target="_blank" rel="noopener noreferrer">
                                             <img 
                                                 src={c.proofImage} 
-                                                alt="Anexo do técnico" 
-                                                className="rounded-xl border border-black/10 max-h-48 w-full object-cover hover:brightness-90 transition-all shadow-inner"
+                                                alt="Anexo" 
+                                                className="rounded-xl border border-black/10 max-h-48 w-full object-cover hover:brightness-90 transition-all shadow-inner bg-white/10"
                                             />
                                             <div className="absolute top-2 right-2 p-1 bg-black/50 rounded-full text-white backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-opacity">
                                                 <ImageIcon size={14} />
