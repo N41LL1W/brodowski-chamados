@@ -1,6 +1,6 @@
 "use client";
 import { useState, useRef } from 'react';
-import { FileText, History, MessageSquare, Terminal, Image as ImageIcon, Paperclip, X } from 'lucide-react';
+import { FileText, History, MessageSquare, Terminal, Image as ImageIcon, Paperclip, X, ExternalLink } from 'lucide-react';
 
 export default function TecnicoAtendimento({ ticket, onUpdate }: any) {
     const [note, setNote] = useState("");
@@ -46,79 +46,80 @@ export default function TecnicoAtendimento({ ticket, onUpdate }: any) {
     return (
         <div className="grid lg:grid-cols-2 gap-8 mt-8">
             {/* PAINEL DE AÇÕES */}
-            <div className="bg-white dark:bg-slate-900 rounded-[2.5rem] p-8 shadow-xl border border-slate-100 dark:border-slate-800">
+            <div className="bg-white dark:bg-slate-900 rounded-[2.5rem] p-8 shadow-xl border border-slate-100 dark:border-slate-800 font-sans">
                 <div className="flex items-center justify-between mb-6">
                     <div className="flex items-center gap-3">
                         <div className="p-3 bg-blue-50 text-blue-600 rounded-2xl"><FileText size={24} /></div>
-                        <h2 className="text-sm font-black uppercase tracking-widest">Ações do Técnico</h2>
+                        <h2 className="text-sm font-black uppercase tracking-widest">Painel do Técnico</h2>
                     </div>
                     <button 
                         type="button"
                         onClick={() => fileInputRef.current?.click()}
                         className={`p-3 rounded-2xl transition-all flex items-center gap-2 text-[10px] font-bold uppercase ${base64Image ? 'bg-blue-600 text-white' : 'bg-slate-100 dark:bg-slate-800 text-slate-600'}`}
                     >
-                        <Paperclip size={18} /> {base64Image ? "Foto Pronta" : "Anexar Foto"}
+                        <Paperclip size={18} /> {base64Image ? "Foto Carregada" : "Anexar Foto"}
                     </button>
                     <input type="file" ref={fileInputRef} onChange={handleFileChange} accept="image/*" className="hidden" />
                 </div>
 
                 <textarea 
                     className="w-full p-6 bg-slate-50 dark:bg-slate-950 border-2 border-slate-100 dark:border-slate-800 rounded-3xl h-32 outline-none focus:border-blue-500 transition-all resize-none font-medium"
-                    placeholder="O que foi resolvido?"
+                    placeholder="Descreva a solução..."
                     value={note}
                     onChange={(e) => setNote(e.target.value)}
                 />
 
                 {base64Image && (
-                    <div className="mt-4 relative inline-block">
-                        <img src={base64Image} alt="Preview" className="h-20 w-20 object-cover rounded-xl border-2 border-blue-500" />
-                        <button onClick={() => setBase64Image(null)} className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1"><X size={12} /></button>
+                    <div className="mt-4 flex items-center gap-3 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-2xl">
+                        <img src={base64Image} alt="Preview" className="h-12 w-12 object-cover rounded-lg border border-blue-200" />
+                        <span className="text-[10px] font-bold text-blue-600 uppercase">Imagem pronta!</span>
+                        <button onClick={() => setBase64Image(null)} className="ml-auto p-1 text-red-500 hover:bg-red-50 rounded-full"><X size={16} /></button>
                     </div>
                 )}
 
                 <div className="grid grid-cols-2 gap-4 mt-4">
-                    <button onClick={() => handleSave(false)} disabled={loading} className="p-4 bg-emerald-600 text-white rounded-2xl font-black uppercase text-[10px] hover:bg-emerald-700 disabled:opacity-50">
-                        {loading ? "Enviando..." : "Enviar Cliente"}
+                    <button onClick={() => handleSave(false)} disabled={loading} className="p-4 bg-emerald-600 text-white rounded-2xl font-black uppercase text-[10px] hover:bg-emerald-700 shadow-lg shadow-emerald-200 dark:shadow-none transition-all">
+                        {loading ? "Processando..." : "Enviar Cliente"}
                     </button>
-                    <button onClick={() => handleSave(true)} disabled={loading} className="p-4 bg-amber-500 text-white rounded-2xl font-black uppercase text-[10px] hover:bg-amber-600 disabled:opacity-50">
-                        {loading ? "Salvando..." : "Nota Interna"}
+                    <button onClick={() => handleSave(true)} disabled={loading} className="p-4 bg-amber-500 text-white rounded-2xl font-black uppercase text-[10px] hover:bg-amber-600 shadow-lg shadow-amber-200 dark:shadow-none transition-all">
+                        Nota Interna
                     </button>
                 </div>
             </div>
 
-            {/* HISTÓRICO - CHAT */}
-            <div className="bg-white dark:bg-slate-900 rounded-[2.5rem] p-8 shadow-xl border border-slate-100 dark:border-slate-800 flex flex-col h-[500px]">
+            {/* LINHA DO TEMPO (CHAT) */}
+            <div className="bg-white dark:bg-slate-900 rounded-[2.5rem] p-8 shadow-xl border border-slate-100 dark:border-slate-800 flex flex-col h-[550px]">
                 <div className="flex items-center gap-3 mb-6">
                     <div className="p-3 bg-slate-100 text-slate-600 rounded-2xl"><History size={24} /></div>
-                    <h2 className="text-sm font-black uppercase tracking-widest">Linha do Tempo</h2>
+                    <h2 className="text-sm font-black uppercase tracking-widest text-slate-400">Linha do Tempo</h2>
                 </div>
 
-                <div className="flex-1 overflow-y-auto space-y-4 pr-2">
+                <div className="flex-1 overflow-y-auto space-y-6 pr-2">
                     {ticket.comments?.map((c: any) => {
                         const isInternal = c.content?.startsWith("[INTERNO]");
                         const cleanContent = c.content?.replace("[INTERNO] ", "");
                         
-                        // DEBUG: Caso ainda não apareça, o console vai nos avisar
-                        if (c.proofImage) console.log("Comentário com imagem detectado:", c.id);
-
                         return (
-                            <div key={c.id} className={`p-4 rounded-2xl border ${isInternal ? 'bg-amber-50/50 border-amber-100 text-amber-800' : 'bg-slate-50 border-slate-100 text-slate-700'}`}>
-                                <div className="flex justify-between items-center mb-2 text-[9px] font-black uppercase opacity-60">
+                            <div key={c.id} className={`p-5 rounded-3xl border transition-all ${isInternal ? 'bg-amber-50/40 border-amber-100 text-amber-900' : 'bg-slate-50 border-slate-100 text-slate-800'}`}>
+                                <div className="flex justify-between items-center mb-3 text-[9px] font-black uppercase opacity-50 tracking-tighter">
                                     <span>{c.user?.name}</span>
                                     <span>{new Date(c.createdAt).toLocaleTimeString()}</span>
                                 </div>
-                                <p className="text-sm mb-2 font-medium leading-relaxed">{cleanContent}</p>
+                                
+                                <p className="text-sm font-medium mb-4 leading-relaxed">{cleanContent}</p>
 
-                                {/* RENDERIZAÇÃO DA IMAGEM */}
-                                {c.proofImage && c.proofImage.length > 10 && (
-                                    <div className="mt-3">
-                                        <a href={c.proofImage} target="_blank" rel="noopener noreferrer">
-                                            <img 
-                                                src={c.proofImage} 
-                                                alt="Anexo" 
-                                                className="rounded-xl max-h-52 w-full object-cover border border-black/5 hover:scale-[1.01] transition-transform"
-                                                loading="lazy"
-                                            />
+                                {/* BOTÃO DE LINK PARA VER A FOTO */}
+                                {c.proofImage && (
+                                    <div className="pt-3 border-t border-black/5">
+                                        <a 
+                                            href={c.proofImage} 
+                                            target="_blank" 
+                                            rel="noopener noreferrer"
+                                            className="w-full flex items-center justify-center gap-2 py-3 bg-white dark:bg-slate-800 border-2 border-blue-100 dark:border-slate-700 text-blue-600 dark:text-blue-400 text-[10px] font-black uppercase rounded-2xl hover:bg-blue-50 transition-all shadow-sm group"
+                                        >
+                                            <ImageIcon size={14} className="group-hover:scale-110 transition-transform" />
+                                            Clique para abrir anexo
+                                            <ExternalLink size={12} className="opacity-40" />
                                         </a>
                                     </div>
                                 )}
