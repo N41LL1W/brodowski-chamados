@@ -1,22 +1,13 @@
 "use client";
 import { useState, useRef } from 'react';
-import { FileText, History, Image as ImageIcon, Paperclip, X, ExternalLink, Maximize2, Download } from 'lucide-react';
+import { FileText, History, Image as ImageIcon, Paperclip, X, Maximize2, Download } from 'lucide-react';
 
 export default function TecnicoAtendimento({ ticket, onUpdate }: any) {
     const [note, setNote] = useState("");
     const [loading, setLoading] = useState(false);
     const [base64Image, setBase64Image] = useState<string | null>(null);
-    const [selectedGalleryImage, setSelectedGalleryImage] = useState<string | null>(null); // Estado para o Modal
+    const [selectedGalleryImage, setSelectedGalleryImage] = useState<string | null>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
-
-    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const file = e.target.files?.[0];
-        if (file) {
-            const reader = new FileReader();
-            reader.onloadend = () => setBase64Image(reader.result as string);
-            reader.readAsDataURL(file);
-        }
-    };
 
     const handleSave = async (isInternal: boolean) => {
         if (!note.trim() && !base64Image) return;
@@ -26,7 +17,7 @@ export default function TecnicoAtendimento({ ticket, onUpdate }: any) {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ 
-                    content: note || "Foto anexada ao atendimento", 
+                    content: note || "Anexo de foto", 
                     isInternal, 
                     proofImage: base64Image 
                 })
@@ -38,7 +29,7 @@ export default function TecnicoAtendimento({ ticket, onUpdate }: any) {
                 onUpdate();
             }
         } catch (err) {
-            console.error("Erro ao salvar:", err);
+            console.error(err);
         } finally {
             setLoading(false);
         }
@@ -47,125 +38,76 @@ export default function TecnicoAtendimento({ ticket, onUpdate }: any) {
     return (
         <div className="grid lg:grid-cols-2 gap-8 mt-8 relative">
             
-            {/* --- MODAL DA GALERIA (APARECE SOBRE TUDO) --- */}
+            {/* MODAL DE GALERIA */}
             {selectedGalleryImage && (
-                <div 
-                    className="fixed inset-0 z-9999 bg-slate-950/90 backdrop-blur-md flex items-center justify-center p-4 animate-in fade-in duration-200"
-                    onClick={() => setSelectedGalleryImage(null)}
-                >
-                    <div className="absolute top-6 right-6 flex gap-4" onClick={e => e.stopPropagation()}>
-                        <a 
-                            href={selectedGalleryImage} 
-                            download="evidencia.png"
-                            className="p-3 bg-white/10 hover:bg-white/20 text-white rounded-full transition-all"
-                        >
-                            <Download size={24} />
-                        </a>
-                        <button 
-                            onClick={() => setSelectedGalleryImage(null)}
-                            className="p-3 bg-white/10 hover:bg-red-500 text-white rounded-full transition-all"
-                        >
-                            <X size={24} />
-                        </button>
+                <div className="fixed inset-0 z-9999 bg-black/95 flex flex-col items-center justify-center p-4" onClick={() => setSelectedGalleryImage(null)}>
+                    <button className="absolute top-10 right-10 text-white bg-red-600 p-4 rounded-full shadow-2xl z-50"><X size={40} /></button>
+                    <img src={selectedGalleryImage} className="max-w-full max-h-[80vh] border-4 border-white rounded-xl shadow-[0_0_50px_rgba(255,255,255,0.3)]" />
+                    <div className="mt-8 flex gap-4">
+                        <a href={selectedGalleryImage} download="foto.png" className="bg-blue-600 text-white px-8 py-3 rounded-xl font-bold uppercase">Baixar Foto</a>
                     </div>
-                    
-                    <img 
-                        src={selectedGalleryImage} 
-                        alt="Evidência" 
-                        className="max-w-full max-h-[85vh] object-contain rounded-xl shadow-2xl border border-white/10 animate-in zoom-in duration-300"
-                        onClick={e => e.stopPropagation()}
-                    />
-                    
-                    <p className="absolute bottom-10 text-white/40 text-[10px] font-bold uppercase tracking-widest">
-                        Clique fora para fechar visualização
-                    </p>
                 </div>
             )}
 
-            {/* PAINEL DE AÇÕES */}
-            <div className="bg-white dark:bg-slate-900 rounded-[2.5rem] p-8 shadow-xl border border-slate-100 dark:border-slate-800 font-sans">
+            {/* FORMULÁRIO */}
+            <div className="bg-white dark:bg-slate-900 rounded-[2.5rem] p-8 shadow-xl border-2 border-slate-100">
                 <div className="flex items-center justify-between mb-6">
-                    <div className="flex items-center gap-3">
-                        <div className="p-3 bg-blue-50 text-blue-600 rounded-2xl"><FileText size={24} /></div>
-                        <h2 className="text-sm font-black uppercase tracking-widest">Painel do Técnico</h2>
-                    </div>
-                    <button 
-                        type="button"
-                        onClick={() => fileInputRef.current?.click()}
-                        className={`p-3 rounded-2xl transition-all flex items-center gap-2 text-[10px] font-bold uppercase ${base64Image ? 'bg-blue-600 text-white' : 'bg-slate-100 dark:bg-slate-800 text-slate-600'}`}
-                    >
-                        <Paperclip size={18} /> {base64Image ? "Foto Carregada" : "Anexar Foto"}
+                    <h2 className="text-sm font-black uppercase tracking-widest text-blue-600">Atendimento</h2>
+                    <button onClick={() => fileInputRef.current?.click()} className={`p-3 rounded-2xl transition-all ${base64Image ? 'bg-emerald-500 text-white' : 'bg-slate-100 text-slate-500'}`}>
+                        <Paperclip size={20} />
                     </button>
-                    <input type="file" ref={fileInputRef} onChange={handleFileChange} accept="image/*" className="hidden" />
+                    <input type="file" ref={fileInputRef} hidden accept="image/*" onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) {
+                            const reader = new FileReader();
+                            reader.onloadend = () => setBase64Image(reader.result as string);
+                            reader.readAsDataURL(file);
+                        }
+                    }} />
                 </div>
 
-                <textarea 
-                    className="w-full p-6 bg-slate-50 dark:bg-slate-950 border-2 border-slate-100 dark:border-slate-800 rounded-3xl h-32 outline-none focus:border-blue-500 transition-all resize-none font-medium"
-                    placeholder="Descreva a solução..."
-                    value={note}
-                    onChange={(e) => setNote(e.target.value)}
-                />
+                <textarea className="w-full p-6 bg-slate-50 rounded-3xl h-32 border-2 border-slate-100 focus:border-blue-500 outline-none" placeholder="O que foi feito?" value={note} onChange={(e) => setNote(e.target.value)} />
 
                 {base64Image && (
-                    <div className="mt-4 flex items-center gap-3 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-2xl cursor-pointer group" onClick={() => setSelectedGalleryImage(base64Image)}>
-                        <div className="relative">
-                            <img src={base64Image} alt="Preview" className="h-12 w-12 object-cover rounded-lg border border-blue-200" />
-                            <div className="absolute inset-0 bg-black/20 flex items-center justify-center opacity-0 group-hover:opacity-100 rounded-lg transition-opacity">
-                                <Maximize2 size={14} className="text-white" />
-                            </div>
-                        </div>
-                        <span className="text-[10px] font-bold text-blue-600 uppercase">Ver miniatura</span>
-                        <button onClick={(e) => { e.stopPropagation(); setBase64Image(null); }} className="ml-auto p-1 text-red-500 hover:bg-red-50 rounded-full"><X size={16} /></button>
+                    <div className="mt-4 p-4 bg-emerald-50 rounded-2xl flex items-center gap-4 border-2 border-emerald-200">
+                        <img src={base64Image} className="h-14 w-14 rounded-lg object-cover shadow-md" />
+                        <span className="text-xs font-bold text-emerald-700">FOTO PRONTA PARA ENVIAR!</span>
+                        <button onClick={() => setBase64Image(null)} className="ml-auto text-red-500"><X size={20} /></button>
                     </div>
                 )}
 
-                <div className="grid grid-cols-2 gap-4 mt-4">
-                    <button onClick={() => handleSave(false)} disabled={loading} className="p-4 bg-emerald-600 text-white rounded-2xl font-black uppercase text-[10px] hover:bg-emerald-700 shadow-lg shadow-emerald-200 dark:shadow-none transition-all">
-                        {loading ? "Processando..." : "Enviar Cliente"}
-                    </button>
-                    <button onClick={() => handleSave(true)} disabled={loading} className="p-4 bg-amber-500 text-white rounded-2xl font-black uppercase text-[10px] hover:bg-amber-600 shadow-lg shadow-amber-200 dark:shadow-none transition-all">
-                        Nota Interna
-                    </button>
+                <div className="grid grid-cols-2 gap-4 mt-6">
+                    <button onClick={() => handleSave(false)} className="p-4 bg-emerald-600 text-white rounded-2xl font-black text-[10px] uppercase">Enviar Cliente</button>
+                    <button onClick={() => handleSave(true)} className="p-4 bg-amber-500 text-white rounded-2xl font-black text-[10px] uppercase">Nota Interna</button>
                 </div>
             </div>
 
-            {/* LINHA DO TEMPO (CHAT) */}
-            <div className="bg-white dark:bg-slate-900 rounded-[2.5rem] p-8 shadow-xl border border-slate-100 dark:border-slate-800 flex flex-col h-[550px]">
-                <div className="flex items-center gap-3 mb-6">
-                    <div className="p-3 bg-slate-100 text-slate-600 rounded-2xl"><History size={24} /></div>
-                    <h2 className="text-sm font-black uppercase tracking-widest text-slate-400">Linha do Tempo</h2>
-                </div>
-
-                <div className="flex-1 overflow-y-auto space-y-6 pr-2">
-                    {ticket.comments?.map((c: any) => {
-                        const isInternal = c.content?.startsWith("[INTERNO]");
-                        const cleanContent = c.content?.replace("[INTERNO] ", "");
-                        
-                        return (
-                            <div key={c.id} className={`p-5 rounded-3xl border transition-all ${isInternal ? 'bg-amber-50/40 border-amber-100 text-amber-900' : 'bg-slate-50 border-slate-100 text-slate-800'}`}>
-                                <div className="flex justify-between items-center mb-3 text-[9px] font-black uppercase opacity-50 tracking-tighter">
-                                    <span>{c.user?.name}</span>
-                                    <span>{new Date(c.createdAt).toLocaleTimeString()}</span>
-                                </div>
-                                
-                                <p className="text-sm font-medium mb-4 leading-relaxed">{cleanContent}</p>
-
-                                {/* BOTÃO QUE ABRE A GALERIA NO MODAL */}
-                                {c.proofImage && (
-                                    <div className="pt-3 border-t border-black/5">
-                                        <button 
-                                            onClick={() => setSelectedGalleryImage(c.proofImage)}
-                                            className="w-full flex items-center justify-center gap-2 py-3 bg-white dark:bg-slate-800 border-2 border-blue-100 dark:border-slate-700 text-blue-600 dark:text-blue-400 text-[10px] font-black uppercase rounded-2xl hover:bg-blue-50 transition-all shadow-sm group"
-                                        >
-                                            <ImageIcon size={14} className="group-hover:scale-110 transition-transform" />
-                                            Visualizar Anexo
-                                            <Maximize2 size={12} className="opacity-40" />
-                                        </button>
-                                    </div>
-                                )}
+            {/* CHAT / HISTÓRICO (Onde a Galeria aparece) */}
+            <div className="bg-slate-50 dark:bg-slate-900 rounded-[2.5rem] p-8 shadow-inner border-2 border-slate-200 h-[600px] flex flex-col">
+                <h3 className="text-xs font-black uppercase text-slate-400 mb-6">Histórico de Mensagens</h3>
+                <div className="flex-1 overflow-y-auto space-y-4">
+                    {ticket.comments?.map((c: any) => (
+                        <div key={c.id} className={`p-5 rounded-3xl border-2 ${c.proofImage ? 'border-blue-400 bg-blue-50/50' : 'border-white bg-white shadow-sm'}`}>
+                            <div className="flex justify-between text-[9px] font-bold opacity-40 mb-2">
+                                <span>{c.user?.name}</span>
+                                <span>{new Date(c.createdAt).toLocaleTimeString()}</span>
                             </div>
-                        );
-                    })}
+                            <p className="text-sm font-medium mb-4">{c.content}</p>
+
+                            {/* TESTE VISUAL DE IMPACTO */}
+                            {c.proofImage ? (
+                                <button 
+                                    onClick={() => setSelectedGalleryImage(c.proofImage)}
+                                    className="w-full py-4 bg-yellow-400 text-black font-black uppercase text-[12px] rounded-2xl border-b-4 border-yellow-600 hover:bg-yellow-300 transition-all flex items-center justify-center gap-3 animate-pulse"
+                                >
+                                    <ImageIcon size={20} />
+                                    ABRIR FOTO ANEXADA
+                                </button>
+                            ) : (
+                                <span className="text-[9px] text-slate-300 italic">Sem anexo</span>
+                            )}
+                        </div>
+                    ))}
                 </div>
             </div>
         </div>
