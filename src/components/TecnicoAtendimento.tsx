@@ -1,11 +1,12 @@
 "use client";
 import { useState, useRef } from 'react';
-import { FileText, History, MessageSquare, Terminal, Image as ImageIcon, Paperclip, X, ExternalLink } from 'lucide-react';
+import { FileText, History, Image as ImageIcon, Paperclip, X, ExternalLink, Maximize2, Download } from 'lucide-react';
 
 export default function TecnicoAtendimento({ ticket, onUpdate }: any) {
     const [note, setNote] = useState("");
     const [loading, setLoading] = useState(false);
     const [base64Image, setBase64Image] = useState<string | null>(null);
+    const [selectedGalleryImage, setSelectedGalleryImage] = useState<string | null>(null); // Estado para o Modal
     const fileInputRef = useRef<HTMLInputElement>(null);
 
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -25,7 +26,7 @@ export default function TecnicoAtendimento({ ticket, onUpdate }: any) {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ 
-                    content: note, 
+                    content: note || "Foto anexada ao atendimento", 
                     isInternal, 
                     proofImage: base64Image 
                 })
@@ -44,7 +45,43 @@ export default function TecnicoAtendimento({ ticket, onUpdate }: any) {
     };
 
     return (
-        <div className="grid lg:grid-cols-2 gap-8 mt-8">
+        <div className="grid lg:grid-cols-2 gap-8 mt-8 relative">
+            
+            {/* --- MODAL DA GALERIA (APARECE SOBRE TUDO) --- */}
+            {selectedGalleryImage && (
+                <div 
+                    className="fixed inset-0 z-9999 bg-slate-950/90 backdrop-blur-md flex items-center justify-center p-4 animate-in fade-in duration-200"
+                    onClick={() => setSelectedGalleryImage(null)}
+                >
+                    <div className="absolute top-6 right-6 flex gap-4" onClick={e => e.stopPropagation()}>
+                        <a 
+                            href={selectedGalleryImage} 
+                            download="evidencia.png"
+                            className="p-3 bg-white/10 hover:bg-white/20 text-white rounded-full transition-all"
+                        >
+                            <Download size={24} />
+                        </a>
+                        <button 
+                            onClick={() => setSelectedGalleryImage(null)}
+                            className="p-3 bg-white/10 hover:bg-red-500 text-white rounded-full transition-all"
+                        >
+                            <X size={24} />
+                        </button>
+                    </div>
+                    
+                    <img 
+                        src={selectedGalleryImage} 
+                        alt="Evidência" 
+                        className="max-w-full max-h-[85vh] object-contain rounded-xl shadow-2xl border border-white/10 animate-in zoom-in duration-300"
+                        onClick={e => e.stopPropagation()}
+                    />
+                    
+                    <p className="absolute bottom-10 text-white/40 text-[10px] font-bold uppercase tracking-widest">
+                        Clique fora para fechar visualização
+                    </p>
+                </div>
+            )}
+
             {/* PAINEL DE AÇÕES */}
             <div className="bg-white dark:bg-slate-900 rounded-[2.5rem] p-8 shadow-xl border border-slate-100 dark:border-slate-800 font-sans">
                 <div className="flex items-center justify-between mb-6">
@@ -70,10 +107,15 @@ export default function TecnicoAtendimento({ ticket, onUpdate }: any) {
                 />
 
                 {base64Image && (
-                    <div className="mt-4 flex items-center gap-3 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-2xl">
-                        <img src={base64Image} alt="Preview" className="h-12 w-12 object-cover rounded-lg border border-blue-200" />
-                        <span className="text-[10px] font-bold text-blue-600 uppercase">Imagem pronta!</span>
-                        <button onClick={() => setBase64Image(null)} className="ml-auto p-1 text-red-500 hover:bg-red-50 rounded-full"><X size={16} /></button>
+                    <div className="mt-4 flex items-center gap-3 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-2xl cursor-pointer group" onClick={() => setSelectedGalleryImage(base64Image)}>
+                        <div className="relative">
+                            <img src={base64Image} alt="Preview" className="h-12 w-12 object-cover rounded-lg border border-blue-200" />
+                            <div className="absolute inset-0 bg-black/20 flex items-center justify-center opacity-0 group-hover:opacity-100 rounded-lg transition-opacity">
+                                <Maximize2 size={14} className="text-white" />
+                            </div>
+                        </div>
+                        <span className="text-[10px] font-bold text-blue-600 uppercase">Ver miniatura</span>
+                        <button onClick={(e) => { e.stopPropagation(); setBase64Image(null); }} className="ml-auto p-1 text-red-500 hover:bg-red-50 rounded-full"><X size={16} /></button>
                     </div>
                 )}
 
@@ -108,19 +150,17 @@ export default function TecnicoAtendimento({ ticket, onUpdate }: any) {
                                 
                                 <p className="text-sm font-medium mb-4 leading-relaxed">{cleanContent}</p>
 
-                                {/* BOTÃO DE LINK PARA VER A FOTO */}
+                                {/* BOTÃO QUE ABRE A GALERIA NO MODAL */}
                                 {c.proofImage && (
                                     <div className="pt-3 border-t border-black/5">
-                                        <a 
-                                            href={c.proofImage} 
-                                            target="_blank" 
-                                            rel="noopener noreferrer"
+                                        <button 
+                                            onClick={() => setSelectedGalleryImage(c.proofImage)}
                                             className="w-full flex items-center justify-center gap-2 py-3 bg-white dark:bg-slate-800 border-2 border-blue-100 dark:border-slate-700 text-blue-600 dark:text-blue-400 text-[10px] font-black uppercase rounded-2xl hover:bg-blue-50 transition-all shadow-sm group"
                                         >
                                             <ImageIcon size={14} className="group-hover:scale-110 transition-transform" />
-                                            Clique para abrir anexo
-                                            <ExternalLink size={12} className="opacity-40" />
-                                        </a>
+                                            Visualizar Anexo
+                                            <Maximize2 size={12} className="opacity-40" />
+                                        </button>
                                     </div>
                                 )}
                             </div>
