@@ -5,7 +5,7 @@ import { Badge } from '@/components/ui/Badge';
 import Card from '@/components/ui/Card';
 import { 
   ArrowLeft, User, MapPin, CheckCircle, Loader2, Send, Undo2, 
-  PauseCircle, Camera, X, Building, Terminal, MessageSquare, UploadCloud 
+  PauseCircle, Camera, X, Building, Terminal, MessageSquare, UploadCloud, Eye 
 } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -20,6 +20,7 @@ export default function DetalheChamadoPage({ params }: { params: Promise<{ id: s
     const [nota, setNota] = useState("");
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [imagePreview, setImagePreview] = useState<string | null>(null);
+    const [selectedImage, setSelectedImage] = useState<string | null>(null); // ESTADO PARA A GALERIA
 
     const loadTicket = async () => {
         try {
@@ -50,7 +51,6 @@ export default function DetalheChamadoPage({ params }: { params: Promise<{ id: s
         }
     };
 
-    // NOVA FUNÇÃO: Salva a foto como uma nota no diário sem finalizar
     const handleSavePhotoOnly = async () => {
         if (!imagePreview) return;
         setIsSubmitting(true);
@@ -61,7 +61,7 @@ export default function DetalheChamadoPage({ params }: { params: Promise<{ id: s
                 body: JSON.stringify({ 
                     content: "[FOTO ANEXADA]", 
                     isInternal: true,
-                    proofImage: imagePreview // Enviando a imagem para o comentário/nota
+                    proofImage: imagePreview 
                 }) 
             });
             if(res.ok) { 
@@ -108,7 +108,25 @@ export default function DetalheChamadoPage({ params }: { params: Promise<{ id: s
     if (loading) return <div className="h-screen flex items-center justify-center dark:bg-slate-950"><Loader2 className="animate-spin text-blue-600" size={40} /></div>;
 
     return (
-        <div className="max-w-5xl mx-auto p-4 md:p-8 space-y-6 bg-slate-50/50 dark:bg-transparent min-h-screen">
+        <div className="max-w-5xl mx-auto p-4 md:p-8 space-y-6 bg-slate-50/50 dark:bg-transparent min-h-screen relative">
+            
+            {/* MODAL DE ZOOM DA FOTO */}
+            {selectedImage && (
+                <div 
+                    className="fixed inset-0 z-100 bg-black/95 backdrop-blur-sm flex items-center justify-center p-4"
+                    onClick={() => setSelectedImage(null)}
+                >
+                    <button className="absolute top-8 right-8 text-white bg-white/10 p-4 rounded-full hover:bg-red-500 transition-all">
+                        <X size={32} />
+                    </button>
+                    <img 
+                        src={selectedImage} 
+                        className="max-w-full max-h-[90vh] object-contain rounded-lg shadow-2xl" 
+                        alt="Evidência ampliada" 
+                    />
+                </div>
+            )}
+
             <header className="flex justify-between items-center bg-white/80 dark:bg-slate-900/80 backdrop-blur-md p-4 rounded-3xl border border-slate-200 dark:border-slate-800 sticky top-4 z-20 shadow-lg">
                 <Link href="/tecnico" className="p-3 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-2xl transition-all">
                     <ArrowLeft size={24} className="text-slate-600" />
@@ -120,8 +138,6 @@ export default function DetalheChamadoPage({ params }: { params: Promise<{ id: s
             </header>
 
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-                
-                {/* Lado Esquerdo: Info e Upload de Foto */}
                 <div className="lg:col-span-4 space-y-6">
                     <Card className="p-6 rounded-[2.5rem] border-none shadow-xl ring-1 ring-slate-100 dark:ring-slate-800">
                         <h1 className="text-xl font-black text-slate-900 dark:text-white uppercase mb-4 leading-tight">{ticket.subject}</h1>
@@ -141,7 +157,6 @@ export default function DetalheChamadoPage({ params }: { params: Promise<{ id: s
                         </div>
                     </Card>
 
-                    {/* SEÇÃO DE FOTOS INDEPENDENTE */}
                     <Card className="p-6 rounded-[2.5rem] bg-slate-900 text-white shadow-2xl border-none">
                         <div className="flex items-center gap-3 mb-4">
                             <div className="p-2 bg-blue-600 rounded-lg"><Camera size={18}/></div>
@@ -178,7 +193,6 @@ export default function DetalheChamadoPage({ params }: { params: Promise<{ id: s
                     </Card>
                 </div>
 
-                {/* Lado Direito: Timeline de Interação */}
                 <div className="lg:col-span-8 h-[calc(100vh-160px)] flex flex-col">
                     <Card className="flex-1 flex flex-col p-0 rounded-[2.5rem] border-none shadow-2xl ring-1 ring-slate-100 dark:ring-slate-800 overflow-hidden bg-white dark:bg-slate-900">
                         <div ref={scrollRef} className="flex-1 overflow-y-auto p-6 space-y-6">
@@ -186,19 +200,30 @@ export default function DetalheChamadoPage({ params }: { params: Promise<{ id: s
                                 const isInternal = c.content.startsWith("[INTERNO]");
                                 const content = c.content.replace("[INTERNO] ", "");
                                 const isTecnico = ["TECNICO", "ADMIN", "MASTER"].includes(c.user?.role);
+                                const hasImage = c.proofImage && c.proofImage.length > 50; // VERIFICA SE O COMENTÁRIO TEM FOTO
 
                                 return (
                                     <div key={c.id} className={`flex flex-col ${isInternal ? 'items-center' : (isTecnico ? 'items-end' : 'items-start')}`}>
-                                        <div className={`p-4 rounded-3xl text-sm shadow-sm ${
+                                        <div className={`p-4 rounded-3xl text-sm shadow-sm relative group ${
                                             isInternal ? 'bg-amber-50 border border-amber-200 text-amber-800 text-center max-w-md' :
                                             isTecnico ? 'bg-blue-600 text-white rounded-tr-none' :
                                             'bg-slate-100 text-slate-800 rounded-tl-none'
                                         }`}>
-                                            {/* Se o comentário tiver foto salva no banco (precisa ajustar API para retornar proofImage no comentário se desejar) */}
                                             {content}
+
+                                            {/* BOTÃO DE VER FOTO - APARECE SE TIVER IMAGEM NO COMENTÁRIO */}
+                                            {hasImage && (
+                                                <button 
+                                                    onClick={() => setSelectedImage(c.proofImage)}
+                                                    className="mt-3 w-full flex items-center justify-center gap-2 bg-white/20 hover:bg-white/40 p-2 rounded-xl border border-white/30 transition-all"
+                                                >
+                                                    <Eye size={14} />
+                                                    <span className="text-[10px] font-black uppercase">Ver Evidência</span>
+                                                </button>
+                                            )}
                                         </div>
                                         <span className="text-[8px] font-black text-slate-400 mt-1 uppercase">
-                                            {new Date(c.createdAt).toLocaleString()}
+                                            {new Date(c.createdAt).toLocaleString()} por {c.user?.name}
                                         </span>
                                     </div>
                                 );
