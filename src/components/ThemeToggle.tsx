@@ -3,43 +3,35 @@
 import { useEffect, useState } from "react";
 import { Sun, Moon, Monitor } from "lucide-react";
 
+type Theme = "light" | "dark" | "system";
+
 export default function ThemeToggle() {
-  const [theme, setTheme] = useState<"light" | "dark" | "system">("system");
+  const [theme, setTheme] = useState<Theme>("system");
   const [mounted, setMounted] = useState(false);
 
-  // Inicialização
   useEffect(() => {
     setMounted(true);
-    const saved = (localStorage.getItem("theme") as "light" | "dark" | "system") || "system";
+    const saved = (localStorage.getItem("theme") as Theme) || "system";
     setTheme(saved);
     applyTheme(saved);
   }, []);
 
-  function applyTheme(t: "light" | "dark" | "system") {
+  function applyTheme(t: Theme) {
     const root = document.documentElement;
     const systemDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
-    
-    // Determina se deve aplicar .dark
     const isDark = t === "system" ? systemDark : t === "dark";
     
-    if (isDark) {
-      root.classList.add("dark");
-    } else {
-      root.classList.remove("dark");
-    }
+    root.classList.toggle("dark", isDark);
+    localStorage.setItem("theme", t);
   }
 
   function toggle() {
-    const modes: ("light" | "dark" | "system")[] = ["light", "dark", "system"];
-    const currentIndex = modes.indexOf(theme);
-    const next = modes[(currentIndex + 1) % modes.length];
-    
+    const modes: Theme[] = ["light", "dark", "system"];
+    const next = modes[(modes.indexOf(theme) + 1) % modes.length];
     setTheme(next);
-    localStorage.setItem("theme", next);
     applyTheme(next);
   }
 
-  // Evita Hydration Mismatch
   if (!mounted) return <div className="w-9 h-9" />;
 
   return (

@@ -98,7 +98,7 @@ export default function NovoChamadoPage() {
             
             {/* MODAL DE BUSCA POR MAPA / ENDEREÇO */}
             {showMap && (
-                <div className="fixed inset-0 z-[100] bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
+                <div className="fixed inset-0 z-100 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
                     <div className="bg-white dark:bg-slate-900 w-full max-w-lg rounded-[2.5rem] p-6 shadow-2xl animate-in zoom-in duration-200">
                         <div className="flex justify-between items-center mb-6">
                             <h3 className="font-black uppercase text-sm tracking-widest text-blue-600">Buscar Localização</h3>

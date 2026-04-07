@@ -88,88 +88,86 @@ export default function ConfigPage() {
     );
 
     return (
-        <div className="max-w-6xl mx-auto p-6 space-y-10 min-h-screen">
-            <div className="flex justify-between items-end border-b border-border pb-6">
+        <div className="max-w-7xl mx-auto p-6 space-y-10 min-h-screen">
+            <header className="flex justify-between items-end border-b border-border pb-6">
                 <div>
-                    <h1 className="text-4xl font-black italic text-blue-600 uppercase tracking-tighter">Painel Master</h1>
-                    <p className="text-muted-foreground text-sm font-medium">Gestão de infraestrutura humana e permissões.</p>
+                    <h1 className="text-4xl font-black text-primary uppercase tracking-tighter italic">Painel Master</h1>
+                    <p className="text-muted text-sm font-medium uppercase tracking-widest">Gestão de infraestrutura humana</p>
                 </div>
-            </div>
+            </header>
 
             {/* SEÇÃO: CADASTRO MANUAL */}
-            <section className="bg-secondary/50 border-2 border-dashed border-border rounded-4xl p-8">
-                <div className="flex justify-between items-center mb-6">
+            <section className="bg-card border-2 border-dashed border-border rounded-[3rem] p-8 shadow-sm">
+                <div className="flex justify-between items-center mb-8">
                     <div className="flex items-center gap-4">
-                        <div className="bg-blue-600 p-3 rounded-2xl text-white shadow-lg shadow-blue-500/20"><UserPlus size={24}/></div>
+                        <div className="bg-primary p-4 rounded-2xl text-white shadow-lg shadow-primary/20"><UserPlus size={24}/></div>
                         <div>
-                            <h2 className="text-xl font-bold text-foreground">Cadastro Direto</h2>
-                            <p className="text-xs text-muted-foreground font-semibold uppercase tracking-wider">Contas manuais</p>
+                            <h2 className="text-xl font-black text-foreground uppercase tracking-tight">Cadastro Direto</h2>
+                            <p className="text-[10px] text-muted font-black uppercase tracking-widest">Criação de contas técnicas</p>
                         </div>
                     </div>
                     <button 
                         onClick={() => setShowAddForm(!showAddForm)}
-                        className={`px-6 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${showAddForm ? 'bg-muted text-muted-foreground' : 'bg-blue-600 text-white shadow-lg shadow-blue-500/20 hover:scale-105'}`}
+                        className={`px-8 py-3 rounded-xl text-[10px] font-black uppercase tracking-[0.2em] transition-all ${showAddForm ? 'bg-muted text-foreground' : 'bg-primary text-white shadow-xl shadow-primary/20 hover:scale-105'}`}
                     >
-                        {showAddForm ? "Cancelar" : "Novo Usuário"}
+                        {showAddForm ? "Cancelar Operação" : "Novo Usuário"}
                     </button>
                 </div>
 
                 {showAddForm && (
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 animate-in fade-in slide-in-from-top-4 duration-300">
-                        <input className="p-3 border-2 border-border rounded-xl bg-background text-foreground text-sm outline-none focus:border-blue-500" placeholder="Nome Completo" value={newUser.name} onChange={e => setNewUser({...newUser, name: e.target.value})} />
-                        <input className="p-3 border-2 border-border rounded-xl bg-background text-foreground text-sm outline-none focus:border-blue-500" placeholder="E-mail" value={newUser.email} onChange={e => setNewUser({...newUser, email: e.target.value})} />
-                        <input className="p-3 border-2 border-border rounded-xl bg-background text-foreground text-sm outline-none focus:border-blue-500" type="password" placeholder="Senha Provisória" value={newUser.password} onChange={e => setNewUser({...newUser, password: e.target.value})} />
-                        <select className="p-3 border-2 border-border rounded-xl bg-background text-foreground text-sm outline-none focus:border-blue-500" value={newUser.roleId} onChange={e => setNewUser({...newUser, roleId: e.target.value})}>
-                            <option value="">Selecione Cargo...</option>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 animate-in fade-in slide-in-from-top-4 duration-500">
+                        <input className="p-4 border-2 border-border rounded-2xl bg-transparent text-foreground text-sm font-bold outline-none focus:border-primary" placeholder="Nome Completo" value={newUser.name} onChange={e => setNewUser({...newUser, name: e.target.value})} />
+                        <input className="p-4 border-2 border-border rounded-2xl bg-transparent text-foreground text-sm font-bold outline-none focus:border-primary" placeholder="E-mail" value={newUser.email} onChange={e => setNewUser({...newUser, email: e.target.value})} />
+                        <input className="p-4 border-2 border-border rounded-2xl bg-transparent text-foreground text-sm font-bold outline-none focus:border-primary" type="password" placeholder="Senha Provisória" value={newUser.password} onChange={e => setNewUser({...newUser, password: e.target.value})} />
+                        <select className="p-4 border-2 border-border rounded-2xl bg-card text-foreground text-sm font-bold outline-none focus:border-primary" value={newUser.roleId} onChange={e => setNewUser({...newUser, roleId: e.target.value})}>
+                            <option value="">Cargo de Acesso...</option>
                             {roles.map(r => <option key={r.id} value={r.id}>{r.name}</option>)}
                         </select>
-                        <select className="p-3 border-2 border-border rounded-xl bg-background text-foreground text-sm outline-none focus:border-blue-500" value={newUser.levelId} onChange={e => setNewUser({...newUser, levelId: e.target.value})}>
-                            <option value="">Selecione Nível...</option>
+                        <select className="p-4 border-2 border-border rounded-2xl bg-card text-foreground text-sm font-bold outline-none focus:border-primary" value={newUser.levelId} onChange={e => setNewUser({...newUser, levelId: e.target.value})}>
+                            <option value="">Nível de Prioridade...</option>
                             {levels.map(l => <option key={l.id} value={l.id}>{l.name}</option>)}
                         </select>
-                        <button onClick={handleCreateUser} className="bg-blue-600 text-white font-black uppercase text-xs tracking-widest rounded-xl hover:bg-blue-700 transition-all shadow-lg shadow-blue-500/10">Criar Acesso</button>
+                        <button onClick={handleCreateUser} className="bg-primary text-white font-black uppercase text-[10px] tracking-widest rounded-2xl hover:opacity-90 transition-all">Criar Acesso Agora</button>
                     </div>
                 )}
             </section>
 
             <section className="grid md:grid-cols-2 gap-8">
-                <Card className="p-6 border-none shadow-xl bg-card rounded-3xl">
-                    <h2 className="text-xl font-bold mb-6 flex items-center gap-2 text-foreground"><Shield size={20} className="text-blue-500"/> Estrutura de Cargos</h2>
+                <Card className="p-8 border-none shadow-2xl bg-card rounded-[2.5rem]">
+                    <h2 className="text-xl font-black mb-6 flex items-center gap-2 text-foreground uppercase tracking-tight"><Shield size={20} className="text-primary"/> Estrutura</h2>
                     <div className="space-y-4">
                         <div className="flex gap-2">
-                            <input className="flex-1 p-3 border-2 border-border rounded-xl text-foreground bg-secondary outline-none focus:border-blue-500 transition-all" placeholder="Nome" value={newOption.name} onChange={e => setNewOption({...newOption, name: e.target.value})} />
-                            <select className="p-3 border-2 border-border rounded-xl text-foreground bg-secondary outline-none" value={newOption.type} onChange={e => setNewOption({...newOption, type: e.target.value})}>
+                            <input className="flex-1 p-4 border-2 border-border rounded-2xl text-foreground bg-transparent font-bold outline-none focus:border-primary transition-all" placeholder="Nome" value={newOption.name} onChange={e => setNewOption({...newOption, name: e.target.value})} />
+                            <select className="p-4 border-2 border-border rounded-2xl text-foreground bg-card font-bold outline-none" value={newOption.type} onChange={e => setNewOption({...newOption, type: e.target.value})}>
                                 <option value="role">Cargo</option>
                                 <option value="level">Nível</option>
                             </select>
                         </div>
-                        <button onClick={() => {}} className="w-full bg-foreground text-background p-3 rounded-xl font-black uppercase text-xs tracking-widest hover:opacity-90 transition-all">+ Adicionar Opção</button>
+                        <button className="w-full bg-foreground text-background p-4 rounded-2xl font-black uppercase text-[10px] tracking-widest hover:opacity-90 transition-all">+ Adicionar Opção</button>
                     </div>
                 </Card>
 
-                <Card className="p-6 border-none shadow-xl bg-card rounded-3xl">
-                    <h2 className="text-xl font-bold mb-6 flex items-center gap-2 text-foreground"><Settings2 size={20} className="text-blue-500"/> Configurações Ativas</h2>
-                    <div className="space-y-6">
-                        <div className="flex flex-wrap gap-2">
-                            {roles.map((r) => (
-                                <div key={r.id} className="flex items-center gap-2 bg-blue-500/10 text-blue-600 px-4 py-1.5 rounded-full border border-blue-500/20 uppercase text-[10px] font-black">
-                                    {r.name} <button className="hover:text-red-500 transition-colors"><XCircle size={14}/></button>
-                                </div>
-                            ))}
-                        </div>
+                <Card className="p-8 border-none shadow-2xl bg-card rounded-[2.5rem]">
+                    <h2 className="text-xl font-black mb-6 flex items-center gap-2 text-foreground uppercase tracking-tight"><Settings2 size={20} className="text-primary"/> Ativos</h2>
+                    <div className="flex flex-wrap gap-2">
+                        {roles.map((r) => (
+                            <div key={r.id} className="flex items-center gap-2 bg-primary/10 text-primary px-4 py-2 rounded-xl border border-primary/20 uppercase text-[10px] font-black">
+                                {r.name} <button className="hover:text-red-500 transition-colors"><XCircle size={14}/></button>
+                            </div>
+                        ))}
                     </div>
                 </Card>
             </section>
 
-            {/* SEÇÃO: GESTÃO DE EQUIPE */}
+            {/* GESTÃO DE EQUIPE */}
             <section className="space-y-6">
-                <div className="flex flex-col md:flex-row justify-between items-center gap-4">
-                    <h2 className="text-2xl font-black flex items-center gap-3 text-foreground"><Users size={28} className="text-blue-600"/> Gestão de Equipe</h2>
-                    <div className="relative w-full md:w-80">
-                        <Search className="absolute left-4 top-3 text-muted-foreground" size={18}/>
+                <div className="flex flex-col md:flex-row justify-between items-center gap-4 px-2">
+                    <h2 className="text-3xl font-black flex items-center gap-3 text-foreground tracking-tighter uppercase"><Users size={32} className="text-primary"/> Gestão de Equipe</h2>
+                    <div className="relative w-full md:w-96">
+                        <Search className="absolute left-4 top-4 text-muted" size={20}/>
                         <input 
-                            className="w-full pl-12 p-3 border-2 border-border rounded-2xl bg-secondary text-foreground text-sm focus:bg-card focus:border-blue-500 transition-all outline-none" 
-                            placeholder="Buscar por nome ou email..." 
+                            className="w-full pl-14 p-4 rounded-4xl bg-card border-2 border-border text-foreground text-sm font-bold focus:border-primary transition-all outline-none" 
+                            placeholder="Pesquisar membros..." 
                             value={searchTerm}
                             onChange={e => setSearchTerm(e.target.value)}
                         />
@@ -178,21 +176,21 @@ export default function ConfigPage() {
                 
                 <div className="grid gap-4">
                     {filteredUsers.map((user: any) => (
-                        <Card key={user.id} className="p-6 flex flex-wrap justify-between items-center bg-card border-none shadow-lg border-l-4 border-l-blue-600 hover:translate-x-1 transition-all">
+                        <Card key={user.id} className="p-6 flex flex-wrap justify-between items-center bg-card border-none shadow-xl hover:translate-x-1 transition-all rounded-4xl">
                             <div className="min-w-[280px]">
-                                <p className="font-black text-foreground text-xl uppercase leading-tight">{user.name}</p>
-                                <p className="text-sm text-muted-foreground mb-4 font-medium">{user.email}</p>
+                                <p className="font-black text-foreground text-xl uppercase leading-tight tracking-tight">{user.name}</p>
+                                <p className="text-xs text-muted mb-4 font-bold lowercase italic">{user.email}</p>
                                 <div className="flex gap-2">
                                     <Badge variant="status" value="aberto">{user.roleRelation?.name || user.role}</Badge>
                                     {user.levelRelation && <Badge variant="priority" value="normal">{user.levelRelation.name}</Badge>}
                                 </div>
                             </div>
                             
-                            <div className="flex flex-wrap gap-4 items-center mt-4 md:mt-0 bg-secondary/50 p-4 rounded-3xl border border-border">
+                            <div className="flex flex-wrap gap-4 items-center mt-4 md:mt-0 bg-background/50 p-4 rounded-3xl border border-border">
                                 <div className="flex flex-col">
-                                    <span className="text-[10px] text-muted-foreground uppercase font-black mb-1 ml-1">Alterar Cargo</span>
+                                    <span className="text-[10px] text-muted uppercase font-black mb-1 ml-1 tracking-widest">Alterar Cargo</span>
                                     <select 
-                                        className="text-sm p-2 border-2 border-border rounded-xl bg-background text-foreground min-w-[150px] outline-none focus:border-blue-500" 
+                                        className="text-xs p-2 border-2 border-border rounded-xl bg-card text-foreground min-w-40 font-bold outline-none focus:border-primary" 
                                         value={user.roleId || ""}
                                         onChange={(e) => updateUser(user.id, { roleId: e.target.value })}
                                     >
@@ -202,8 +200,8 @@ export default function ConfigPage() {
                                 </div>
 
                                 <div className="flex items-center gap-2 border-l border-border pl-4">
-                                    <button onClick={() => {}} className="text-amber-500 hover:bg-amber-500/10 p-3 rounded-2xl transition-colors" title="Senha"><Key size={20}/></button>
-                                    <button onClick={() => deleteUser(user.id, user.name)} className="text-red-500 hover:bg-red-500/10 p-3 rounded-2xl transition-colors" title="Excluir"><Trash2 size={20}/></button>
+                                    <button className="text-amber-500 hover:bg-amber-500/10 p-3 rounded-xl transition-colors"><Key size={20}/></button>
+                                    <button onClick={() => deleteUser(user.id, user.name)} className="text-red-500 hover:bg-red-500/10 p-3 rounded-xl transition-colors"><Trash2 size={20}/></button>
                                 </div>
                             </div>
                         </Card>
