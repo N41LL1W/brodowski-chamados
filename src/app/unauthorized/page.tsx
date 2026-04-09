@@ -1,3 +1,5 @@
+//src\app\unauthorized\page.tsx
+
 import Link from 'next/link';
 import { ShieldAlert } from 'lucide-react';
 

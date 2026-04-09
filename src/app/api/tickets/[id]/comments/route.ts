@@ -1,3 +1,5 @@
+//src/app/api/tickets/[id]/comments/route.ts
+
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { getServerSession } from "next-auth";
@@ -47,3 +49,4 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
         return NextResponse.json({ error: error.message }, { status: 500 });
     }
 }
+

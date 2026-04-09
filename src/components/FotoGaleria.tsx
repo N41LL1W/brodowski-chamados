@@ -1,3 +1,5 @@
+//src\components\FotoGaleria.tsx
+
 "use client";
 import { useState } from 'react';
 import { ImageIcon, X, Maximize2, Download, ExternalLink } from 'lucide-react';

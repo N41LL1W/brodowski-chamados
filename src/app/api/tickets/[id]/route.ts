@@ -1,3 +1,5 @@
+//src/app/api/tickets/[id]/route.ts
+
 import { NextResponse, NextRequest } from 'next/server';
 import prisma from '@/lib/prisma';
 import { getServerSession } from "next-auth";
@@ -141,3 +143,4 @@ export async function PATCH(req: NextRequest, { params }: RouteContext) {
         return NextResponse.json({ error: error.message }, { status: 500 });
     }
 }
+

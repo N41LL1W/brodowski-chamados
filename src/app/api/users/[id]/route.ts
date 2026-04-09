@@ -1,3 +1,5 @@
+//src/app/api/users/[id]/route.ts
+
 import { NextResponse, NextRequest } from 'next/server';
 import prisma from '@/lib/prisma';
 import { getServerSession } from "next-auth";
@@ -75,3 +77,4 @@ export async function DELETE(
         return NextResponse.json({ message: "Erro ao excluir: verifique se o usuário possui chamados vinculados." }, { status: 500 });
     }
 }
+

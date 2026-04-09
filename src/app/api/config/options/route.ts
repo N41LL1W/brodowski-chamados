@@ -1,3 +1,5 @@
+//src/app/api/config/options/route.ts
+
 import { NextResponse, NextRequest } from 'next/server';
 import prisma from '@/lib/prisma';
 import { getServerSession } from "next-auth";
@@ -57,3 +59,4 @@ export async function DELETE(req: NextRequest) {
         return NextResponse.json({ success: true });
     } catch (e) { return NextResponse.json({ message: "Item em uso. Não pode ser excluído." }, { status: 400 }); }
 }
+

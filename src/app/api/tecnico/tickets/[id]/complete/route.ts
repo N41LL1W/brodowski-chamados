@@ -1,3 +1,5 @@
+//src/app/api/tecnico/tickets/[id]/complete/route.ts
+
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { getServerSession } from "next-auth";
@@ -31,3 +33,4 @@ export async function PATCH(
         return new NextResponse('Erro ao concluir chamado', { status: 500 });
     }
 }
+

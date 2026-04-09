@@ -1,3 +1,5 @@
+//src\components\controlador\EvidenceGallery.tsx
+
 "use client";
 
 import Image from "next/image";

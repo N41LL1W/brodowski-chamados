@@ -1,3 +1,5 @@
+//src\app\tecnico\page.tsx
+
 "use client";
 import { useEffect, useState, useCallback } from 'react';
 import { Search, RefreshCw, LayoutDashboard, ListChecks, Timer, Coffee, CheckCircle2 } from 'lucide-react';

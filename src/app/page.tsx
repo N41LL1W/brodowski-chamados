@@ -1,3 +1,5 @@
+//src/app/page.tsx
+
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import Link from "next/link";

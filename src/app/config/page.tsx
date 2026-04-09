@@ -1,3 +1,5 @@
+//src\app\config\page.tsx
+
 "use client";
 
 import { useEffect, useState } from 'react';

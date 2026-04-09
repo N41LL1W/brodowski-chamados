@@ -1,3 +1,5 @@
+//src\components\ui\Badge.tsx
+
 import React from 'react';
 
 interface BadgeProps extends React.HTMLAttributes<HTMLSpanElement> {

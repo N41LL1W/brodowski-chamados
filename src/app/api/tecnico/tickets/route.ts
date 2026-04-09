@@ -1,3 +1,5 @@
+//src/app/api/tecnico/tickets/route.ts
+
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { getServerSession } from "next-auth";
@@ -32,3 +34,4 @@ export async function GET() {
     return NextResponse.json({ message: "Erro ao buscar chamados" }, { status: 500 });
   }
 }
+

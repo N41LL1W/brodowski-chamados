@@ -1,3 +1,5 @@
+//src\components\TecnicoAtendimento.tsx
+
 "use client";
 import { useState, useRef } from 'react';
 import { FileText, History, Image as ImageIcon, Paperclip, X, Camera } from 'lucide-react';

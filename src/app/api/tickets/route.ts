@@ -1,3 +1,5 @@
+//src/app/api/tickets/route.ts
+
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { getServerSession } from "next-auth";
@@ -56,3 +58,4 @@ export async function POST(req: Request) {
         return NextResponse.json({ message: "Erro ao abrir chamado" }, { status: 500 });
     }
 }
+

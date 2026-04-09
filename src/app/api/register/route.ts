@@ -1,3 +1,5 @@
+//src/app/api/register/route.ts
+
 import { NextResponse } from 'next/server';
 import bcrypt from 'bcryptjs';
 import { PrismaClient } from '@prisma/client';
@@ -59,3 +61,4 @@ export async function POST(request: Request) {
     await prisma.$disconnect();
   }
 }
+

@@ -1,3 +1,5 @@
+//src\components\TicketPDF.tsx
+
 import { Document, Page, Text, View, StyleSheet, Image } from '@react-pdf/renderer';
 
 // Estilização para o PDF (parecido com CSS)

@@ -1,3 +1,5 @@
+//src\app\controlador\chamados\[id]\page.tsx
+
 export const dynamic = "force-dynamic";
 
 import prisma from "@/lib/prisma";

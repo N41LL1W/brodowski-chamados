@@ -1,3 +1,5 @@
+//src\components\controlador\AudiLog.tsx
+
 "use client";
 
 import { Clock, User, Activity, ArrowRight } from 'lucide-react';

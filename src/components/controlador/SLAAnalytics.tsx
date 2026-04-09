@@ -1,3 +1,5 @@
+//src\components\controlador\SLAAnalytics.tsx
+
 "use client";
 
 import Card from "@/components/ui/Card";
