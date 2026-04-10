@@ -57,7 +57,7 @@ export default function RegisterPage() {
                         <UserPlus size={32} />
                     </div>
                     <h1 className="text-3xl font-black tracking-tighter uppercase text-foreground dark:text-white">Criar Conta</h1>
-                    <p className="font-medium mt-2 text-slate-500 dark:text-slate-400">Inicie seu acesso ao sistema.</p>
+                    <p className="font-medium mt-2 text-muted dark:text-slate-400">Inicie seu acesso ao sistema.</p>
                 </div>
 
                 {success && <div className="mb-6 p-4 bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-400 text-sm font-bold rounded-2xl border border-emerald-100 dark:border-emerald-800 animate-pulse">{success}</div>}
@@ -65,7 +65,7 @@ export default function RegisterPage() {
 
                 <form onSubmit={handleSubmit} className="space-y-5">
                     <div className="space-y-1">
-                        <label className="text-[10px] font-black uppercase tracking-widest ml-4 text-slate-400 dark:text-slate-500">Nome Completo</label>
+                        <label className="text-[10px] font-black uppercase tracking-widest ml-4 text-slate-400 dark:text-muted">Nome Completo</label>
                         <input
                             type="text"
                             value={name}
@@ -77,7 +77,7 @@ export default function RegisterPage() {
                     </div>
                     
                     <div className="space-y-1">
-                        <label className="text-[10px] font-black uppercase tracking-widest ml-4 text-slate-400 dark:text-slate-500">E-mail Corporativo</label>
+                        <label className="text-[10px] font-black uppercase tracking-widest ml-4 text-slate-400 dark:text-muted">E-mail Corporativo</label>
                         <input
                             type="email"
                             value={email}
@@ -89,7 +89,7 @@ export default function RegisterPage() {
                     </div>
                     
                     <div className="space-y-1">
-                        <label className="text-[10px] font-black uppercase tracking-widest ml-4 text-slate-400 dark:text-slate-500">Senha de Acesso</label>
+                        <label className="text-[10px] font-black uppercase tracking-widest ml-4 text-slate-400 dark:text-muted">Senha de Acesso</label>
                         <input
                             type="password"
                             value={password}
@@ -108,7 +108,7 @@ export default function RegisterPage() {
                 </form>
 
                 <div className="text-center mt-8 pt-8 border-t border-slate-100 dark:border-slate-800">
-                    <Link href="/login" className="text-sm font-bold text-slate-500 dark:text-slate-400 hover:text-blue-600 transition-colors">
+                    <Link href="/login" className="text-sm font-bold text-muted dark:text-slate-400 hover:text-blue-600 transition-colors">
                         Já possui uma credencial? <span className="underline italic">Fazer Login</span>
                     </Link>
                 </div>

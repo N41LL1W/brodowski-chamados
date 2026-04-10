@@ -12,13 +12,13 @@ export default function CreateTicketPage() {
           <h1 className="text-4xl font-black text-foreground dark:text-white tracking-tighter uppercase">
             Novo Chamado
           </h1>
-          <p className="text-slate-500 dark:text-slate-400 font-medium">
+          <p className="text-muted dark:text-slate-400 font-medium">
             Preencha os detalhes para abrir uma solicitação.
           </p>
         </div>
         <Link 
           href="/meus-chamados" 
-          className="p-3 bg-slate-100 dark:bg-slate-800 rounded-2xl text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700 transition-all"
+          className="p-3 bg-slate-100 dark:bg-slate-800 rounded-2xl text-muted dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700 transition-all"
         >
           <ArrowLeft size={24} />
         </Link>

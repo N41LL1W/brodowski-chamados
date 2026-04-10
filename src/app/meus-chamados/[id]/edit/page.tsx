@@ -40,7 +40,7 @@ export default async function EditTicketPage({ params }: Props) {
 
         <form action={updateTicket} className="p-10 space-y-8">
           <div className="space-y-2">
-            <label className="text-[10px] font-black uppercase text-slate-400 dark:text-slate-500 tracking-[0.2em] ml-2">Título do Problema</label>
+            <label className="text-[10px] font-black uppercase text-slate-400 dark:text-muted tracking-[0.2em] ml-2">Título do Problema</label>
             <input
               name="subject"
               defaultValue={ticket.subject}
@@ -50,7 +50,7 @@ export default async function EditTicketPage({ params }: Props) {
           </div>
 
           <div className="space-y-2">
-            <label className="text-[10px] font-black uppercase text-slate-400 dark:text-slate-500 tracking-[0.2em] ml-2">Descrição Completa</label>
+            <label className="text-[10px] font-black uppercase text-slate-400 dark:text-muted tracking-[0.2em] ml-2">Descrição Completa</label>
             <textarea
               name="description"
               defaultValue={ticket.description}
@@ -61,7 +61,7 @@ export default async function EditTicketPage({ params }: Props) {
 
           <div className="grid md:grid-cols-2 gap-8">
             <div className="space-y-2">
-              <label className="text-[10px] font-black uppercase text-slate-400 dark:text-slate-500 tracking-[0.2em] ml-2">Status Atual</label>
+              <label className="text-[10px] font-black uppercase text-slate-400 dark:text-muted tracking-[0.2em] ml-2">Status Atual</label>
               <select
                 name="status"
                 defaultValue={ticket.status}
@@ -74,7 +74,7 @@ export default async function EditTicketPage({ params }: Props) {
             </div>
 
             <div className="space-y-2">
-              <label className="text-[10px] font-black uppercase text-slate-400 dark:text-slate-500 tracking-[0.2em] ml-2">Prioridade</label>
+              <label className="text-[10px] font-black uppercase text-slate-400 dark:text-muted tracking-[0.2em] ml-2">Prioridade</label>
               <select
                 name="priority"
                 defaultValue={ticket.priority}
@@ -89,7 +89,7 @@ export default async function EditTicketPage({ params }: Props) {
           </div>
 
           <div className="flex flex-col md:flex-row justify-end gap-4 pt-10 border-t border-slate-100 dark:border-slate-800">
-            <Link href={`/meus-chamados/${ticket.id}`} className="flex items-center justify-center gap-2 px-8 py-5 rounded-2xl font-bold text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all">
+            <Link href={`/meus-chamados/${ticket.id}`} className="flex items-center justify-center gap-2 px-8 py-5 rounded-2xl font-bold text-muted dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all">
               <X size={20} /> Cancelar
             </Link>
             <button type="submit" className="flex items-center justify-center gap-2 px-10 py-5 bg-slate-900 dark:bg-blue-600 text-white rounded-3xl font-black hover:bg-blue-600 dark:hover:bg-blue-700 transition-all shadow-xl active:scale-95">

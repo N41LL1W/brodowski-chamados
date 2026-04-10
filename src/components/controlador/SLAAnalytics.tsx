@@ -33,7 +33,7 @@ export default function SLAAnalytics({ stats }: any) {
         title="Volume de Demandas" 
         value="158" 
         subText="Chamados este mês"
-        icon={<BarChart3 size={24} className="text-slate-500" />}
+        icon={<BarChart3 size={24} className="text-muted" />}
       />
     </div>
   );
@@ -57,7 +57,7 @@ function KPICard({ title, value, subText, icon, trend }: any) {
       <div>
         <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">{title}</p>
         <h4 className="text-3xl font-black text-foreground dark:text-white tracking-tighter">{value}</h4>
-        <p className="text-[11px] font-medium text-slate-500 dark:text-slate-400 mt-1">{subText}</p>
+        <p className="text-[11px] font-medium text-muted dark:text-slate-400 mt-1">{subText}</p>
       </div>
     </Card>
   );

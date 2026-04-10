@@ -57,7 +57,7 @@ export default function TicketDetailPage({ params }: { params: Promise<{ id: str
         <div className="min-h-screen flex items-center justify-center bg-background dark:bg-slate-950">
             <div className="text-center animate-pulse">
                 <div className="w-16 h-16 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-                <p className="font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">Sincronizando Protocolo...</p>
+                <p className="font-black text-slate-400 dark:text-muted uppercase tracking-widest">Sincronizando Protocolo...</p>
             </div>
         </div>
     );
@@ -68,7 +68,7 @@ export default function TicketDetailPage({ params }: { params: Promise<{ id: str
                 <Lock size={64} className="text-red-500" />
             </div>
             <h1 className="text-3xl font-black text-slate-800 dark:text-white uppercase tracking-tighter">Acesso Restrito</h1>
-            <p className="text-slate-500 dark:text-slate-400 mt-2 max-w-md italic">Este chamado não pertence a você.</p>
+            <p className="text-muted dark:text-slate-400 mt-2 max-w-md italic">Este chamado não pertence a você.</p>
             <Link href="/meus-chamados" className="mt-8 bg-slate-900 dark:bg-blue-600 text-white px-8 py-3 rounded-2xl font-bold hover:scale-105 transition-all">
                 Voltar aos meus pedidos
             </Link>
@@ -80,7 +80,7 @@ export default function TicketDetailPage({ params }: { params: Promise<{ id: str
 
     return (
         <div className="max-w-7xl mx-auto py-10 px-6 animate-in fade-in duration-500">
-            <Link href="/meus-chamados" className="group inline-flex items-center gap-2 text-slate-500 dark:text-slate-400 hover:text-blue-600 transition-all font-bold mb-8">
+            <Link href="/meus-chamados" className="group inline-flex items-center gap-2 text-muted dark:text-slate-400 hover:text-blue-600 transition-all font-bold mb-8">
                 <div className="p-2 rounded-xl group-hover:bg-blue-50 dark:group-hover:bg-blue-900/20 transition-colors">
                     <ArrowLeft size={20} />
                 </div>
@@ -115,7 +115,7 @@ export default function TicketDetailPage({ params }: { params: Promise<{ id: str
                                     return (
                                         <div key={step} className="flex flex-col items-center gap-3">
                                             <div className={`w-14 h-14 rounded-full flex items-center justify-center transition-all ${
-                                                isActive ? 'bg-blue-600 text-white shadow-xl shadow-blue-200 dark:shadow-none scale-110' : 'bg-card dark:bg-slate-800 border-2 border-slate-200 dark:border-slate-700 text-slate-300'
+                                                isActive ? 'bg-blue-600 text-white shadow-xl shadow-blue-200 dark:shadow-none scale-110' : 'bg-card dark:bg-slate-800 border-2 border-border dark:border-slate-700 text-slate-300'
                                             }`}>
                                                 {idx === 0 && <Clock size={24} />}
                                                 {idx === 1 && <Wrench size={24} />}
@@ -130,7 +130,7 @@ export default function TicketDetailPage({ params }: { params: Promise<{ id: str
 
                         <div className="p-10 space-y-10">
                             <section>
-                                <h2 className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-4">Assunto & Descrição</h2>
+                                <h2 className="text-[10px] font-black text-slate-400 dark:text-muted uppercase tracking-widest mb-4">Assunto & Descrição</h2>
                                 <h3 className="text-2xl font-bold text-slate-800 dark:text-white mb-4 tracking-tight">{ticket.subject}</h3>
                                 <div className="bg-background dark:bg-slate-800/50 p-8 rounded-4xl border border-slate-100 dark:border-slate-800 text-slate-600 dark:text-slate-300 italic text-lg">
                                     "{ticket.description}"
@@ -175,7 +175,7 @@ export default function TicketDetailPage({ params }: { params: Promise<{ id: str
                                             isMe ? 'bg-blue-600 text-white rounded-tr-none' 
                                                  : 'bg-card dark:bg-slate-800 text-slate-800 dark:text-slate-200 rounded-tl-none border border-slate-100 dark:border-slate-700 shadow-sm'
                                         }`}>
-                                            <p className={`text-[8px] font-black uppercase mb-2 ${isMe ? 'text-blue-100' : 'text-slate-400 dark:text-slate-500'}`}>{c.user?.name}</p>
+                                            <p className={`text-[8px] font-black uppercase mb-2 ${isMe ? 'text-blue-100' : 'text-slate-400 dark:text-muted'}`}>{c.user?.name}</p>
                                             <p className="font-semibold">{c.content}</p>
                                         </div>
                                     </div>

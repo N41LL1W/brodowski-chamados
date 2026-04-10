@@ -22,10 +22,10 @@ export default async function AdminPage() {
                         <ShieldCheck className="text-red-600 w-10 h-10" /> 
                         <span className="text-foreground dark:text-white uppercase">SISTEMA <span className="text-red-600">MASTER</span></span>
                     </h1>
-                    <p className="text-slate-500 font-bold text-xs uppercase tracking-[0.2em] mt-1">Gestão de Infraestrutura e Governança</p>
+                    <p className="text-muted font-bold text-xs uppercase tracking-[0.2em] mt-1">Gestão de Infraestrutura e Governança</p>
                 </div>
                 <div className="flex gap-2">
-                     <div className="bg-slate-100 dark:bg-slate-800 px-4 py-2 rounded-2xl border border-slate-200 dark:border-slate-700">
+                     <div className="bg-slate-100 dark:bg-slate-800 px-4 py-2 rounded-2xl border border-border dark:border-slate-700">
                         <p className="text-[10px] font-black text-slate-400 uppercase">Database</p>
                         <p className="text-xs font-bold text-emerald-500 flex items-center gap-1">● Online</p>
                      </div>

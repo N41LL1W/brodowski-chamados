@@ -32,7 +32,7 @@ export default function MeusChamadosPage() {
     const s = status?.toUpperCase() || '';
     if (s === 'ABERTO') return 'bg-emerald-50 text-emerald-600 border-emerald-100';
     if (s.includes('ATENDIMENTO')) return 'bg-blue-50 text-blue-600 border-blue-100';
-    return 'bg-background text-slate-500 border-slate-100';
+    return 'bg-background text-muted border-slate-100';
   };
 
   if (loading) return (

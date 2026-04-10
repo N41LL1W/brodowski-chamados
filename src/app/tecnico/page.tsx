@@ -74,7 +74,7 @@ export default function PainelTecnicoPage() {
                         </div>
                         <div>
                             <h1 className="text-3xl font-black uppercase tracking-tighter text-slate-800 dark:text-slate-100">Central de Operações</h1>
-                            <p className="text-slate-500 dark:text-slate-400 text-[10px] font-black uppercase tracking-[0.2em]">
+                            <p className="text-muted dark:text-slate-400 text-[10px] font-black uppercase tracking-[0.2em]">
                                 Operador: <span className="text-blue-600 dark:text-blue-400 italic">{session?.user?.name || "Carregando..."}</span>
                             </p>
                         </div>
@@ -125,13 +125,13 @@ function Section({ title, icon, color, tickets, onAction, actionLabel, isMine, i
                     <div className={`p-3 rounded-2xl shadow-lg ${colorVariants[color]}`}>{icon}</div>
                     <div>
                         <h2 className="font-black uppercase text-lg tracking-tight text-slate-800 dark:text-slate-100">{title}</h2>
-                        <p className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">Total: {tickets.length}</p>
+                        <p className="text-[10px] font-black text-slate-400 dark:text-muted uppercase tracking-widest">Total: {tickets.length}</p>
                     </div>
                 </div>
             </div>
 
             {tickets.length === 0 ? (
-                <div className="py-12 flex flex-col items-center justify-center bg-background/50 dark:bg-slate-900/40 border-2 border-dashed border-slate-200 dark:border-slate-800 rounded-[2.5rem] opacity-60">
+                <div className="py-12 flex flex-col items-center justify-center bg-background/50 dark:bg-slate-900/40 border-2 border-dashed border-border dark:border-slate-800 rounded-[2.5rem] opacity-60">
                     <p className="text-slate-400 font-black text-[10px] uppercase tracking-widest">Nenhum chamado encontrado</p>
                 </div>
             ) : (

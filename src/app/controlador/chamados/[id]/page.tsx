@@ -45,7 +45,7 @@ export default async function DetalheChamadoControlador({ params }: PageProps) {
         >
           <ArrowLeft size={16} /> Voltar ao Painel
         </Link>
-        <div className="text-[10px] font-mono font-bold text-slate-500 bg-slate-100 dark:bg-slate-800 px-5 py-2.5 rounded-full border border-slate-200 dark:border-slate-700">
+        <div className="text-[10px] font-mono font-bold text-muted bg-slate-100 dark:bg-slate-800 px-5 py-2.5 rounded-full border border-border dark:border-slate-700">
           PROTOCOLO: {ticket.protocol}
         </div>
       </nav>
@@ -87,7 +87,7 @@ export default async function DetalheChamadoControlador({ params }: PageProps) {
               <DetailItem icon={<Calendar size={18}/>} label="Data de Abertura" value={new Date(ticket.createdAt).toLocaleString('pt-BR')} />
             </div>
             
-            <div className="pt-6 border-t border-slate-200 dark:border-slate-800">
+            <div className="pt-6 border-t border-border dark:border-slate-800">
               <p className="text-[9px] font-black text-slate-400 uppercase mb-4 tracking-widest">Responsável Técnico</p>
               <div className="flex items-center gap-4 bg-card dark:bg-slate-800 p-4 rounded-4xl shadow-sm border border-slate-100 dark:border-slate-700">
                 <div className="h-10 w-10 bg-linear-to-br from-blue-500 to-blue-700 rounded-2xl flex items-center justify-center text-white font-black shadow-inner">

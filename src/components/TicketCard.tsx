@@ -43,7 +43,7 @@ export default function TicketCard({ ticket, onAction, actionLabel, isMine, isDi
                         <MapPin size={14} className="text-slate-400"/>
                         <div className="flex flex-col">
                             <span className="text-[10px] uppercase font-black text-slate-400 leading-none">Localização</span>
-                            <span className="text-xs font-bold text-slate-500 truncate max-w-[150px]">{ticket.location || "N/A"}</span>
+                            <span className="text-xs font-bold text-muted truncate max-w-[150px]">{ticket.location || "N/A"}</span>
                         </div>
                     </div>
                 </div>
@@ -51,7 +51,7 @@ export default function TicketCard({ ticket, onAction, actionLabel, isMine, isDi
 
             <div className="mt-8 flex flex-col gap-3">
                 {isDisabled ? (
-                    <div className="flex items-center justify-center gap-2 py-3 bg-slate-100 dark:bg-slate-800 rounded-xl text-[10px] font-black text-slate-500 uppercase tracking-widest">
+                    <div className="flex items-center justify-center gap-2 py-3 bg-slate-100 dark:bg-slate-800 rounded-xl text-[10px] font-black text-muted uppercase tracking-widest">
                         <CheckCheck size={16} className="text-emerald-500"/> Atendimento Finalizado
                     </div>
                 ) : (

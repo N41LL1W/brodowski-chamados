@@ -19,7 +19,7 @@ export default function UnauthorizedPage() {
                 <Link href="/" className="px-10 py-4 bg-blue-600 text-white rounded-2xl font-black uppercase tracking-widest shadow-xl shadow-blue-200 dark:shadow-none hover:bg-blue-700 transition-all active:scale-95">
                     Página Inicial
                 </Link>
-                <Link href="/login" className="px-10 py-4 bg-card dark:bg-slate-800 text-slate-800 dark:text-white border-2 border-slate-200 dark:border-slate-700 rounded-2xl font-black uppercase tracking-widest hover:bg-background dark:hover:bg-slate-700 transition-all active:scale-95">
+                <Link href="/login" className="px-10 py-4 bg-card dark:bg-slate-800 text-slate-800 dark:text-white border-2 border-border dark:border-slate-700 rounded-2xl font-black uppercase tracking-widest hover:bg-background dark:hover:bg-slate-700 transition-all active:scale-95">
                     Tentar Login
                 </Link>
             </div>

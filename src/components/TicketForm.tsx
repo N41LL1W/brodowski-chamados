@@ -54,12 +54,12 @@ export default function TicketForm() {
         }
     }
 
-    const inputClass = "w-full border p-3 rounded-xl bg-card text-foreground border-slate-200 focus:ring-2 focus:ring-blue-500 outline-none";
+    const inputClass = "w-full border p-3 rounded-xl bg-card text-foreground border-border focus:ring-2 focus:ring-blue-500 outline-none";
 
     return (
         <form onSubmit={handleSubmit} className="max-w-2xl mx-auto space-y-4 bg-card p-6 rounded-2xl shadow-sm border border-slate-100">
             <div>
-                <label className="text-xs font-bold text-slate-500 uppercase ml-1">Assunto</label>
+                <label className="text-xs font-bold text-muted uppercase ml-1">Assunto</label>
                 <input 
                     required
                     value={form.subject} 
@@ -71,7 +71,7 @@ export default function TicketForm() {
 
             <div className="grid grid-cols-2 gap-4">
                 <div>
-                    <label className="text-xs font-bold text-slate-500 uppercase ml-1">Categoria</label>
+                    <label className="text-xs font-bold text-muted uppercase ml-1">Categoria</label>
                     <select 
                         required
                         value={form.categoryId} 
@@ -83,7 +83,7 @@ export default function TicketForm() {
                     </select>
                 </div>
                 <div>
-                    <label className="text-xs font-bold text-slate-500 uppercase ml-1">Secretaria</label>
+                    <label className="text-xs font-bold text-muted uppercase ml-1">Secretaria</label>
                     <select 
                         required
                         value={form.departmentId} 
@@ -97,7 +97,7 @@ export default function TicketForm() {
             </div>
 
             <div>
-                <label className="text-xs font-bold text-slate-500 uppercase ml-1">Urgência</label>
+                <label className="text-xs font-bold text-muted uppercase ml-1">Urgência</label>
                 <select 
                     value={form.priority} 
                     onChange={e => setForm({...form, priority: e.target.value})} 
@@ -111,7 +111,7 @@ export default function TicketForm() {
             </div>
 
             <div>
-                <label className="text-xs font-bold text-slate-500 uppercase ml-1">Descrição Detalhada</label>
+                <label className="text-xs font-bold text-muted uppercase ml-1">Descrição Detalhada</label>
                 <textarea 
                     required
                     value={form.description} 

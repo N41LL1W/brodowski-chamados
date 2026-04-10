@@ -39,7 +39,7 @@ export default function ThemeToggle() {
   return (
     <button 
       onClick={toggle} 
-      className="p-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:scale-110 active:scale-95 transition-all border border-slate-200 dark:border-slate-700"
+      className="p-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:scale-110 active:scale-95 transition-all border border-border dark:border-slate-700"
       aria-label="Trocar Tema"
     >
       {theme === "light" && <Sun size={18} />}

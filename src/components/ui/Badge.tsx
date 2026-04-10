@@ -21,7 +21,7 @@ export function Badge({ children, variant = 'default', value, className = "", ..
     atendimento: "bg-blue-600 text-white border-blue-700",
     em_andamento: "bg-blue-600 text-white border-blue-700",
     concluido: "bg-emerald-100 text-emerald-700 border-emerald-200 dark:bg-emerald-900/30 dark:text-emerald-400 dark:border-emerald-800",
-    pausado: "bg-slate-100 text-slate-700 border-slate-200 dark:bg-slate-800 dark:text-slate-400",
+    pausado: "bg-slate-100 text-slate-700 border-border dark:bg-slate-800 dark:text-slate-400",
   };
 
   const normalize = (val: string) => val?.toLowerCase()
@@ -29,7 +29,7 @@ export function Badge({ children, variant = 'default', value, className = "", ..
     .normalize("NFD")
     .replace(/[\u0300-\u036f]/g, "");
 
-  let variantStyles = "bg-gray-100 text-foreground border-gray-200 dark:bg-slate-800 dark:text-slate-300";
+  let variantStyles = "bg-gray-100 text-foreground border-border dark:bg-slate-800 dark:text-slate-300";
   
   if ((variant === 'priority' || variant === 'status') && value) {
     variantStyles = colors[normalize(value)] || colors.baixa;
