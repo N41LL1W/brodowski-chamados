@@ -54,7 +54,7 @@ export default function TicketDetailPage({ params }: { params: Promise<{ id: str
     };
 
     if (loading) return (
-        <div className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-slate-950">
+        <div className="min-h-screen flex items-center justify-center bg-background dark:bg-slate-950">
             <div className="text-center animate-pulse">
                 <div className="w-16 h-16 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
                 <p className="font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">Sincronizando Protocolo...</p>
@@ -63,7 +63,7 @@ export default function TicketDetailPage({ params }: { params: Promise<{ id: str
     );
 
     if (errorStatus === 403) return (
-        <div className="min-h-screen flex flex-col items-center justify-center p-6 text-center bg-slate-50 dark:bg-slate-950">
+        <div className="min-h-screen flex flex-col items-center justify-center p-6 text-center bg-background dark:bg-slate-950">
             <div className="bg-red-50 dark:bg-red-900/20 p-8 rounded-full mb-6">
                 <Lock size={64} className="text-red-500" />
             </div>
@@ -89,7 +89,7 @@ export default function TicketDetailPage({ params }: { params: Promise<{ id: str
 
             <div className="grid lg:grid-cols-3 gap-8">
                 <div className="lg:col-span-2 space-y-6">
-                    <div className="bg-white dark:bg-slate-900 rounded-[3rem] shadow-2xl shadow-slate-200/50 dark:shadow-none border border-slate-100 dark:border-slate-800 overflow-hidden">
+                    <div className="bg-card dark:bg-slate-900 rounded-[3rem] shadow-2xl shadow-slate-200/50 dark:shadow-none border border-slate-100 dark:border-slate-800 overflow-hidden">
                         
                         <div className="bg-slate-900 dark:bg-slate-950 p-10 text-white flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
                             <div className="flex flex-col md:flex-row md:items-center gap-6">
@@ -108,14 +108,14 @@ export default function TicketDetailPage({ params }: { params: Promise<{ id: str
                             <span className="bg-blue-600 px-6 py-2.5 rounded-2xl text-xs font-black uppercase">{ticket.status.replace('_', ' ')}</span>
                         </div>
 
-                        <div className="p-10 bg-slate-50/50 dark:bg-slate-900/50 border-b border-slate-100 dark:border-slate-800">
+                        <div className="p-10 bg-background/50 dark:bg-slate-900/50 border-b border-slate-100 dark:border-slate-800">
                             <div className="flex justify-between relative z-10">
                                 {statusSteps.map((step, idx) => {
                                     const isActive = idx <= currentStep;
                                     return (
                                         <div key={step} className="flex flex-col items-center gap-3">
                                             <div className={`w-14 h-14 rounded-full flex items-center justify-center transition-all ${
-                                                isActive ? 'bg-blue-600 text-white shadow-xl shadow-blue-200 dark:shadow-none scale-110' : 'bg-white dark:bg-slate-800 border-2 border-slate-200 dark:border-slate-700 text-slate-300'
+                                                isActive ? 'bg-blue-600 text-white shadow-xl shadow-blue-200 dark:shadow-none scale-110' : 'bg-card dark:bg-slate-800 border-2 border-slate-200 dark:border-slate-700 text-slate-300'
                                             }`}>
                                                 {idx === 0 && <Clock size={24} />}
                                                 {idx === 1 && <Wrench size={24} />}
@@ -132,20 +132,20 @@ export default function TicketDetailPage({ params }: { params: Promise<{ id: str
                             <section>
                                 <h2 className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-4">Assunto & Descrição</h2>
                                 <h3 className="text-2xl font-bold text-slate-800 dark:text-white mb-4 tracking-tight">{ticket.subject}</h3>
-                                <div className="bg-slate-50 dark:bg-slate-800/50 p-8 rounded-4xl border border-slate-100 dark:border-slate-800 text-slate-600 dark:text-slate-300 italic text-lg">
+                                <div className="bg-background dark:bg-slate-800/50 p-8 rounded-4xl border border-slate-100 dark:border-slate-800 text-slate-600 dark:text-slate-300 italic text-lg">
                                     "{ticket.description}"
                                 </div>
                             </section>
 
                             <div className="grid md:grid-cols-2 gap-6">
-                                <div className="flex items-center gap-4 p-6 bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-3xl">
+                                <div className="flex items-center gap-4 p-6 bg-card dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-3xl">
                                     <div className="p-4 bg-blue-50 dark:bg-blue-900/20 text-blue-600 rounded-2xl"><Tag size={24}/></div>
                                     <div>
                                         <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Categoria</p>
                                         <p className="text-lg font-bold text-slate-700 dark:text-slate-200">{ticket.category?.name || "Geral"}</p>
                                     </div>
                                 </div>
-                                <div className="flex items-center gap-4 p-6 bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-3xl">
+                                <div className="flex items-center gap-4 p-6 bg-card dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-3xl">
                                     <div className="p-4 bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 rounded-2xl"><MapPin size={24}/></div>
                                     <div>
                                         <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Localização</p>
@@ -158,7 +158,7 @@ export default function TicketDetailPage({ params }: { params: Promise<{ id: str
                 </div>
 
                 <div className="lg:col-span-1">
-                    <div className="bg-white dark:bg-slate-900 rounded-[3rem] shadow-2xl border border-slate-100 dark:border-slate-800 overflow-hidden flex flex-col h-[750px]">
+                    <div className="bg-card dark:bg-slate-900 rounded-[3rem] shadow-2xl border border-slate-100 dark:border-slate-800 overflow-hidden flex flex-col h-[750px]">
                         <div className="p-8 bg-slate-900 dark:bg-slate-950 text-white flex items-center justify-between">
                             <div className="flex items-center gap-3">
                                 <MessageSquare className="text-blue-400" size={20} />
@@ -166,14 +166,14 @@ export default function TicketDetailPage({ params }: { params: Promise<{ id: str
                             </div>
                         </div>
 
-                        <div className="flex-1 overflow-y-auto p-8 space-y-6 bg-slate-50/30 dark:bg-slate-950/20">
+                        <div className="flex-1 overflow-y-auto p-8 space-y-6 bg-background/30 dark:bg-slate-950/20">
                             {ticket.comments?.map((c: any) => {
                                 const isMe = c.userId === ticket.requesterId;
                                 return (
                                     <div key={c.id} className={`flex flex-col ${isMe ? 'items-end' : 'items-start'}`}>
                                         <div className={`max-w-[90%] p-5 rounded-3xl text-sm ${
                                             isMe ? 'bg-blue-600 text-white rounded-tr-none' 
-                                                 : 'bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-200 rounded-tl-none border border-slate-100 dark:border-slate-700 shadow-sm'
+                                                 : 'bg-card dark:bg-slate-800 text-slate-800 dark:text-slate-200 rounded-tl-none border border-slate-100 dark:border-slate-700 shadow-sm'
                                         }`}>
                                             <p className={`text-[8px] font-black uppercase mb-2 ${isMe ? 'text-blue-100' : 'text-slate-400 dark:text-slate-500'}`}>{c.user?.name}</p>
                                             <p className="font-semibold">{c.content}</p>
@@ -183,8 +183,8 @@ export default function TicketDetailPage({ params }: { params: Promise<{ id: str
                             })}
                         </div>
 
-                        <div className="p-6 bg-white dark:bg-slate-900 border-t border-slate-100 dark:border-slate-800">
-                            <div className="flex gap-3 bg-slate-50 dark:bg-slate-800 p-2 rounded-4xl border-2 border-slate-100 dark:border-slate-700 focus-within:border-blue-500 transition-all">
+                        <div className="p-6 bg-card dark:bg-slate-900 border-t border-slate-100 dark:border-slate-800">
+                            <div className="flex gap-3 bg-background dark:bg-slate-800 p-2 rounded-4xl border-2 border-slate-100 dark:border-slate-700 focus-within:border-blue-500 transition-all">
                                 <input 
                                     className="flex-1 bg-transparent px-4 outline-none text-sm font-bold text-slate-700 dark:text-slate-200"
                                     placeholder="Digite sua dúvida..."

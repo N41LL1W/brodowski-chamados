@@ -61,12 +61,12 @@ export default async function DetalheChamadoControlador({ params }: PageProps) {
                 Prioridade {ticket.priority}
               </span>
             </div>
-            <h1 className="text-4xl md:text-5xl font-black tracking-tighter text-slate-900 dark:text-white uppercase leading-[0.9]">
+            <h1 className="text-4xl md:text-5xl font-black tracking-tighter text-foreground dark:text-white uppercase leading-[0.9]">
               {ticket.subject}
             </h1>
           </header>
 
-          <Card className="p-10 border-none bg-white dark:bg-slate-900 shadow-2xl shadow-slate-200/50 rounded-[3rem]">
+          <Card className="p-10 border-none bg-card dark:bg-slate-900 shadow-2xl shadow-slate-200/50 rounded-[3rem]">
             <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-blue-600 mb-6">Descrição Técnica</h3>
             <p className="text-slate-600 dark:text-slate-300 text-lg leading-relaxed font-medium">
               {ticket.description}
@@ -77,7 +77,7 @@ export default async function DetalheChamadoControlador({ params }: PageProps) {
         </div>
 
         <aside className="space-y-6">
-          <Card className="p-8 border-none bg-slate-50 dark:bg-slate-900/50 rounded-[3rem] space-y-8 border border-white dark:border-slate-800 shadow-inner">
+          <Card className="p-8 border-none bg-background dark:bg-slate-900/50 rounded-[3rem] space-y-8 border border-white dark:border-slate-800 shadow-inner">
             <h3 className="text-[10px] font-black uppercase tracking-widest text-slate-400">Metadados do Chamado</h3>
             
             <div className="space-y-5">
@@ -89,7 +89,7 @@ export default async function DetalheChamadoControlador({ params }: PageProps) {
             
             <div className="pt-6 border-t border-slate-200 dark:border-slate-800">
               <p className="text-[9px] font-black text-slate-400 uppercase mb-4 tracking-widest">Responsável Técnico</p>
-              <div className="flex items-center gap-4 bg-white dark:bg-slate-800 p-4 rounded-4xl shadow-sm border border-slate-100 dark:border-slate-700">
+              <div className="flex items-center gap-4 bg-card dark:bg-slate-800 p-4 rounded-4xl shadow-sm border border-slate-100 dark:border-slate-700">
                 <div className="h-10 w-10 bg-linear-to-br from-blue-500 to-blue-700 rounded-2xl flex items-center justify-center text-white font-black shadow-inner">
                   {ticket.assignedTo?.name?.charAt(0) || <ShieldCheck size={18} />}
                 </div>

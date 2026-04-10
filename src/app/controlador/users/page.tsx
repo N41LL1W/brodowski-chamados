@@ -44,7 +44,7 @@ export default function UsersListPage() {
       CONTROLADOR: 'bg-indigo-50 text-indigo-600 border-indigo-100',
       TECNICO: 'bg-sky-50 text-sky-600 border-sky-100',
     };
-    return roles[role] || 'bg-slate-50 text-slate-600 border-slate-100';
+    return roles[role] || 'bg-background text-slate-600 border-slate-100';
   };
 
   if (loading) return (
@@ -64,7 +64,7 @@ export default function UsersListPage() {
             <Shield className="text-blue-600" size={20} />
             <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Security & Access</span>
           </div>
-          <h1 className="text-5xl font-black text-slate-900 tracking-tighter uppercase leading-[0.8]">Equipe<br/>Cadastrada</h1>
+          <h1 className="text-5xl font-black text-foreground tracking-tighter uppercase leading-[0.8]">Equipe<br/>Cadastrada</h1>
         </div>
         <Link 
           href="/controlador/users/add" 
@@ -76,13 +76,13 @@ export default function UsersListPage() {
 
       <div className="grid gap-4">
         {users.map((user) => (
-          <Card key={user.id} className="p-6 flex flex-col sm:flex-row justify-between items-center hover:border-blue-200 transition-all border-2 border-slate-100 bg-white group">
+          <Card key={user.id} className="p-6 flex flex-col sm:flex-row justify-between items-center hover:border-blue-200 transition-all border-2 border-slate-100 bg-card group">
             <div className="flex items-center gap-5 w-full">
               <div className="h-12 w-12 rounded-2xl bg-slate-100 flex items-center justify-center font-black text-slate-400 group-hover:bg-blue-600 group-hover:text-white transition-colors">
                 {user.name.charAt(0)}
               </div>
               <div className="flex flex-col">
-                <span className="font-black text-slate-900 text-lg uppercase tracking-tight">{user.name}</span>
+                <span className="font-black text-foreground text-lg uppercase tracking-tight">{user.name}</span>
                 <span className="text-xs font-bold text-slate-400 flex items-center gap-1 uppercase tracking-tighter italic">
                   <Mail size={12} /> {user.email}
                 </span>

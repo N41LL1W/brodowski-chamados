@@ -38,7 +38,7 @@ export default function TecnicoAtendimento({ ticket, onUpdate }: any) {
     };
 
     return (
-        <div className="grid lg:grid-cols-2 gap-8 mt-8 relative bg-slate-50 p-4 rounded-3xl">
+        <div className="grid lg:grid-cols-2 gap-8 mt-8 relative bg-background p-4 rounded-3xl">
             
             {/* MODAL DA GALERIA */}
             {selectedGalleryImage && (
@@ -49,7 +49,7 @@ export default function TecnicoAtendimento({ ticket, onUpdate }: any) {
             )}
 
             {/* LADO ESQUERDO */}
-            <div className="bg-white p-8 rounded-4xl shadow-xl border-4 border-blue-500">
+            <div className="bg-card p-8 rounded-4xl shadow-xl border-4 border-blue-500">
                 <div className="flex items-center gap-4 mb-6">
                     {/* BOTÃO DE TESTE - SE ELE NÃO ESTIVER VERMELHO, O DEPLOY FALHOU */}
                     <button 
@@ -84,11 +84,11 @@ export default function TecnicoAtendimento({ ticket, onUpdate }: any) {
             </div>
 
             {/* LADO DIREITO (HISTÓRICO) */}
-            <div className="bg-white p-8 rounded-4xl shadow-xl">
+            <div className="bg-card p-8 rounded-4xl shadow-xl">
                 <h2 className="font-black uppercase mb-4 opacity-30">Histórico</h2>
                 <div className="space-y-4">
                     {ticket.comments?.map((c: any) => (
-                        <div key={c.id} className="p-4 bg-slate-50 rounded-2xl border">
+                        <div key={c.id} className="p-4 bg-background rounded-2xl border">
                             <p className="text-sm font-bold">{c.content || "Sem texto"}</p>
                             {c.proofImage && (
                                 <button 

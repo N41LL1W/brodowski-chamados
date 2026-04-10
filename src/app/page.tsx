@@ -25,7 +25,7 @@ export default async function Home() {
                 </Link>
                 
                 <Link href="/meus-chamados" 
-                    className="p-10 bg-card border-2 border-border rounded-[3rem] font-bold hover:bg-slate-50 dark:hover:bg-slate-800 transition-all shadow-xl flex flex-col items-center gap-4 text-foreground">
+                    className="p-10 bg-card border-2 border-border rounded-[3rem] font-bold hover:bg-background dark:hover:bg-slate-800 transition-all shadow-xl flex flex-col items-center gap-4 text-foreground">
                     <ListChecks size={40} className="text-primary" />
                     MEUS CHAMADOS
                 </Link>

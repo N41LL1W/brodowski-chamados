@@ -14,7 +14,7 @@ export default function TicketCard({ ticket, onAction, actionLabel, isMine, isDi
         <Card className={`group relative p-6 flex flex-col h-full transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl border-l-[6px] shadow-sm ${
             isMine 
             ? 'border-l-blue-600 bg-linear-to-br from-blue-50/50 to-transparent dark:from-blue-900/10' 
-            : (isDisabled ? 'border-l-slate-300 opacity-75 grayscale' : 'border-l-amber-500 bg-white dark:bg-slate-900')
+            : (isDisabled ? 'border-l-slate-300 opacity-75 grayscale' : 'border-l-amber-500 bg-card dark:bg-slate-900')
         }`}>
             <div className="flex-1 space-y-5">
                 <div className="flex justify-between items-center">
@@ -71,7 +71,7 @@ export default function TicketCard({ ticket, onAction, actionLabel, isMine, isDi
                         {onAction && actionLabel && (
                             <button 
                                 onClick={() => onAction(ticket.id)} 
-                                className="flex-1 flex items-center justify-center gap-2 bg-white dark:bg-slate-800 border-2 border-amber-500 text-amber-500 hover:bg-amber-500 hover:text-white py-4 rounded-2xl font-black text-[10px] uppercase transition-all"
+                                className="flex-1 flex items-center justify-center gap-2 bg-card dark:bg-slate-800 border-2 border-amber-500 text-amber-500 hover:bg-amber-500 hover:text-white py-4 rounded-2xl font-black text-[10px] uppercase transition-all"
                                 title={actionLabel}
                             >
                                 {actionLabel === "Retomar" ? <Play size={14}/> : <ArrowRight size={14}/>}

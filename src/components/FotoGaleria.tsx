@@ -53,13 +53,13 @@ export default function FotoGaleria({ images, titulo = "Galeria de Evidências" 
                             href={selectedImage} 
                             download={`evidencia-${Date.now()}.jpg`}
                             onClick={(e) => e.stopPropagation()}
-                            className="p-3 bg-white/10 hover:bg-white/20 text-white rounded-full transition-all"
+                            className="p-3 bg-card/10 hover:bg-card/20 text-white rounded-full transition-all"
                             title="Baixar Imagem"
                         >
                             <Download size={24} />
                         </a>
                         <button 
-                            className="p-3 bg-white/10 hover:bg-red-500 text-white rounded-full transition-all shadow-xl"
+                            className="p-3 bg-card/10 hover:bg-red-500 text-white rounded-full transition-all shadow-xl"
                             onClick={() => setSelectedImage(null)}
                         >
                             <X size={28} />

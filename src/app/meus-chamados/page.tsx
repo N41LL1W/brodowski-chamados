@@ -32,7 +32,7 @@ export default function MeusChamadosPage() {
     const s = status?.toUpperCase() || '';
     if (s === 'ABERTO') return 'bg-emerald-50 text-emerald-600 border-emerald-100';
     if (s.includes('ATENDIMENTO')) return 'bg-blue-50 text-blue-600 border-blue-100';
-    return 'bg-slate-50 text-slate-500 border-slate-100';
+    return 'bg-background text-slate-500 border-slate-100';
   };
 
   if (loading) return (
@@ -46,7 +46,7 @@ export default function MeusChamadosPage() {
     <div className="max-w-5xl mx-auto p-6 md:p-12 space-y-12">
       <header className="flex flex-col md:flex-row justify-between items-start md:items-end gap-8">
         <div className="space-y-2">
-          <h1 className="text-6xl font-black text-slate-900 tracking-tighter uppercase leading-[0.8]">Meus<br/>Chamados</h1>
+          <h1 className="text-6xl font-black text-foreground tracking-tighter uppercase leading-[0.8]">Meus<br/>Chamados</h1>
           <p className="text-slate-400 font-bold uppercase text-[10px] tracking-widest pl-1 italic">Rastreamento de Protocolos em tempo real</p>
         </div>
         <Link 
@@ -66,7 +66,7 @@ export default function MeusChamadosPage() {
         <div className="grid gap-6">
           {tickets.map((ticket) => (
             <Link href={`/meus-chamados/${ticket.id}`} key={ticket.id}>
-              <div className="p-8 bg-white border-2 border-slate-50 rounded-[2.5rem] shadow-sm hover:shadow-2xl hover:border-blue-100 transition-all group relative overflow-hidden">
+              <div className="p-8 bg-card border-2 border-slate-50 rounded-[2.5rem] shadow-sm hover:shadow-2xl hover:border-blue-100 transition-all group relative overflow-hidden">
                 <div className="flex flex-col md:flex-row justify-between md:items-center gap-6">
                   <div className="space-y-4 flex-1">
                     <div className="flex flex-wrap gap-2">
@@ -96,7 +96,7 @@ export default function MeusChamadosPage() {
                     <div className="flex items-center gap-2 text-[10px] font-black text-slate-300 uppercase tracking-widest">
                       <Clock size={14} /> {new Date(ticket.createdAt).toLocaleDateString('pt-BR')}
                     </div>
-                    <div className="hidden md:flex mt-6 h-12 w-12 bg-slate-50 rounded-full items-center justify-center text-slate-300 group-hover:bg-blue-600 group-hover:text-white transition-all transform group-hover:translate-x-2">
+                    <div className="hidden md:flex mt-6 h-12 w-12 bg-background rounded-full items-center justify-center text-slate-300 group-hover:bg-blue-600 group-hover:text-white transition-all transform group-hover:translate-x-2">
                       <ChevronRight size={20} />
                     </div>
                   </div>

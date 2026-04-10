@@ -51,12 +51,12 @@ export default function RegisterPage() {
 
     return (
         <div className="min-h-[80vh] flex items-center justify-center p-6 bg-transparent">
-            <Card className="w-full max-w-md p-10 bg-white dark:bg-slate-900 shadow-2xl dark:shadow-none rounded-[3rem] border-none">
+            <Card className="w-full max-w-md p-10 bg-card dark:bg-slate-900 shadow-2xl dark:shadow-none rounded-[3rem] border-none">
                 <div className="text-center mb-10">
                     <div className="w-16 h-16 bg-blue-600 rounded-3xl flex items-center justify-center text-white mx-auto mb-6 shadow-xl shadow-blue-200 dark:shadow-none">
                         <UserPlus size={32} />
                     </div>
-                    <h1 className="text-3xl font-black tracking-tighter uppercase text-slate-900 dark:text-white">Criar Conta</h1>
+                    <h1 className="text-3xl font-black tracking-tighter uppercase text-foreground dark:text-white">Criar Conta</h1>
                     <p className="font-medium mt-2 text-slate-500 dark:text-slate-400">Inicie seu acesso ao sistema.</p>
                 </div>
 
@@ -70,7 +70,7 @@ export default function RegisterPage() {
                             type="text"
                             value={name}
                             onChange={(e) => setName(e.target.value)}
-                            className="w-full p-4 bg-slate-50 dark:bg-slate-800 border-2 border-slate-100 dark:border-slate-700 rounded-2xl transition-all outline-none font-bold text-slate-700 dark:text-slate-200 focus:border-blue-500"
+                            className="w-full p-4 bg-background dark:bg-slate-800 border-2 border-slate-100 dark:border-slate-700 rounded-2xl transition-all outline-none font-bold text-slate-700 dark:text-slate-200 focus:border-blue-500"
                             placeholder="Ex: João Silva"
                             disabled={isLoading}
                         />
@@ -82,7 +82,7 @@ export default function RegisterPage() {
                             type="email"
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
-                            className="w-full p-4 bg-slate-50 dark:bg-slate-800 border-2 border-slate-100 dark:border-slate-700 rounded-2xl transition-all outline-none font-bold text-slate-700 dark:text-slate-200 focus:border-blue-500"
+                            className="w-full p-4 bg-background dark:bg-slate-800 border-2 border-slate-100 dark:border-slate-700 rounded-2xl transition-all outline-none font-bold text-slate-700 dark:text-slate-200 focus:border-blue-500"
                             placeholder="email@empresa.com"
                             disabled={isLoading}
                         />
@@ -94,7 +94,7 @@ export default function RegisterPage() {
                             type="password"
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
-                            className="w-full p-4 bg-slate-50 dark:bg-slate-800 border-2 border-slate-100 dark:border-slate-700 rounded-2xl transition-all outline-none font-bold text-slate-700 dark:text-slate-200 focus:border-blue-500"
+                            className="w-full p-4 bg-background dark:bg-slate-800 border-2 border-slate-100 dark:border-slate-700 rounded-2xl transition-all outline-none font-bold text-slate-700 dark:text-slate-200 focus:border-blue-500"
                             placeholder="••••••••"
                             disabled={isLoading}
                         />

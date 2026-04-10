@@ -15,7 +15,7 @@ export function Badge({ children, variant = 'default', value, className = "", ..
     urgente: "bg-red-500 text-white border-red-600",
     alta: "bg-orange-500 text-white border-orange-600",
     normal: "bg-blue-500 text-white border-blue-600",
-    baixa: "bg-slate-500 text-white border-slate-600",
+    baixa: "bg-background0 text-white border-slate-600",
     
     aberto: "bg-amber-100 text-amber-700 border-amber-200 dark:bg-amber-900/30 dark:text-amber-400 dark:border-amber-800",
     atendimento: "bg-blue-600 text-white border-blue-700",
@@ -29,7 +29,7 @@ export function Badge({ children, variant = 'default', value, className = "", ..
     .normalize("NFD")
     .replace(/[\u0300-\u036f]/g, "");
 
-  let variantStyles = "bg-gray-100 text-gray-800 border-gray-200 dark:bg-slate-800 dark:text-slate-300";
+  let variantStyles = "bg-gray-100 text-foreground border-gray-200 dark:bg-slate-800 dark:text-slate-300";
   
   if ((variant === 'priority' || variant === 'status') && value) {
     variantStyles = colors[normalize(value)] || colors.baixa;

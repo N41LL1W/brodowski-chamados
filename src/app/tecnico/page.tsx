@@ -64,7 +64,7 @@ export default function PainelTecnicoPage() {
     };
 
     return (
-        <div className="min-h-screen bg-slate-50 dark:bg-slate-950 p-4 md:p-8 transition-colors duration-300">
+        <div className="min-h-screen bg-background dark:bg-slate-950 p-4 md:p-8 transition-colors duration-300">
             <div className="max-w-[1400px] mx-auto space-y-12 animate-in fade-in duration-700">
                 
                 <header className="flex flex-col md:flex-row justify-between items-center gap-6">
@@ -84,7 +84,7 @@ export default function PainelTecnicoPage() {
                         <div className="relative flex-1 md:w-96 group">
                             <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-blue-600 transition-colors" size={18} />
                             <input 
-                                className="w-full pl-12 pr-4 py-4 bg-white dark:bg-slate-900 border-2 border-slate-100 dark:border-slate-800 text-slate-900 dark:text-slate-100 rounded-2xl outline-none focus:border-blue-500 transition-all"
+                                className="w-full pl-12 pr-4 py-4 bg-card dark:bg-slate-900 border-2 border-slate-100 dark:border-slate-800 text-foreground dark:text-slate-100 rounded-2xl outline-none focus:border-blue-500 transition-all"
                                 placeholder="Buscar por Protocolo, Assunto..."
                                 onChange={(e) => setSearchTerm(e.target.value)}
                             />
@@ -92,7 +92,7 @@ export default function PainelTecnicoPage() {
                         <button 
                             onClick={fetchTickets} 
                             disabled={loading}
-                            className="p-4 bg-white dark:bg-slate-900 border-2 border-slate-100 dark:border-slate-800 rounded-2xl hover:bg-slate-50 dark:hover:bg-slate-800 transition-all active:scale-95"
+                            className="p-4 bg-card dark:bg-slate-900 border-2 border-slate-100 dark:border-slate-800 rounded-2xl hover:bg-background dark:hover:bg-slate-800 transition-all active:scale-95"
                         >
                             <RefreshCw size={24} className={`${loading ? "animate-spin text-blue-600" : "text-slate-600 dark:text-slate-400"}`} />
                         </button>
@@ -115,7 +115,7 @@ function Section({ title, icon, color, tickets, onAction, actionLabel, isMine, i
         amber: 'bg-amber-500 text-white shadow-amber-500/20',
         blue: 'bg-blue-600 text-white shadow-blue-500/20',
         purple: 'bg-purple-600 text-white shadow-purple-500/20',
-        slate: 'bg-slate-500 text-white shadow-slate-500/20'
+        slate: 'bg-background0 text-white shadow-slate-500/20'
     };
 
     return (
@@ -131,7 +131,7 @@ function Section({ title, icon, color, tickets, onAction, actionLabel, isMine, i
             </div>
 
             {tickets.length === 0 ? (
-                <div className="py-12 flex flex-col items-center justify-center bg-slate-50/50 dark:bg-slate-900/40 border-2 border-dashed border-slate-200 dark:border-slate-800 rounded-[2.5rem] opacity-60">
+                <div className="py-12 flex flex-col items-center justify-center bg-background/50 dark:bg-slate-900/40 border-2 border-dashed border-slate-200 dark:border-slate-800 rounded-[2.5rem] opacity-60">
                     <p className="text-slate-400 font-black text-[10px] uppercase tracking-widest">Nenhum chamado encontrado</p>
                 </div>
             ) : (

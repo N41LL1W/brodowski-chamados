@@ -15,7 +15,7 @@ interface LogEntry {
 
 export default function AuditLog({ logs }: { logs: LogEntry[] }) {
   return (
-    <div className="bg-white dark:bg-slate-900 rounded-4xl border border-slate-200 dark:border-slate-800 overflow-hidden">
+    <div className="bg-card dark:bg-slate-900 rounded-4xl border border-slate-200 dark:border-slate-800 overflow-hidden">
       <div className="p-6 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center">
         <h3 className="font-black text-xs uppercase tracking-widest text-slate-400 flex items-center gap-2">
           <Activity size={16} className="text-blue-500" /> Fluxo de Atividades (Logs)
@@ -25,7 +25,7 @@ export default function AuditLog({ logs }: { logs: LogEntry[] }) {
 
       <div className="divide-y divide-slate-50 dark:divide-slate-800">
         {logs.map((log) => (
-          <div key={log.id} className="p-4 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors flex items-start gap-4">
+          <div key={log.id} className="p-4 hover:bg-background dark:hover:bg-slate-800/50 transition-colors flex items-start gap-4">
             <div className="mt-1 p-2 bg-slate-100 dark:bg-slate-800 rounded-lg">
               <Clock size={14} className="text-slate-500" />
             </div>

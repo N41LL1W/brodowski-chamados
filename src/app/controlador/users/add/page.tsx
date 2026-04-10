@@ -41,21 +41,21 @@ export default function AddUserPage() {
     };
 
     return (
-        <div className="min-h-screen bg-gray-50 p-6 flex flex-col items-center">
+        <div className="min-h-screen bg-background p-6 flex flex-col items-center">
             <div className="w-full max-w-lg mb-6 text-left">
                 <Link href="/controlador/users" className="text-sm text-gray-500 hover:text-blue-600 flex items-center gap-1">
                     <ArrowLeft size={16} /> Voltar para lista
                 </Link>
             </div>
 
-            <Card className="w-full max-w-lg p-8 shadow-xl bg-white">
+            <Card className="w-full max-w-lg p-8 shadow-xl bg-card">
                 <div className="flex justify-center mb-6">
                     <div className="bg-blue-100 p-3 rounded-full">
                         <UserCheck className="text-blue-600" size={32} />
                     </div>
                 </div>
                 
-                <h1 className="text-2xl font-black text-center text-gray-800 mb-8 uppercase tracking-tight">Novo Acesso</h1>
+                <h1 className="text-2xl font-black text-center text-foreground mb-8 uppercase tracking-tight">Novo Acesso</h1>
 
                 {status && (
                     <div className={`p-4 rounded-lg mb-6 text-sm font-medium border ${
@@ -67,48 +67,48 @@ export default function AddUserPage() {
 
                 <form onSubmit={handleSubmit} className="space-y-5">
                     <div>
-                        <label className="block text-xs font-bold text-gray-400 uppercase mb-1 ml-1">Nome Completo</label>
+                        <label className="block text-xs font-bold text-muted uppercase mb-1 ml-1">Nome Completo</label>
                         <input 
                             type="text" 
                             value={formData.name} 
                             onChange={(e) => setFormData({...formData, name: e.target.value})} 
                             required 
                             disabled={isLoading}
-                            className="w-full p-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none bg-gray-50 transition-all"
+                            className="w-full p-3 border border-border rounded-xl focus:ring-2 focus:ring-blue-500 outline-none bg-background transition-all"
                         />
                     </div>
 
                     <div>
-                        <label className="block text-xs font-bold text-gray-400 uppercase mb-1 ml-1">Email Institucional</label>
+                        <label className="block text-xs font-bold text-muted uppercase mb-1 ml-1">Email Institucional</label>
                         <input 
                             type="email" 
                             value={formData.email} 
                             onChange={(e) => setFormData({...formData, email: e.target.value})} 
                             required 
                             disabled={isLoading}
-                            className="w-full p-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none bg-gray-50 transition-all"
+                            className="w-full p-3 border border-border rounded-xl focus:ring-2 focus:ring-blue-500 outline-none bg-background transition-all"
                         />
                     </div>
 
                     <div>
-                        <label className="block text-xs font-bold text-gray-400 uppercase mb-1 ml-1">Senha Provisória</label>
+                        <label className="block text-xs font-bold text-muted uppercase mb-1 ml-1">Senha Provisória</label>
                         <input 
                             type="password" 
                             value={formData.password} 
                             onChange={(e) => setFormData({...formData, password: e.target.value})} 
                             required 
                             disabled={isLoading}
-                            className="w-full p-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none bg-gray-50 transition-all"
+                            className="w-full p-3 border border-border rounded-xl focus:ring-2 focus:ring-blue-500 outline-none bg-background transition-all"
                         />
                     </div>
 
                     <div>
-                        <label className="block text-xs font-bold text-gray-400 uppercase mb-1 ml-1">Nível de Permissão</label>
+                        <label className="block text-xs font-bold text-muted uppercase mb-1 ml-1">Nível de Permissão</label>
                         <select 
                             value={formData.role} 
                             onChange={(e) => setFormData({...formData, role: e.target.value})} 
                             disabled={isLoading}
-                            className="w-full p-3 border border-gray-200 rounded-xl bg-gray-50 focus:ring-2 focus:ring-blue-500 outline-none transition-all cursor-pointer font-bold text-gray-700"
+                            className="w-full p-3 border border-border rounded-xl bg-background focus:ring-2 focus:ring-blue-500 outline-none transition-all cursor-pointer font-bold text-gray-700"
                         >
                             {ROLES.map(r => <option key={r} value={r}>{r}</option>)}
                         </select>

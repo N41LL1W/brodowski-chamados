@@ -20,7 +20,7 @@ export default async function AdminPage() {
                 <div>
                     <h1 className="text-4xl font-black flex items-center gap-3 tracking-tighter">
                         <ShieldCheck className="text-red-600 w-10 h-10" /> 
-                        <span className="text-slate-900 dark:text-white uppercase">SISTEMA <span className="text-red-600">MASTER</span></span>
+                        <span className="text-foreground dark:text-white uppercase">SISTEMA <span className="text-red-600">MASTER</span></span>
                     </h1>
                     <p className="text-slate-500 font-bold text-xs uppercase tracking-[0.2em] mt-1">Gestão de Infraestrutura e Governança</p>
                 </div>

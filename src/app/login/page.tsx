@@ -40,13 +40,13 @@ export default function LoginPage() {
   if (status === "loading") return null;
 
   return (
-    <div className="flex justify-center items-center min-h-[90vh] p-4 bg-slate-50/50">
-      <Card className="w-full max-w-md p-12 shadow-[0_32px_64px_-12px_rgba(0,0,0,0.1)] border-none rounded-[3rem] bg-white">
+    <div className="flex justify-center items-center min-h-[90vh] p-4 bg-background/50">
+      <Card className="w-full max-w-md p-12 shadow-[0_32px_64px_-12px_rgba(0,0,0,0.1)] border-none rounded-[3rem] bg-card">
         <div className="flex flex-col items-center mb-12">
           <div className="bg-slate-900 text-white p-5 rounded-4xl shadow-2xl mb-6 scale-110">
             <LogIn size={32} />
           </div>
-          <h1 className="text-4xl font-black tracking-tighter uppercase text-slate-900">Brodowski</h1>
+          <h1 className="text-4xl font-black tracking-tighter uppercase text-foreground">Brodowski</h1>
           <p className="font-bold text-[10px] uppercase tracking-[0.3em] text-blue-600 mt-2">Central de Operações</p>
         </div>
         
@@ -66,7 +66,7 @@ export default function LoginPage() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
-              className="w-full p-5 bg-slate-50 border-2 border-transparent focus:border-blue-500 focus:bg-white rounded-2xl outline-none transition-all font-bold text-slate-700 placeholder:text-slate-300"
+              className="w-full p-5 bg-background border-2 border-transparent focus:border-blue-500 focus:bg-card rounded-2xl outline-none transition-all font-bold text-slate-700 placeholder:text-slate-300"
               placeholder="usuario@brodowski.sp.gov.br"
               disabled={isLoading}
             />
@@ -81,7 +81,7 @@ export default function LoginPage() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
-              className="w-full p-5 bg-slate-50 border-2 border-transparent focus:border-blue-500 focus:bg-white rounded-2xl outline-none transition-all font-bold text-slate-700 placeholder:text-slate-300"
+              className="w-full p-5 bg-background border-2 border-transparent focus:border-blue-500 focus:bg-card rounded-2xl outline-none transition-all font-bold text-slate-700 placeholder:text-slate-300"
               placeholder="••••••••"
               disabled={isLoading}
             />

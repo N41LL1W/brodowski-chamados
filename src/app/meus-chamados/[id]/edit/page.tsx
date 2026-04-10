@@ -32,7 +32,7 @@ export default async function EditTicketPage({ params }: Props) {
 
   return (
     <div className="max-w-4xl mx-auto py-16 px-6">
-      <div className="bg-white dark:bg-slate-900 shadow-2xl rounded-[3rem] border border-slate-100 dark:border-slate-800 overflow-hidden">
+      <div className="bg-card dark:bg-slate-900 shadow-2xl rounded-[3rem] border border-slate-100 dark:border-slate-800 overflow-hidden">
         <div className="bg-slate-900 dark:bg-slate-950 p-10 text-white">
           <h1 className="text-3xl font-black tracking-tighter uppercase">Editar Chamado</h1>
           <p className="text-blue-400 font-mono text-sm mt-2">{ticket.protocol}</p>
@@ -44,7 +44,7 @@ export default async function EditTicketPage({ params }: Props) {
             <input
               name="subject"
               defaultValue={ticket.subject}
-              className="w-full p-5 bg-slate-50 dark:bg-slate-800 border-2 border-slate-100 dark:border-slate-700 rounded-3xl focus:border-blue-500 focus:bg-white dark:focus:bg-slate-950 outline-none transition-all font-bold text-slate-700 dark:text-slate-200"
+              className="w-full p-5 bg-background dark:bg-slate-800 border-2 border-slate-100 dark:border-slate-700 rounded-3xl focus:border-blue-500 focus:bg-card dark:focus:bg-slate-950 outline-none transition-all font-bold text-slate-700 dark:text-slate-200"
               required
             />
           </div>
@@ -54,7 +54,7 @@ export default async function EditTicketPage({ params }: Props) {
             <textarea
               name="description"
               defaultValue={ticket.description}
-              className="w-full p-6 bg-slate-50 dark:bg-slate-800 border-2 border-slate-100 dark:border-slate-700 rounded-4xl h-48 resize-none focus:border-blue-500 focus:bg-white dark:focus:bg-slate-950 outline-none transition-all font-medium text-slate-600 dark:text-slate-300"
+              className="w-full p-6 bg-background dark:bg-slate-800 border-2 border-slate-100 dark:border-slate-700 rounded-4xl h-48 resize-none focus:border-blue-500 focus:bg-card dark:focus:bg-slate-950 outline-none transition-all font-medium text-slate-600 dark:text-slate-300"
               required
             />
           </div>
@@ -65,7 +65,7 @@ export default async function EditTicketPage({ params }: Props) {
               <select
                 name="status"
                 defaultValue={ticket.status}
-                className="w-full p-5 bg-slate-50 dark:bg-slate-800 border-2 border-slate-100 dark:border-slate-700 rounded-2xl focus:border-blue-500 outline-none transition-all font-black text-slate-700 dark:text-slate-200"
+                className="w-full p-5 bg-background dark:bg-slate-800 border-2 border-slate-100 dark:border-slate-700 rounded-2xl focus:border-blue-500 outline-none transition-all font-black text-slate-700 dark:text-slate-200"
               >
                 <option value="ABERTO">🟢 ABERTO</option>
                 <option value="EM_ANDAMENTO">🟡 EM ANDAMENTO</option>
@@ -78,7 +78,7 @@ export default async function EditTicketPage({ params }: Props) {
               <select
                 name="priority"
                 defaultValue={ticket.priority}
-                className="w-full p-5 bg-slate-50 dark:bg-slate-800 border-2 border-slate-100 dark:border-slate-700 rounded-2xl focus:border-blue-500 outline-none transition-all font-black text-slate-700 dark:text-slate-200"
+                className="w-full p-5 bg-background dark:bg-slate-800 border-2 border-slate-100 dark:border-slate-700 rounded-2xl focus:border-blue-500 outline-none transition-all font-black text-slate-700 dark:text-slate-200"
               >
                 <option value="BAIXA">BAIXA</option>
                 <option value="NORMAL">NORMAL</option>

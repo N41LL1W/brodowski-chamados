@@ -78,11 +78,11 @@ export default async function ControladorDashboard() {
                                 Você está visualizando o fluxo de trabalho em tempo real. Verifique protocolos, prazos e a qualidade.
                             </p>
                             <div className="flex gap-4">
-                                <div className="bg-white/10 px-5 py-3 rounded-2xl backdrop-blur-md border border-white/10">
+                                <div className="bg-card/10 px-5 py-3 rounded-2xl backdrop-blur-md border border-white/10">
                                     <p className="text-[10px] font-bold uppercase opacity-70">Total Hoje</p>
                                     <p className="text-2xl font-black">{totalChamados}</p>
                                 </div>
-                                <div className="bg-white/10 px-5 py-3 rounded-2xl backdrop-blur-md border border-white/10">
+                                <div className="bg-card/10 px-5 py-3 rounded-2xl backdrop-blur-md border border-white/10">
                                     <p className="text-[10px] font-bold uppercase opacity-70">SLA Global</p>
                                     <p className="text-2xl font-black">98%</p>
                                 </div>

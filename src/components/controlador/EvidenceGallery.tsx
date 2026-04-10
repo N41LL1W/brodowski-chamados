@@ -40,7 +40,7 @@ export default function EvidenceGallery({ proofImage, protocol }: EvidenceGaller
   if (!proofImage) {
     return (
       <div className="p-12 border-4 border-dashed border-slate-100 dark:border-slate-800 rounded-[3rem] flex flex-col items-center justify-center text-slate-300 dark:text-slate-700">
-        <div className="bg-slate-50 dark:bg-slate-900 p-6 rounded-full mb-4">
+        <div className="bg-background dark:bg-slate-900 p-6 rounded-full mb-4">
           <Camera size={48} className="opacity-20" />
         </div>
         <p className="text-[10px] font-black uppercase tracking-[0.2em]">Sem evidência de conclusão</p>
@@ -49,7 +49,7 @@ export default function EvidenceGallery({ proofImage, protocol }: EvidenceGaller
   }
 
   return (
-    <Card className="p-8 border-none bg-white dark:bg-slate-900 shadow-2xl rounded-[3rem] overflow-hidden group">
+    <Card className="p-8 border-none bg-card dark:bg-slate-900 shadow-2xl rounded-[3rem] overflow-hidden group">
       <div className="flex items-center justify-between mb-8">
         <div className="flex items-center gap-3">
           <div className="bg-emerald-100 dark:bg-emerald-900/30 p-2 rounded-xl">

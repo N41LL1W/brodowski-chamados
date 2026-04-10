@@ -43,7 +43,7 @@ function KPICard({ title, value, subText, icon, trend }: any) {
   return (
     <Card className="p-6 border-none ring-1 ring-slate-200 dark:ring-slate-800 shadow-lg shadow-slate-100 dark:shadow-none">
       <div className="flex justify-between items-start mb-4">
-        <div className="p-2 bg-slate-50 dark:bg-slate-800 rounded-xl">
+        <div className="p-2 bg-background dark:bg-slate-800 rounded-xl">
           {icon}
         </div>
         {trend && (
@@ -56,7 +56,7 @@ function KPICard({ title, value, subText, icon, trend }: any) {
       </div>
       <div>
         <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">{title}</p>
-        <h4 className="text-3xl font-black text-slate-900 dark:text-white tracking-tighter">{value}</h4>
+        <h4 className="text-3xl font-black text-foreground dark:text-white tracking-tighter">{value}</h4>
         <p className="text-[11px] font-medium text-slate-500 dark:text-slate-400 mt-1">{subText}</p>
       </div>
     </Card>

@@ -54,10 +54,10 @@ export default function TicketForm() {
         }
     }
 
-    const inputClass = "w-full border p-3 rounded-xl bg-white text-slate-900 border-slate-200 focus:ring-2 focus:ring-blue-500 outline-none";
+    const inputClass = "w-full border p-3 rounded-xl bg-card text-foreground border-slate-200 focus:ring-2 focus:ring-blue-500 outline-none";
 
     return (
-        <form onSubmit={handleSubmit} className="max-w-2xl mx-auto space-y-4 bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
+        <form onSubmit={handleSubmit} className="max-w-2xl mx-auto space-y-4 bg-card p-6 rounded-2xl shadow-sm border border-slate-100">
             <div>
                 <label className="text-xs font-bold text-slate-500 uppercase ml-1">Assunto</label>
                 <input 

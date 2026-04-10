@@ -101,7 +101,7 @@ export default function NovoChamadoPage() {
             {/* MODAL DE BUSCA POR MAPA / ENDEREÇO */}
             {showMap && (
                 <div className="fixed inset-0 z-100 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
-                    <div className="bg-white dark:bg-slate-900 w-full max-w-lg rounded-[2.5rem] p-6 shadow-2xl animate-in zoom-in duration-200">
+                    <div className="bg-card dark:bg-slate-900 w-full max-w-lg rounded-[2.5rem] p-6 shadow-2xl animate-in zoom-in duration-200">
                         <div className="flex justify-between items-center mb-6">
                             <h3 className="font-black uppercase text-sm tracking-widest text-blue-600">Buscar Localização</h3>
                             <button onClick={() => setShowMap(false)} className="p-2 bg-slate-100 rounded-full"><X size={20}/></button>
@@ -111,7 +111,7 @@ export default function NovoChamadoPage() {
                             <Search className="absolute left-4 top-4 text-slate-400" size={20} />
                             <input 
                                 autoFocus
-                                className="w-full p-4 pl-12 border-2 border-slate-100 rounded-2xl bg-slate-50 outline-none focus:border-blue-500 transition-all text-sm font-medium"
+                                className="w-full p-4 pl-12 border-2 border-slate-100 rounded-2xl bg-background outline-none focus:border-blue-500 transition-all text-sm font-medium"
                                 placeholder="Digite a rua, prédio ou praça..."
                                 value={searchAddress}
                                 onChange={(e) => handleSearchAddress(e.target.value)}

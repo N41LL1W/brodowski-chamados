@@ -92,14 +92,14 @@ export default function DetalheChamadoPage({ params }: { params: Promise<{ id: s
     };
 
     if (loading) return (
-        <div className="h-screen flex flex-col items-center justify-center bg-slate-50 dark:bg-slate-950">
+        <div className="h-screen flex flex-col items-center justify-center bg-background dark:bg-slate-950">
             <Loader2 className="animate-spin text-blue-600 mb-4" size={48} />
             <p className="text-slate-400 dark:text-slate-500 font-black uppercase text-xs">Sincronizando...</p>
         </div>
     );
 
     return (
-        <div className="min-h-screen bg-slate-50 dark:bg-slate-950 transition-colors duration-300 pb-12">
+        <div className="min-h-screen bg-background dark:bg-slate-950 transition-colors duration-300 pb-12">
             {/* MODAL IMAGEM */}
             {selectedImage && (
                 <div className="fixed inset-0 z-100 bg-black/90 backdrop-blur-sm flex items-center justify-center p-4" onClick={() => setSelectedImage(null)}>
@@ -108,7 +108,7 @@ export default function DetalheChamadoPage({ params }: { params: Promise<{ id: s
             )}
 
             {/* HEADER STICKY */}
-            <div className="bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 sticky top-0 z-30 px-4 py-3">
+            <div className="bg-card dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 sticky top-0 z-30 px-4 py-3">
                 <div className="max-w-7xl mx-auto flex items-center justify-between">
                     <div className="flex items-center gap-3">
                         <Link href="/tecnico" className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition-colors dark:text-white">
@@ -130,7 +130,7 @@ export default function DetalheChamadoPage({ params }: { params: Promise<{ id: s
             <main className="max-w-7xl mx-auto p-4 grid grid-cols-1 lg:grid-cols-12 gap-6">
                 {/* COLUNA INFO */}
                 <div className="lg:col-span-4 space-y-6">
-                    <Card className="p-6 rounded-3xl border-none shadow-sm bg-white dark:bg-slate-900">
+                    <Card className="p-6 rounded-3xl border-none shadow-sm bg-card dark:bg-slate-900">
                         <div className="space-y-4">
                             <InfoItem icon={<User size={18}/>} label="Solicitante" value={ticket.requester?.name} color="blue" />
                             <div className="flex items-center justify-between">
@@ -152,7 +152,7 @@ export default function DetalheChamadoPage({ params }: { params: Promise<{ id: s
                             <h3 className="font-black uppercase text-[10px] tracking-widest">Anexar Foto</h3>
                         </div>
                         {!imagePreview ? (
-                            <label className="cursor-pointer block border-2 border-dashed border-slate-700 rounded-2xl p-6 text-center hover:bg-white/5 transition-all">
+                            <label className="cursor-pointer block border-2 border-dashed border-slate-700 rounded-2xl p-6 text-center hover:bg-card/5 transition-all">
                                 <UploadCloud className="mx-auto mb-2 text-slate-500" size={24} />
                                 <p className="text-[9px] font-black uppercase text-slate-400">Capturar</p>
                                 <input type="file" className="hidden" accept="image/*" capture="environment" onChange={handleImageChange} />
@@ -161,7 +161,7 @@ export default function DetalheChamadoPage({ params }: { params: Promise<{ id: s
                             <div className="space-y-3">
                                 <img src={imagePreview} className="rounded-xl aspect-video object-cover w-full border-2 border-blue-500" alt="Preview" />
                                 <div className="flex gap-2">
-                                    <button onClick={() => setImagePreview(null)} className="flex-1 bg-white/10 p-2 rounded-lg text-[10px] font-bold">Limpar</button>
+                                    <button onClick={() => setImagePreview(null)} className="flex-1 bg-card/10 p-2 rounded-lg text-[10px] font-bold">Limpar</button>
                                     <button onClick={() => handleAction(true, "[FOTO ANEXADA]") } className="flex-2 bg-blue-600 p-2 rounded-lg text-[10px] font-black uppercase">Enviar</button>
                                 </div>
                             </div>
@@ -171,8 +171,8 @@ export default function DetalheChamadoPage({ params }: { params: Promise<{ id: s
 
                 {/* COLUNA CHAT */}
                 <div className="lg:col-span-8 flex flex-col h-[calc(100vh-160px)]">
-                    <Card className="flex-1 flex flex-col p-0 rounded-3xl border-none shadow-sm bg-white dark:bg-slate-900 overflow-hidden">
-                        <div className="px-6 py-3 border-b border-slate-100 dark:border-slate-800 flex items-center gap-4 bg-slate-50/50 dark:bg-slate-800/30">
+                    <Card className="flex-1 flex flex-col p-0 rounded-3xl border-none shadow-sm bg-card dark:bg-slate-900 overflow-hidden">
+                        <div className="px-6 py-3 border-b border-slate-100 dark:border-slate-800 flex items-center gap-4 bg-background/50 dark:bg-slate-800/30">
                             <Filter size={14} className="text-slate-400" />
                             <div className="flex gap-2">
                                 <FilterTab active={filter === 'all'} label="Tudo" onClick={() => setFilter('all')} />
@@ -208,15 +208,15 @@ export default function DetalheChamadoPage({ params }: { params: Promise<{ id: s
                             })}
                         </div>
 
-                        <div className="p-4 bg-slate-50 dark:bg-slate-800/50 border-t border-slate-100 dark:border-slate-800">
+                        <div className="p-4 bg-background dark:bg-slate-800/50 border-t border-slate-100 dark:border-slate-800">
                             <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide mb-2">
                                 {macros.map((m, i) => (
-                                    <button key={i} onClick={() => setNota(m)} className="whitespace-nowrap px-3 py-1.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-full text-[10px] font-bold text-slate-600 dark:text-slate-400 hover:border-blue-500">
+                                    <button key={i} onClick={() => setNota(m)} className="whitespace-nowrap px-3 py-1.5 bg-card dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-full text-[10px] font-bold text-slate-600 dark:text-slate-400 hover:border-blue-500">
                                         + {m}
                                     </button>
                                 ))}
                             </div>
-                            <div className="bg-white dark:bg-slate-900 rounded-2xl p-2 shadow-sm border border-slate-200 dark:border-slate-700">
+                            <div className="bg-card dark:bg-slate-900 rounded-2xl p-2 shadow-sm border border-slate-200 dark:border-slate-700">
                                 <textarea value={nota} onChange={(e) => setNota(e.target.value)} placeholder="Escreva aqui..." className="w-full p-3 bg-transparent outline-none text-sm dark:text-white resize-none h-20" />
                                 <div className="flex gap-2 border-t border-slate-50 dark:border-slate-800 pt-2">
                                     <button onClick={() => handleAction(false)} className="flex-1 bg-slate-900 dark:bg-slate-800 text-white py-3 rounded-xl font-black text-[10px] uppercase">Público</button>
@@ -235,7 +235,7 @@ export default function DetalheChamadoPage({ params }: { params: Promise<{ id: s
 function FilterTab({ active, label, onClick, icon }: any) {
     return (
         <button onClick={onClick} className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[10px] font-black uppercase transition-all ${
-            active ? 'bg-blue-600 text-white shadow-lg' : 'bg-white dark:bg-slate-900 text-slate-400 border border-slate-100 dark:border-slate-800'
+            active ? 'bg-blue-600 text-white shadow-lg' : 'bg-card dark:bg-slate-900 text-slate-400 border border-slate-100 dark:border-slate-800'
         }`}>
             {icon} {label}
         </button>
@@ -261,7 +261,7 @@ function InfoItem({ icon, label, value, color }: any) {
 function ActionBtn({ icon, label, onClick, variant }: any) {
     const variants: any = {
         amber: 'bg-amber-50 dark:bg-amber-900/10 text-amber-700 dark:text-amber-500 border-amber-100 dark:border-amber-900/30',
-        slate: 'bg-slate-50 dark:bg-slate-800/50 text-slate-700 dark:text-slate-400 border-slate-200 dark:border-slate-700',
+        slate: 'bg-background dark:bg-slate-800/50 text-slate-700 dark:text-slate-400 border-slate-200 dark:border-slate-700',
     };
     return (
         <button onClick={onClick} className={`flex-1 p-3 rounded-xl font-black text-[9px] uppercase flex flex-col items-center gap-1 border transition-all ${variants[variant]}`}>

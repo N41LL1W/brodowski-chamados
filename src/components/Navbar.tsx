@@ -77,7 +77,7 @@ export default function Navbar() {
       </div>
       
       {/* Navegação Mobile Inferior */}
-      <nav className="md:hidden flex items-center justify-around border-t dark:border-slate-800 py-3 bg-white dark:bg-slate-900">
+      <nav className="md:hidden flex items-center justify-around border-t dark:border-slate-800 py-3 bg-card dark:bg-slate-900">
           <MobileNavLink href="/" icon={<History size={20}/>} active={pathname === "/"} />
           <MobileNavLink href="/chamados/novo" icon={<PlusCircle size={20}/>} active={pathname === "/chamados/novo"} />
           
