@@ -10,7 +10,7 @@ import AuthButton from "./AuthButton";
 import { 
   LayoutDashboard, PlusCircle, History, 
   Settings, ShieldCheck, Briefcase, 
-  Terminal 
+  Terminal, UserCircle2 
 } from "lucide-react";
 
 export default function Navbar() {
@@ -66,6 +66,10 @@ export default function Navbar() {
                 ADMIN MASTER
               </Link>
             )}
+
+            {isLogged && (
+                <Link href="/conta" className={isActive("/conta")}>Minha Conta</Link>
+            )}
           </nav>
 
           <div className="flex items-center gap-4">
@@ -88,6 +92,10 @@ export default function Navbar() {
           {/* Mobile: Link Master usa ícone de Terminal ou Settings */}
           {isLogged && role === "MASTER" && (
             <MobileNavLink href="/admin" icon={<Terminal size={20} className="text-red-500" />} active={pathname.startsWith("/admin")} />
+          )}
+
+          {isLogged && (
+              <MobileNavLink href="/conta" icon={<UserCircle2 size={20}/>} active={pathname === "/conta"} />
           )}
       </nav>
     </header>
