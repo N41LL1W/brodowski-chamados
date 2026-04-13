@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useSession } from 'next-auth/react';
-import { User, Mail, Shield, KeyRound, Save, CheckCircle2, AlertCircle, Calendar } from 'lucide-react';
+import { User, Mail, Shield, KeyRound, Save, CheckCircle2, AlertCircle } from 'lucide-react';
 
 const ROLE_LABELS: Record<string, { label: string; color: string }> = {
     FUNCIONARIO: { label: 'Funcionário',  color: 'bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400' },
@@ -112,12 +112,6 @@ export default function ContaPage() {
                             <Shield size={10} className="inline mr-1" />
                             {roleInfo.label}
                         </span>
-                        {userData?.createdAt && (
-                            <span className="text-[10px] font-bold text-muted flex items-center gap-1">
-                                <Calendar size={10} />
-                                Desde {new Date(userData.createdAt).toLocaleDateString('pt-BR')}
-                            </span>
-                        )}
                     </div>
                 </div>
             </div>
