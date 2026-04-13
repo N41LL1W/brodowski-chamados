@@ -73,6 +73,8 @@ model Ticket {
   category     Category   @relation(fields: [categoryId], references: [id], onDelete: NoAction, onUpdate: NoAction)
   department   Department @relation(fields: [departmentId], references: [id], onDelete: NoAction, onUpdate: NoAction)
   requester    User       @relation("CreatedBy", fields: [requesterId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  visitDate  DateTime? 
+  visitNote  String?
 }
 
 model Comment {
