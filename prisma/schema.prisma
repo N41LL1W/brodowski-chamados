@@ -8,46 +8,37 @@ datasource db {
   directUrl = env("POSTGRES_URL_NON_POOLING")
 }
 
-// --- TABELAS DE APOIO ---
-
 model Role {
-  id    Int    @id @default(autoincrement())
-  name  String @unique
+  id    Int     @id @default(autoincrement())
+  name  String? @unique
   users User[]
 }
 
 model Level {
-  id    Int    @id @default(autoincrement())
-  name  String @unique
-  rank  Int    @default(1)
+  id    Int     @id @default(autoincrement())
+  name  String? @unique
+  rank  Int?    @default(1)
   users User[]
 }
 
-// --- USUÁRIOS ---
-
 model User {
-  id            String    @id @default(cuid())
-  name          String?
-  email         String?   @unique
-  passwordHash  String?
-  emailVerified DateTime?
-  image         String?
-  role          String    @default("FUNCIONARIO")
-  
-  roleId         Int?
-  roleRelation   Role?     @relation(fields: [roleId], references: [id])
-  levelId        Int?
-  levelRelation  Level?    @relation(fields: [levelId], references: [id])
-  
-  tickets         Ticket[]  @relation("CreatedBy")
-  assignedTickets Ticket[]  @relation("AssignedTo")
+  id              String    @id @default(cuid())
+  name            String?
+  email           String?   @unique
+  passwordHash    String?
+  emailVerified   DateTime?
+  image           String?
+  role            String    @default("FUNCIONARIO")
+  roleId          Int?
+  levelId         Int?
+  accounts        Account[]
   comments        Comment[]
-
-  accounts         Account[]
-  sessions         Session[]
+  sessions        Session[]
+  assignedTickets Ticket[]  @relation("AssignedTo")
+  tickets         Ticket[]  @relation("CreatedBy")
+  levelRelation   Level?    @relation(fields: [levelId], references: [id])
+  roleRelation    Role?     @relation(fields: [roleId], references: [id])
 }
-
-// --- CONFIGURAÇÕES DE CHAMADO ---
 
 model Category {
   id      String   @id
@@ -62,51 +53,38 @@ model Department {
   tickets Ticket[]
 }
 
-// --- O CHAMADO (TICKET) ---
-
 model Ticket {
-  id           String   @id @default(cuid())
-  protocol     String   @unique 
+  id           String     @id @default(cuid())
+  protocol     String     @unique
   subject      String
   description  String
-  location     String?  
-  status       String   @default("ABERTO") // Aceita: ABERTO, EM_ANDAMENTO, EM_PAUSA, CONCLUIDO
-  priority     String   @default("NORMAL") 
-  
-  // Campo para armazenar a URL da foto de conclusão/anexo
-  proofImage   String?  @db.Text 
-
-  category     Category @relation(fields: [categoryId], references: [id])
+  status       String     @default("ABERTO")
+  priority     String     @default("NORMAL")
   categoryId   String
-  department   Department @relation(fields: [departmentId], references: [id])
   departmentId String
-  
-  requester    User     @relation("CreatedBy", fields: [requesterId], references: [id])
   requesterId  String
-
-  assignedTo   User?    @relation("AssignedTo", fields: [assignedToId], references: [id])
   assignedToId String?
-
+  createdAt    DateTime   @default(now()) @db.Timestamp(6)
+  updatedAt    DateTime   @updatedAt @db.Timestamp(6)
+  location     String?
+  proofImage   String?
   comments     Comment[]
-
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  assignedTo   User?      @relation("AssignedTo", fields: [assignedToId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  category     Category   @relation(fields: [categoryId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  department   Department @relation(fields: [departmentId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  requester    User       @relation("CreatedBy", fields: [requesterId], references: [id], onDelete: NoAction, onUpdate: NoAction)
 }
-
-// --- CHAT / COMENTÁRIOS ---
 
 model Comment {
   id         String   @id @default(cuid())
   content    String
-  proofImage String?  @db.Text   // <--- ADICIONE ESTA LINHA
   createdAt  DateTime @default(now())
   ticketId   String
   userId     String
+  proofImage String?
   ticket     Ticket   @relation(fields: [ticketId], references: [id], onDelete: Cascade)
-  user       User     @relation(fields: [userId], references: [id])
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
-
-// --- NEXT AUTH ---
 
 model Account {
   id                String  @id @default(cuid())
@@ -114,14 +92,15 @@ model Account {
   type              String
   provider          String
   providerAccountId String
-  refresh_token     String? @db.Text
-  access_token      String? @db.Text
+  refresh_token     String?
+  access_token      String?
   expires_at        Int?
   token_type        String?
   scope             String?
-  id_token          String? @db.Text
+  id_token          String?
   session_state     String?
   user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
   @@unique([provider, providerAccountId])
 }
 
@@ -137,5 +116,6 @@ model VerificationToken {
   identifier String
   token      String   @unique
   expires    DateTime
+
   @@unique([identifier, token])
 }
