@@ -30,7 +30,7 @@ export default function Navbar() {
           
           <div className="shrink-0">
             <Link href="/" className="flex items-center gap-2">
-              <span className="text-xl font-black tracking-tighter bg-gradient-to-r from-blue-600 to-indigo-500 bg-clip-text text-transparent">
+              <span className="text-xl font-black tracking-tighter bg-linear-to-r from-blue-600 to-indigo-500 bg-clip-text text-transparent">
                 TI BRODOWSKI
               </span>
             </Link>
