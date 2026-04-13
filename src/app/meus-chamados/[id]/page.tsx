@@ -244,7 +244,7 @@ export default function TicketDetailPage({ params }: { params: Promise<{ id: str
                             <div className="flex gap-3 bg-background p-2 rounded-3xl border-2 border-border focus-within:border-blue-500 transition-all">
                                 
                                 {/* BOTÃO DE FOTO */}
-                                <label className="cursor-pointer p-3 text-muted hover:text-blue-600 transition-colors flex-shrink-0">
+                                <label className="cursor-pointer p-3 text-muted hover:text-blue-600 transition-colors shrink-0">
                                     <Camera size={20} />
                                     <input
                                         type="file"
