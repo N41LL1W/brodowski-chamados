@@ -1,195 +1,433 @@
-//src\app\admin\config\page.tsx
-
 "use client";
 
 import { useEffect, useState } from 'react';
-import Card from '@/components/ui/Card';
 import { 
-    Trash2, Users, Shield, 
-    XCircle, Key, Search, Building2, Tag, Layers
+    Settings2, Shield, Clock, Palette, 
+    Save, CheckCircle2, AlertCircle, Building2,
+    Phone, Mail, Type, Hash
 } from 'lucide-react';
 
-export default function ConfigPage() {
-    const [users, setUsers] = useState<any[]>([]);
-    const [roles, setRoles] = useState<any[]>([]);
-    const [levels, setLevels] = useState<any[]>([]);
-    const [departments, setDepartments] = useState<any[]>([]);
-    const [categories, setCategories] = useState<any[]>([]);
-    
-    const [loading, setLoading] = useState(false);
-    const [searchTerm, setSearchTerm] = useState('');
-    const [newOption, setNewOption] = useState({ name: '', type: 'department' });
+const PRIORIDADES = [
+    { key: 'URGENTE', label: 'Urgente',  defaultHours: 2,  color: 'red' },
+    { key: 'ALTA',    label: 'Alta',     defaultHours: 4,  color: 'amber' },
+    { key: 'NORMAL',  label: 'Normal',   defaultHours: 24, color: 'blue' },
+    { key: 'BAIXA',   label: 'Baixa',    defaultHours: 72, color: 'gray' },
+];
 
-    const loadData = async () => {
+const COLOR_OPTIONS = [
+    { value: 'red',    label: 'Vermelho', bg: 'bg-red-500' },
+    { value: 'amber',  label: 'Laranja',  bg: 'bg-amber-500' },
+    { value: 'blue',   label: 'Azul',     bg: 'bg-blue-500' },
+    { value: 'green',  label: 'Verde',    bg: 'bg-green-500' },
+    { value: 'purple', label: 'Roxo',     bg: 'bg-purple-500' },
+    { value: 'gray',   label: 'Cinza',    bg: 'bg-gray-500' },
+];
+
+export default function MasterConfigPage() {
+    const [activeTab, setActiveTab] = useState<'sla' | 'sistema'>('sla');
+    const [loading, setLoading] = useState(true);
+    const [saving, setSaving] = useState(false);
+    const [feedback, setFeedback] = useState<{ type: 'success' | 'error'; msg: string } | null>(null);
+
+    const [slaValues, setSlaValues] = useState<Record<string, { maxHours: number; label: string; color: string }>>(
+        Object.fromEntries(PRIORIDADES.map(p => [p.key, { maxHours: p.defaultHours, label: p.label, color: p.color }]))
+    );
+
+    const [system, setSystem] = useState({
+        systemName:     'TI BRODOWSKI',
+        systemSubtitle: 'Central de Operações',
+        cityName:       'Brodowski',
+        supportPhone:   '',
+        supportEmail:   '',
+        primaryColor:   '#2563eb',
+        logoText:       'TI',
+    });
+
+    useEffect(() => {
+        fetch('/api/master/config')
+            .then(r => r.json())
+            .then(data => {
+                if (data.sla?.length) {
+                    const slaMap: any = {};
+                    data.sla.forEach((s: any) => {
+                        slaMap[s.priority] = { maxHours: s.maxHours, label: s.label, color: s.color };
+                    });
+                    setSlaValues(prev => ({ ...prev, ...slaMap }));
+                }
+                if (data.system) {
+                    setSystem(prev => ({ ...prev, ...data.system }));
+                }
+            })
+            .finally(() => setLoading(false));
+    }, []);
+
+    const showFeedback = (type: 'success' | 'error', msg: string) => {
+        setFeedback({ type, msg });
+        setTimeout(() => setFeedback(null), 3000);
+    };
+
+    const saveSLA = async () => {
+        setSaving(true);
         try {
-            const [uRes, oRes] = await Promise.all([
-                fetch('/api/users'),
-                fetch('/api/config/options')
-            ]);
-            setUsers(await uRes.json());
-            const options = await oRes.json();
-            setRoles(options.roles || []);
-            setLevels(options.levels || []);
-            setDepartments(options.departments || []);
-            setCategories(options.categories || []);
-        } catch (error) { 
-            console.error("Erro ao carregar dados:", error); 
+            await Promise.all(
+                PRIORIDADES.map(p =>
+                    fetch('/api/master/config', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ type: 'sla', data: { priority: p.key, ...slaValues[p.key] } })
+                    })
+                )
+            );
+            showFeedback('success', 'SLA salvo com sucesso!');
+        } catch {
+            showFeedback('error', 'Erro ao salvar SLA.');
+        } finally {
+            setSaving(false);
         }
     };
 
-    useEffect(() => { loadData(); }, []);
-
-    const handleCreateOption = async () => {
-        if (!newOption.name) return;
-        setLoading(true);
+    const saveSystem = async () => {
+        setSaving(true);
         try {
-            const res = await fetch('/api/config/options', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(newOption)
-            });
-            if (res.ok) {
-                setNewOption({ ...newOption, name: '' });
-                loadData();
-            }
-        } catch (e) { 
-            console.error(e); 
-        } finally { 
-            setLoading(false); 
+            await Promise.all(
+                Object.entries(system).map(([key, value]) =>
+                    fetch('/api/master/config', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ type: 'system', data: { key, value } })
+                    })
+                )
+            );
+            showFeedback('success', 'Configurações do sistema salvas!');
+        } catch {
+            showFeedback('error', 'Erro ao salvar.');
+        } finally {
+            setSaving(false);
         }
     };
 
-    const deleteOption = async (type: string, id: string) => {
-        if(!confirm("Deseja realmente excluir este item?")) return;
-        await fetch(`/api/config/options?type=${type}&id=${id}`, { method: 'DELETE' });
-        loadData();
-    };
-
-    return (
-        <div className="max-w-7xl mx-auto p-6 space-y-10">
-            <header className="border-b border-border pb-6 flex justify-between items-center">
-                <div>
-                    <h1 className="text-4xl font-black text-foreground uppercase tracking-tighter">
-                        Configuração <span className="text-primary italic">Global</span>
-                    </h1>
-                    <p className="text-muted text-xs font-black uppercase tracking-[0.2em] mt-1">
-                        Painel de Controle de Entidades
-                    </p>
-                </div>
-            </header>
-
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                
-                {/* FORMULÁRIO DE ADIÇÃO RÁPIDA */}
-                <Card className="p-8 border-none shadow-2xl bg-card rounded-[2.5rem] lg:col-span-1">
-                    <h2 className="text-xl font-black mb-6 uppercase flex items-center gap-2 tracking-tighter text-foreground">
-                        <Layers size={20} className="text-primary"/> Adicionar Entidade
-                    </h2>
-                    <div className="space-y-4">
-                        <div>
-                            <label className="text-[10px] font-black uppercase text-muted ml-1">Tipo de Registro</label>
-                            <select 
-                                className="w-full p-4 mt-1 border-2 border-border rounded-2xl text-sm font-bold outline-none focus:border-primary bg-transparent text-foreground"
-                                value={newOption.type}
-                                onChange={e => setNewOption({...newOption, type: e.target.value})}
-                            >
-                                <option value="department" className="bg-card">Secretaria / Depto</option>
-                                <option value="category" className="bg-card">Categoria de Chamado</option>
-                                <option value="role" className="bg-card">Cargo / Role</option>
-                                <option value="level" className="bg-card">Nível de Prioridade</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label className="text-[10px] font-black uppercase text-muted ml-1">Nome do Item</label>
-                            <input 
-                                className="w-full p-4 mt-1 border-2 border-border rounded-2xl text-sm font-bold outline-none focus:border-primary bg-transparent text-foreground placeholder:text-muted/50"
-                                placeholder="Ex: Infraestrutura, Elétrica..."
-                                value={newOption.name}
-                                onChange={e => setNewOption({...newOption, name: e.target.value})}
-                            />
-                        </div>
-                        <button 
-                            disabled={loading}
-                            onClick={handleCreateOption}
-                            className="w-full bg-primary text-white p-4 rounded-2xl font-black uppercase text-xs tracking-[0.2em] shadow-lg shadow-primary/20 hover:opacity-90 transition-all disabled:opacity-50"
-                        >
-                            {loading ? 'Salvando...' : 'Salvar Registro'}
-                        </button>
-                    </div>
-                </Card>
-
-                {/* VISUALIZAÇÃO DE ITENS ATIVOS */}
-                <div className="lg:col-span-2 space-y-6">
-                    <EntitySection title="Secretarias" icon={<Building2 size={18}/>} items={departments} type="department" onDelete={deleteOption} color="text-emerald-500" />
-                    <EntitySection title="Categorias" icon={<Tag size={18}/>} items={categories} type="category" onDelete={deleteOption} color="text-amber-500" />
-                    <EntitySection title="Permissões" icon={<Shield size={18}/>} items={roles} type="role" onDelete={deleteOption} color="text-primary" />
-                </div>
-            </div>
-
-            {/* GESTÃO DE USUÁRIOS */}
-            <section className="bg-card/50 p-8 rounded-[3rem] border border-border">
-                <div className="flex flex-col md:flex-row justify-between items-center gap-6 mb-10">
-                    <h2 className="text-3xl font-black uppercase tracking-tighter flex items-center gap-3 text-foreground">
-                        <Users size={32} className="text-primary"/> Equipe do Sistema
-                    </h2>
-                    <div className="relative w-full md:w-96">
-                        <Search className="absolute left-4 top-4 text-muted" size={20}/>
-                        <input 
-                            className="w-full pl-14 p-4 rounded-3xl bg-card border border-border shadow-sm text-sm font-bold outline-none focus:ring-2 focus:ring-primary text-foreground"
-                            placeholder="Buscar por nome ou e-mail..."
-                            onChange={e => setSearchTerm(e.target.value)}
-                        />
-                    </div>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {users.filter(u => u.name.toLowerCase().includes(searchTerm.toLowerCase())).map(user => (
-                        <Card key={user.id} className="p-6 border border-border bg-card flex items-center justify-between group hover:shadow-xl transition-all rounded-3xl">
-                            <div className="flex items-center gap-4">
-                                <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center font-black text-primary">
-                                    {user.name.charAt(0).toUpperCase()}
-                                </div>
-                                <div>
-                                    <h4 className="font-black uppercase text-sm tracking-tight text-foreground">{user.name}</h4>
-                                    <p className="text-[10px] font-bold text-muted uppercase tracking-widest">{user.role}</p>
-                                </div>
-                            </div>
-                            <div className="flex gap-2 md:opacity-0 group-hover:opacity-100 transition-opacity">
-                                <button className="p-2 hover:bg-amber-100 dark:hover:bg-amber-900/30 rounded-lg text-amber-600 transition-colors">
-                                    <Key size={18}/>
-                                </button>
-                                <button 
-                                    className="p-2 hover:bg-red-100 dark:hover:bg-red-900/30 rounded-lg text-red-600 transition-colors" 
-                                    onClick={() => deleteOption('user', user.id)}
-                                >
-                                    <Trash2 size={18}/>
-                                </button>
-                            </div>
-                        </Card>
-                    ))}
-                </div>
-            </section>
+    if (loading) return (
+        <div className="flex items-center justify-center h-[70vh]">
+            <div className="w-10 h-10 border-4 border-border border-t-primary rounded-full animate-spin" />
         </div>
     );
-}
 
-function EntitySection({ title, icon, items, type, onDelete, color }: any) {
     return (
-        <div className="space-y-3">
-            <h3 className={`text-[10px] font-black uppercase tracking-[0.3em] ${color} flex items-center gap-2`}>
-                {icon} {title}
-            </h3>
-            <div className="flex flex-wrap gap-2">
-                {items.length === 0 && <p className="text-[10px] text-muted italic">Nenhum registro encontrado.</p>}
-                {items.map((item: any) => (
-                    <div key={item.id} className="bg-card px-4 py-2 rounded-xl text-[10px] font-black uppercase border border-border shadow-sm flex items-center gap-3 text-foreground">
-                        {item.name}
-                        <button onClick={() => onDelete(type, item.id)} className="text-muted hover:text-red-500 transition-colors">
-                            <XCircle size={14} />
-                        </button>
-                    </div>
-                ))}
+        <div className="max-w-4xl mx-auto p-6 md:p-10 space-y-8">
+
+            <header>
+                <h1 className="text-4xl font-black tracking-tighter uppercase text-foreground">
+                    Configurações <span className="text-primary italic">Master</span>
+                </h1>
+                <p className="text-muted text-sm font-medium mt-1">Personalize o sistema sem mexer no código</p>
+            </header>
+
+            {feedback && (
+                <div className={`flex items-center gap-3 p-4 rounded-2xl text-sm font-bold border animate-in fade-in duration-200 ${
+                    feedback.type === 'success'
+                        ? 'bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-400 border-emerald-200 dark:border-emerald-800'
+                        : 'bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-400 border-red-200 dark:border-red-800'
+                }`}>
+                    {feedback.type === 'success' ? <CheckCircle2 size={18}/> : <AlertCircle size={18}/>}
+                    {feedback.msg}
+                </div>
+            )}
+
+            {/* ABAS */}
+            <div className="flex gap-2 bg-card border border-border p-1.5 rounded-2xl w-fit">
+                <button
+                    onClick={() => setActiveTab('sla')}
+                    className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-[11px] font-black uppercase tracking-widest transition-all ${
+                        activeTab === 'sla' ? 'bg-primary text-white shadow-lg' : 'text-muted hover:text-foreground'
+                    }`}
+                >
+                    <Clock size={14}/> SLA
+                </button>
+                <button
+                    onClick={() => setActiveTab('sistema')}
+                    className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-[11px] font-black uppercase tracking-widest transition-all ${
+                        activeTab === 'sistema' ? 'bg-primary text-white shadow-lg' : 'text-muted hover:text-foreground'
+                    }`}
+                >
+                    <Palette size={14}/> Sistema
+                </button>
             </div>
+
+            {/* ABA SLA */}
+            {activeTab === 'sla' && (
+                <div className="space-y-6">
+                    <div className="bg-card border border-border rounded-3xl p-2 overflow-hidden">
+                        <div className="bg-background/50 px-6 py-4 border-b border-border">
+                            <p className="text-[10px] font-black uppercase tracking-widest text-muted flex items-center gap-2">
+                                <Clock size={12}/> Tempo máximo de atendimento por prioridade
+                            </p>
+                        </div>
+                        <div className="divide-y divide-border">
+                            {PRIORIDADES.map(p => {
+                                const val = slaValues[p.key];
+                                return (
+                                    <div key={p.key} className="p-6 grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
+                                        
+                                        <div className="space-y-2">
+                                            <label className="text-[10px] font-black uppercase text-muted">
+                                                Prioridade
+                                            </label>
+                                            <div className={`inline-flex items-center gap-2 px-4 py-2 rounded-xl text-[11px] font-black uppercase border ${
+                                                p.color === 'red'    ? 'bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-400 border-red-100' :
+                                                p.color === 'amber'  ? 'bg-amber-50 dark:bg-amber-900/20 text-amber-700 dark:text-amber-400 border-amber-100' :
+                                                p.color === 'blue'   ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400 border-blue-100' :
+                                                'bg-card text-muted border-border'
+                                            }`}>
+                                                {p.label}
+                                            </div>
+                                        </div>
+
+                                        <div className="space-y-2">
+                                            <label className="text-[10px] font-black uppercase text-muted">
+                                                Prazo máximo (horas)
+                                            </label>
+                                            <input
+                                                type="number"
+                                                min={1}
+                                                value={val.maxHours}
+                                                onChange={e => setSlaValues(prev => ({
+                                                    ...prev,
+                                                    [p.key]: { ...prev[p.key], maxHours: Number(e.target.value) }
+                                                }))}
+                                                className="w-full p-3 bg-background border-2 border-border rounded-2xl outline-none focus:border-primary font-black text-foreground text-sm"
+                                            />
+                                        </div>
+
+                                        <div className="space-y-2">
+                                            <label className="text-[10px] font-black uppercase text-muted">
+                                                Cor do badge
+                                            </label>
+                                            <div className="flex gap-2">
+                                                {COLOR_OPTIONS.map(c => (
+                                                    <button
+                                                        key={c.value}
+                                                        onClick={() => setSlaValues(prev => ({
+                                                            ...prev,
+                                                            [p.key]: { ...prev[p.key], color: c.value }
+                                                        }))}
+                                                        title={c.label}
+                                                        className={`w-7 h-7 rounded-full ${c.bg} transition-all ${
+                                                            val.color === c.value ? 'ring-2 ring-offset-2 ring-primary scale-110' : 'opacity-50 hover:opacity-100'
+                                                        }`}
+                                                    />
+                                                ))}
+                                            </div>
+                                        </div>
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    </div>
+
+                    {/* Preview de como fica */}
+                    <div className="bg-card border border-border rounded-3xl p-6 space-y-4">
+                        <p className="text-[10px] font-black uppercase tracking-widest text-muted">Preview dos badges</p>
+                        <div className="flex gap-3 flex-wrap">
+                            {PRIORIDADES.map(p => {
+                                const val = slaValues[p.key];
+                                return (
+                                    <div key={p.key} className="space-y-1 text-center">
+                                        <div className={`px-4 py-1.5 rounded-full text-[10px] font-black uppercase ${
+                                            val.color === 'red'    ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400' :
+                                            val.color === 'amber'  ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400' :
+                                            val.color === 'blue'   ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400' :
+                                            val.color === 'green'  ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' :
+                                            val.color === 'purple' ? 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400' :
+                                            'bg-gray-100 text-gray-700 dark:bg-gray-900/30 dark:text-gray-400'
+                                        }`}>
+                                            {p.label}
+                                        </div>
+                                        <p className="text-[9px] text-muted font-bold">{val.maxHours}h</p>
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    </div>
+
+                    <button
+                        onClick={saveSLA}
+                        disabled={saving}
+                        className="w-full flex items-center justify-center gap-3 p-5 bg-primary text-white rounded-2xl font-black uppercase tracking-widest hover:opacity-90 transition-all shadow-lg shadow-primary/20 disabled:opacity-50"
+                    >
+                        <Save size={18}/> {saving ? 'Salvando...' : 'Salvar configurações de SLA'}
+                    </button>
+                </div>
+            )}
+
+            {/* ABA SISTEMA */}
+            {activeTab === 'sistema' && (
+                <div className="space-y-6">
+
+                    {/* IDENTIDADE */}
+                    <div className="bg-card border border-border rounded-3xl p-6 space-y-5">
+                        <p className="text-[10px] font-black uppercase tracking-widest text-muted flex items-center gap-2">
+                            <Type size={12}/> Identidade do sistema
+                        </p>
+
+                        <div className="grid md:grid-cols-2 gap-4">
+                            <div className="space-y-2">
+                                <label className="text-[10px] font-black uppercase text-muted ml-1">Nome do sistema</label>
+                                <input
+                                    value={system.systemName}
+                                    onChange={e => setSystem(p => ({ ...p, systemName: e.target.value }))}
+                                    className="w-full p-4 bg-background border-2 border-border rounded-2xl outline-none focus:border-primary font-bold text-foreground"
+                                    placeholder="Ex: TI BRODOWSKI"
+                                />
+                            </div>
+                            <div className="space-y-2">
+                                <label className="text-[10px] font-black uppercase text-muted ml-1">Subtítulo</label>
+                                <input
+                                    value={system.systemSubtitle}
+                                    onChange={e => setSystem(p => ({ ...p, systemSubtitle: e.target.value }))}
+                                    className="w-full p-4 bg-background border-2 border-border rounded-2xl outline-none focus:border-primary font-bold text-foreground"
+                                    placeholder="Ex: Central de Operações"
+                                />
+                            </div>
+                            <div className="space-y-2">
+                                <label className="text-[10px] font-black uppercase text-muted ml-1">Nome da cidade</label>
+                                <input
+                                    value={system.cityName}
+                                    onChange={e => setSystem(p => ({ ...p, cityName: e.target.value }))}
+                                    className="w-full p-4 bg-background border-2 border-border rounded-2xl outline-none focus:border-primary font-bold text-foreground"
+                                    placeholder="Ex: Brodowski"
+                                />
+                            </div>
+                            <div className="space-y-2">
+                                <label className="text-[10px] font-black uppercase text-muted ml-1">Sigla / Logo texto</label>
+                                <input
+                                    value={system.logoText}
+                                    onChange={e => setSystem(p => ({ ...p, logoText: e.target.value.slice(0, 4) }))}
+                                    className="w-full p-4 bg-background border-2 border-border rounded-2xl outline-none focus:border-primary font-bold text-foreground"
+                                    placeholder="Ex: TI"
+                                    maxLength={4}
+                                />
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* SUPORTE */}
+                    <div className="bg-card border border-border rounded-3xl p-6 space-y-5">
+                        <p className="text-[10px] font-black uppercase tracking-widest text-muted flex items-center gap-2">
+                            <Building2 size={12}/> Informações de suporte
+                        </p>
+                        <div className="grid md:grid-cols-2 gap-4">
+                            <div className="space-y-2">
+                                <label className="text-[10px] font-black uppercase text-muted ml-1 flex items-center gap-1">
+                                    <Phone size={10}/> Telefone de suporte
+                                </label>
+                                <input
+                                    value={system.supportPhone}
+                                    onChange={e => setSystem(p => ({ ...p, supportPhone: e.target.value }))}
+                                    className="w-full p-4 bg-background border-2 border-border rounded-2xl outline-none focus:border-primary font-bold text-foreground"
+                                    placeholder="Ex: (16) 3664-0000"
+                                />
+                            </div>
+                            <div className="space-y-2">
+                                <label className="text-[10px] font-black uppercase text-muted ml-1 flex items-center gap-1">
+                                    <Mail size={10}/> E-mail de suporte
+                                </label>
+                                <input
+                                    value={system.supportEmail}
+                                    onChange={e => setSystem(p => ({ ...p, supportEmail: e.target.value }))}
+                                    className="w-full p-4 bg-background border-2 border-border rounded-2xl outline-none focus:border-primary font-bold text-foreground"
+                                    placeholder="Ex: ti@brodowski.sp.gov.br"
+                                />
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* COR PRIMÁRIA */}
+                    <div className="bg-card border border-border rounded-3xl p-6 space-y-5">
+                        <p className="text-[10px] font-black uppercase tracking-widest text-muted flex items-center gap-2">
+                            <Palette size={12}/> Cor primária do sistema
+                        </p>
+                        <div className="flex items-center gap-4">
+                            <input
+                                type="color"
+                                value={system.primaryColor}
+                                onChange={e => setSystem(p => ({ ...p, primaryColor: e.target.value }))}
+                                className="w-14 h-14 rounded-2xl border-2 border-border cursor-pointer bg-transparent"
+                            />
+                            <div className="space-y-1">
+                                <p className="text-sm font-black text-foreground">{system.primaryColor}</p>
+                                <p className="text-[10px] text-muted">Afeta botões, links e destaques do sistema</p>
+                            </div>
+                            <div
+                                className="ml-auto px-6 py-3 rounded-2xl text-white text-xs font-black uppercase"
+                                style={{ backgroundColor: system.primaryColor }}
+                            >
+                                Preview
+                            </div>
+                        </div>
+
+                        {/* Cores predefinidas */}
+                        <div className="flex gap-3 flex-wrap">
+                            {[
+                                { label: 'Azul',    hex: '#2563eb' },
+                                { label: 'Índigo',  hex: '#4f46e5' },
+                                { label: 'Roxo',    hex: '#7c3aed' },
+                                { label: 'Verde',   hex: '#16a34a' },
+                                { label: 'Teal',    hex: '#0d9488' },
+                                { label: 'Laranja', hex: '#ea580c' },
+                                { label: 'Rosa',    hex: '#db2777' },
+                                { label: 'Cinza',   hex: '#475569' },
+                            ].map(c => (
+                                <button
+                                    key={c.hex}
+                                    onClick={() => setSystem(p => ({ ...p, primaryColor: c.hex }))}
+                                    title={c.label}
+                                    className={`w-8 h-8 rounded-xl transition-all hover:scale-110 ${
+                                        system.primaryColor === c.hex ? 'ring-2 ring-offset-2 ring-foreground scale-110' : ''
+                                    }`}
+                                    style={{ backgroundColor: c.hex }}
+                                />
+                            ))}
+                        </div>
+                    </div>
+
+                    {/* PREVIEW GERAL */}
+                    <div className="bg-card border border-border rounded-3xl p-6 space-y-4">
+                        <p className="text-[10px] font-black uppercase tracking-widest text-muted">Preview do sistema</p>
+                        <div className="bg-background rounded-2xl p-4 border border-border space-y-3">
+                            <div className="flex items-center gap-3">
+                                <div
+                                    className="w-10 h-10 rounded-xl flex items-center justify-center text-white font-black text-sm"
+                                    style={{ backgroundColor: system.primaryColor }}
+                                >
+                                    {system.logoText || 'TI'}
+                                </div>
+                                <div>
+                                    <p className="font-black text-foreground text-sm uppercase tracking-tight">
+                                        {system.systemName || 'TI BRODOWSKI'}
+                                    </p>
+                                    <p className="text-[10px] font-bold uppercase tracking-widest" style={{ color: system.primaryColor }}>
+                                        {system.systemSubtitle || 'Central de Operações'}
+                                    </p>
+                                </div>
+                            </div>
+                            {(system.supportPhone || system.supportEmail) && (
+                                <div className="flex gap-4 text-[10px] text-muted font-bold pt-2 border-t border-border">
+                                    {system.supportPhone && <span>📞 {system.supportPhone}</span>}
+                                    {system.supportEmail && <span>✉ {system.supportEmail}</span>}
+                                </div>
+                            )}
+                        </div>
+                    </div>
+
+                    <button
+                        onClick={saveSystem}
+                        disabled={saving}
+                        className="w-full flex items-center justify-center gap-3 p-5 bg-primary text-white rounded-2xl font-black uppercase tracking-widest hover:opacity-90 transition-all shadow-lg shadow-primary/20 disabled:opacity-50"
+                    >
+                        <Save size={18}/> {saving ? 'Salvando...' : 'Salvar configurações do sistema'}
+                    </button>
+                </div>
+            )}
         </div>
     );
 }

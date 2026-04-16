@@ -121,3 +121,17 @@ model VerificationToken {
 
   @@unique([identifier, token])
 }
+
+model SLAConfig {
+  id         Int    @id @default(autoincrement())
+  priority   String @unique
+  maxHours   Int
+  label      String
+  color      String @default("amber")
+}
+
+model SystemConfig {
+  id          Int     @id @default(autoincrement())
+  key         String  @unique
+  value       String
+}
