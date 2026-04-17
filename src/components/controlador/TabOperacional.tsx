@@ -7,6 +7,7 @@ import {
     Calendar, MessageSquare, Camera, CalendarClock,
     CheckCircle2, Clock, Wrench, PauseCircle
 } from 'lucide-react';
+import SLABadge from '@/components/SLABadge';
 
 const STATUS_STYLE: Record<string, string> = {
     ABERTO:       'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400',
@@ -91,6 +92,7 @@ export default function TabOperacional({ data }: any) {
                                     <div className="flex items-center gap-2 flex-wrap">
                                         <span className={`text-[9px] font-black px-3 py-1 rounded-full uppercase tracking-widest ${STATUS_STYLE[ticket.status] || 'bg-card text-muted'}`}>
                                             {STATUS_LABEL[ticket.status] || ticket.status}
+                                            <SLABadge ticketId={ticket.id} compact />
                                         </span>
                                         <span className="text-[9px] font-mono font-bold text-muted">#{ticket.protocol}</span>
                                     </div>
