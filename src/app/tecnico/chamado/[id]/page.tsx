@@ -10,6 +10,7 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import SLABadge from '@/components/SLABadge';
 
 export default function DetalheChamadoPage({ params }: { params: Promise<{ id: string }> }) {
     const { id } = use(params); 
@@ -219,6 +220,7 @@ export default function DetalheChamadoPage({ params }: { params: Promise<{ id: s
                     <Card className="p-6 rounded-3xl border-none shadow-sm bg-card">
                         <div className="space-y-4">
                             <InfoItem icon={<User size={18}/>} label="Solicitante" value={ticket.requester?.name} color="blue" />
+                            <SLABadge ticketId={id} />
                             <div className="flex items-center justify-between">
                                 <InfoItem icon={<MapPin size={18}/>} label="Local" value={ticket.location} color="emerald" />
                                 <a href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(ticket.location || '')}`} target="_blank" className="p-2.5 bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 rounded-xl">

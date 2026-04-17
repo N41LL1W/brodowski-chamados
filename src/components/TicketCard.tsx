@@ -6,6 +6,7 @@ import Link from "next/link";
 import Card from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
 import { CheckCheck, MapPin, Wrench, Eye, Clock, ArrowRight, Play } from 'lucide-react';
+import SLABadge from '@/components/SLABadge';
 
 export default function TicketCard({ ticket, onAction, actionLabel, isMine, isDisabled }: any) {
     const detailHref = `/tecnico/chamado/${ticket.id}`;
@@ -22,6 +23,7 @@ export default function TicketCard({ ticket, onAction, actionLabel, isMine, isDi
                         {ticket.protocol}
                     </span>
                     <Badge variant="priority" value={ticket.priority}>{ticket.priority}</Badge>
+                    <SLABadge ticketId={ticket.id} compact />
                 </div>
                 
                 <h3 className="font-black text-slate-800 dark:text-white text-xl leading-tight uppercase group-hover:text-blue-600 transition-colors">
