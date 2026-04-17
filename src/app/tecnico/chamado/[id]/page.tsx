@@ -31,6 +31,8 @@ export default function DetalheChamadoPage({ params }: { params: Promise<{ id: s
     const [selectedImage, setSelectedImage] = useState<string | null>(null);
     const [filter, setFilter] = useState<'all' | 'images' | 'internal'>('all');
     const [elapsedTime, setElapsedTime] = useState("");
+    const [showPauseModal, setShowPauseModal] = useState(false);
+    const [pauseReason, setPauseReason] = useState('');
 
     const macros = ["Peça solicitada.", "Aguardando local.", "Equipamento em testes.", "Cliente ausente."];
 
@@ -105,7 +107,11 @@ export default function DetalheChamadoPage({ params }: { params: Promise<{ id: s
         }
     };
 
-    const handleUpdateStatus = async (action: string) => {
+    const handleUpdateStatus = async (action: string, reason?: string) => {
+        if (action === 'PAUSAR' && !reason) {
+            setShowPauseModal(true);
+            return;
+        }
         if (!confirm(`Deseja ${action.toLowerCase()}?`)) return;
         setIsSubmitting(true);
         try {
@@ -114,8 +120,30 @@ export default function DetalheChamadoPage({ params }: { params: Promise<{ id: s
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ action, proofImage: imagePreview })
             });
-            if (res.ok) router.push('/tecnico');
-        } finally { setIsSubmitting(false); }
+            if (res.ok) {
+                // Se pausou com justificativa, registra no chat
+                if (action === 'PAUSAR' && reason) {
+                    await fetch(`/api/tickets/${id}`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            content: `[INTERNO] Chamado pausado. Motivo: ${reason}`,
+                            isInternal: true
+                        })
+                    });
+                }
+                router.push('/tecnico');
+            }
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
+
+    const handleConfirmPause = async () => {
+        if (!pauseReason.trim()) return;
+        setShowPauseModal(false);
+        await handleUpdateStatus('PAUSAR', pauseReason);
+        setPauseReason('');
     };
 
     if (loading) return (
@@ -186,6 +214,65 @@ export default function DetalheChamadoPage({ params }: { params: Promise<{ id: s
                                     className="flex-1 p-4 rounded-2xl font-black text-[10px] uppercase bg-blue-600 text-white hover:bg-blue-700 transition-all disabled:opacity-40"
                                 >
                                     {savingVisit ? 'Salvando...' : 'Confirmar'}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* MODAL PAUSA */}
+            {showPauseModal && (
+                <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+                    <div className="bg-card w-full max-w-md rounded-[2.5rem] p-8 shadow-2xl border border-border">
+                        <h3 className="font-black uppercase text-sm tracking-widest text-foreground mb-2 flex items-center gap-2">
+                            <PauseCircle size={18} className="text-amber-500" /> Pausar chamado
+                        </h3>
+                        <p className="text-muted text-sm mb-6">Informe o motivo da pausa. Isso ficará registrado no histórico.</p>
+
+                        <div className="space-y-4">
+                            {/* Motivos rápidos */}
+                            <div className="flex flex-wrap gap-2">
+                                {[
+                                    'Aguardando peça',
+                                    'Aguardando usuário',
+                                    'Aguardando aprovação',
+                                    'Problema externo',
+                                ].map(m => (
+                                    <button
+                                        key={m}
+                                        onClick={() => setPauseReason(m)}
+                                        className={`px-3 py-1.5 rounded-xl text-[10px] font-black uppercase border transition-all ${
+                                            pauseReason === m
+                                                ? 'bg-amber-500 text-white border-amber-500'
+                                                : 'bg-background border-border text-muted hover:border-amber-400'
+                                        }`}
+                                    >
+                                        {m}
+                                    </button>
+                                ))}
+                            </div>
+
+                            <textarea
+                                value={pauseReason}
+                                onChange={e => setPauseReason(e.target.value)}
+                                placeholder="Ou descreva o motivo detalhadamente..."
+                                className="w-full p-4 bg-background border-2 border-border rounded-2xl outline-none focus:border-amber-500 transition-all font-medium text-foreground text-sm resize-none h-24"
+                            />
+
+                            <div className="flex gap-3">
+                                <button
+                                    onClick={() => { setShowPauseModal(false); setPauseReason(''); }}
+                                    className="flex-1 p-4 rounded-2xl font-black text-[10px] uppercase bg-background border border-border text-muted hover:bg-border transition-all"
+                                >
+                                    Cancelar
+                                </button>
+                                <button
+                                    onClick={handleConfirmPause}
+                                    disabled={!pauseReason.trim() || isSubmitting}
+                                    className="flex-1 p-4 rounded-2xl font-black text-[10px] uppercase bg-amber-500 text-white hover:bg-amber-600 transition-all disabled:opacity-40"
+                                >
+                                    {isSubmitting ? 'Pausando...' : 'Confirmar pausa'}
                                 </button>
                             </div>
                         </div>

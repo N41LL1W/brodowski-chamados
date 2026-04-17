@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { 
     Settings2, Shield, Clock, Palette, 
     Save, CheckCircle2, AlertCircle, Building2,
-    Phone, Mail, Type, Hash
+    Phone, Mail, Type, Hash,
 } from 'lucide-react';
 
 const PRIORIDADES = [
@@ -41,6 +41,8 @@ export default function MasterConfigPage() {
         supportEmail:   '',
         primaryColor:   '#2563eb',
         logoText:       'TI',
+        allowedDomain: '',       // Ex: brodowski.sp.gov.br
+        registrationOpen: 'true' // 'true' ou 'false'
     });
 
     useEffect(() => {
@@ -416,6 +418,53 @@ export default function MasterConfigPage() {
                                     {system.supportEmail && <span>✉ {system.supportEmail}</span>}
                                 </div>
                             )}
+                        </div>
+                    </div>
+
+                    {/* CONTROLE DE REGISTRO */}
+                    <div className="bg-card border border-border rounded-3xl p-6 space-y-5">
+                        <p className="text-[10px] font-black uppercase tracking-widest text-muted flex items-center gap-2">
+                            <Shield size={12}/> Controle de registro
+                        </p>
+
+                        <div className="space-y-4">
+                            <div className="flex items-center justify-between p-4 bg-background rounded-2xl border border-border">
+                                <div>
+                                    <p className="text-sm font-black text-foreground">Permitir auto-registro</p>
+                                    <p className="text-[10px] text-muted">Usuários podem criar conta pela página de registro</p>
+                                </div>
+                                <button
+                                    onClick={() => setSystem(p => ({
+                                        ...p,
+                                        registrationOpen: p.registrationOpen === 'true' ? 'false' : 'true'
+                                    }))}
+                                    className={`relative w-12 h-6 rounded-full transition-colors ${
+                                        system.registrationOpen === 'true' ? 'bg-primary' : 'bg-border'
+                                    }`}
+                                >
+                                    <span className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-all shadow ${
+                                        system.registrationOpen === 'true' ? 'left-7' : 'left-1'
+                                    }`}/>
+                                </button>
+                            </div>
+
+                            <div className="space-y-2">
+                                <label className="text-[10px] font-black uppercase text-muted ml-1">
+                                    Domínio de e-mail obrigatório
+                                </label>
+                                <div className="flex items-center gap-2 p-4 bg-background border-2 border-border rounded-2xl focus-within:border-primary transition-all">
+                                    <span className="text-muted font-bold text-sm">@</span>
+                                    <input
+                                        value={system.allowedDomain}
+                                        onChange={e => setSystem(p => ({ ...p, allowedDomain: e.target.value }))}
+                                        className="flex-1 bg-transparent outline-none font-bold text-foreground text-sm"
+                                        placeholder="brodowski.sp.gov.br (deixe vazio para qualquer e-mail)"
+                                    />
+                                </div>
+                                <p className="text-[10px] text-muted ml-1">
+                                    Se preenchido, só e-mails com esse domínio poderão se registrar.
+                                </p>
+                            </div>
                         </div>
                     </div>
 
