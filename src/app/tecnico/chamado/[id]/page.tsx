@@ -221,6 +221,7 @@ export default function DetalheChamadoPage({ params }: { params: Promise<{ id: s
                         <div className="space-y-4">
                             <InfoItem icon={<User size={18}/>} label="Solicitante" value={ticket.requester?.name} color="blue" />
                             <SLABadge ticketId={id} />
+                            <h1 className="text-sm font-bold text-foreground">TA AQUI O PROBLEMA</h1>
                             <div className="flex items-center justify-between">
                                 <InfoItem icon={<MapPin size={18}/>} label="Local" value={ticket.location} color="emerald" />
                                 <a href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(ticket.location || '')}`} target="_blank" className="p-2.5 bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 rounded-xl">
