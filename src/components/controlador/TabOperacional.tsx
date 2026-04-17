@@ -93,7 +93,6 @@ export default function TabOperacional({ data }: any) {
                                         <span className={`text-[9px] font-black px-3 py-1 rounded-full uppercase tracking-widest ${STATUS_STYLE[ticket.status] || 'bg-card text-muted'}`}>
                                             {STATUS_LABEL[ticket.status] || ticket.status}
                                             <SLABadge ticketId={ticket.id} compact />
-                                            <h1 className="text-sm font-bold text-foreground">TA AQUI O PROBLEMA</h1>
                                         </span>
                                         <span className="text-[9px] font-mono font-bold text-muted">#{ticket.protocol}</span>
                                     </div>

@@ -24,7 +24,6 @@ export default function TicketCard({ ticket, onAction, actionLabel, isMine, isDi
                     </span>
                     <Badge variant="priority" value={ticket.priority}>{ticket.priority}</Badge>
                     <SLABadge ticketId={ticket.id} compact />
-                    <h1 className="text-sm font-bold text-foreground">TA AQUI O PROBLEMA</h1>
                 </div>
                 
                 <h3 className="font-black text-slate-800 dark:text-white text-xl leading-tight uppercase group-hover:text-blue-600 transition-colors">
