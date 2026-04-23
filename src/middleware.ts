@@ -50,6 +50,6 @@ export default withAuth(
 export const config = {
     // Matcher para proteger tudo, exceto arquivos públicos e a rota de registro/api
     matcher: [
-        "/((?!api|_next/static|_next/image|favicon.ico|.*\\.png|registro$).*)",
+        "/((?!api|_next/static|_next/image|favicon.ico|.*\\.png|registro$|acompanhar$).*)",
     ],
 };

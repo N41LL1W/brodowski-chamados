@@ -100,6 +100,9 @@ export default function LoginPage() {
           <Link href="/registro" className="text-[10px] font-black uppercase tracking-widest text-slate-400 hover:text-blue-600 transition-colors">
             Solicitar acesso institucional
           </Link>
+          <Link href="/acompanhar" className="text-[10px] font-black uppercase tracking-widest text-muted hover:text-primary transition-colors">
+              Acompanhar chamado por protocolo
+          </Link>
         </div>
       </Card>
     </div>

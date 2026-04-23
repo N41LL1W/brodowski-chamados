@@ -4,6 +4,7 @@ import prisma from "@/lib/prisma";
 import Link from "next/link";
 import { ShieldCheck } from "lucide-react";
 import DashboardTabs from "@/components/controlador/DashboardTabs";
+import ExportarRelatorio from "@/components/controlador/ExportarRelatorio";
 
 export default async function ControladorDashboard() {
     return (
@@ -24,6 +25,12 @@ export default async function ControladorDashboard() {
                 >
                     Ver todos os tickets
                 </Link>
+                <div className="flex items-center gap-3">
+                    <ExportarRelatorio />
+                    <Link href="/controlador/chamados" className="bg-foreground text-background px-8 py-4 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] hover:scale-105 transition-all shadow-xl">
+                        Ver todos os tickets
+                    </Link>
+                </div>
             </header>
 
             <DashboardTabs />

@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { useSession } from "next-auth/react";
 import ThemeToggle from "./ThemeToggle";
 import AuthButton from "./AuthButton";
+import NotificacaoBadge from './NotificacaoBadge';
 import { 
   LayoutDashboard, PlusCircle, History, 
   Settings, ShieldCheck, Briefcase, 
@@ -48,7 +49,10 @@ export default function Navbar() {
             )}
 
             {isLogged && ["TECNICO"].includes(role) && (
-              <Link href="/tecnico" className={isActive("/tecnico")}>Painel Técnico</Link>
+              <div className="relative">
+                <Link href="/tecnico" className={isActive("/tecnico")}>Painel Técnico</Link>
+                <NotificacaoBadge />
+              </div>
             )}
 
             {isLogged && ["TECNICO"].includes(role) && (
@@ -88,7 +92,10 @@ export default function Navbar() {
         <MobileNavLink href="/chamados/novo" icon={<PlusCircle size={20}/>} active={pathname === "/chamados/novo"} />
         
         {isLogged && ["TECNICO", "ADMIN", "MASTER"].includes(role) && (
-          <MobileNavLink href="/tecnico" icon={<LayoutDashboard size={20}/>} active={pathname === "/tecnico"} />
+          <div className="relative">
+            <MobileNavLink href="/tecnico" icon={<LayoutDashboard size={20}/>} active={pathname === "/tecnico"} />
+            <NotificacaoBadge />
+          </div>
         )}
 
         {isLogged && ["TECNICO", "ADMIN", "MASTER"].includes(role) && (
