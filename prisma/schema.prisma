@@ -29,6 +29,7 @@ model User {
   emailVerified   DateTime?
   image           String?
   role            String    @default("FUNCIONARIO")
+  active          Boolean   @default(true)
   roleId          Int?
   levelId         Int?
   accounts        Account[]
@@ -45,6 +46,14 @@ model Category {
   name    String
   icon    String   @default("Wrench")
   tickets Ticket[]
+}
+
+model CategoryConfig {
+  id     String  @id @default(cuid())
+  name   String
+  icon   String  @default("Monitor")
+  order  Int     @default(0)
+  active Boolean @default(true)
 }
 
 model Department {
@@ -68,13 +77,13 @@ model Ticket {
   updatedAt    DateTime   @updatedAt @db.Timestamp(6)
   location     String?
   proofImage   String?
+  visitDate    DateTime?
+  visitNote    String?
   comments     Comment[]
   assignedTo   User?      @relation("AssignedTo", fields: [assignedToId], references: [id], onDelete: NoAction, onUpdate: NoAction)
   category     Category   @relation(fields: [categoryId], references: [id], onDelete: NoAction, onUpdate: NoAction)
   department   Department @relation(fields: [departmentId], references: [id], onDelete: NoAction, onUpdate: NoAction)
   requester    User       @relation("CreatedBy", fields: [requesterId], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  visitDate  DateTime? 
-  visitNote  String?
 }
 
 model Comment {
@@ -86,6 +95,26 @@ model Comment {
   proofImage String?
   ticket     Ticket   @relation(fields: [ticketId], references: [id], onDelete: Cascade)
   user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model SLAConfig {
+  id       Int    @id @default(autoincrement())
+  priority String @unique
+  maxHours Int
+  label    String
+  color    String @default("amber")
+}
+
+model SystemConfig {
+  id    Int    @id @default(autoincrement())
+  key   String @unique
+  value String
+}
+
+model RolePermission {
+  id          String @id @default(cuid())
+  role        String @unique
+  permissions String
 }
 
 model Account {
@@ -102,7 +131,6 @@ model Account {
   id_token          String?
   session_state     String?
   user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
-
   @@unique([provider, providerAccountId])
 }
 
@@ -118,20 +146,5 @@ model VerificationToken {
   identifier String
   token      String   @unique
   expires    DateTime
-
   @@unique([identifier, token])
-}
-
-model SLAConfig {
-  id         Int    @id @default(autoincrement())
-  priority   String @unique
-  maxHours   Int
-  label      String
-  color      String @default("amber")
-}
-
-model SystemConfig {
-  id          Int     @id @default(autoincrement())
-  key         String  @unique
-  value       String
 }
