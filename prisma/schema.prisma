@@ -39,6 +39,7 @@ model User {
   tickets         Ticket[]  @relation("CreatedBy")
   levelRelation   Level?    @relation(fields: [levelId], references: [id])
   roleRelation    Role?     @relation(fields: [roleId], references: [id])
+  createdAt       DateTime  @default(now())
 }
 
 model Category {
