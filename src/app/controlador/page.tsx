@@ -19,12 +19,6 @@ export default async function ControladorDashboard() {
                         Painel de <span className="text-primary italic">Gestão</span>
                     </h1>
                 </div>
-                <Link 
-                    href="/controlador/chamados" 
-                    className="bg-foreground text-background px-8 py-4 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] hover:scale-105 transition-all shadow-xl"
-                >
-                    Ver todos os tickets
-                </Link>
                 <div className="flex items-center gap-3">
                     <ExportarRelatorio />
                     <Link href="/controlador/chamados" className="bg-foreground text-background px-8 py-4 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] hover:scale-105 transition-all shadow-xl">

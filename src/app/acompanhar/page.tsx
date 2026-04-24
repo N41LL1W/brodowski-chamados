@@ -82,7 +82,7 @@ export default function AcompanharPage() {
                 {/* NÃO ENCONTRADO */}
                 {notFound && (
                     <div className="flex items-center gap-4 p-6 bg-red-50 dark:bg-red-900/20 border border-red-100 dark:border-red-900/30 rounded-3xl animate-in fade-in duration-300">
-                        <AlertCircle size={24} className="text-red-500 flex-shrink-0"/>
+                        <AlertCircle size={24} className="text-red-500 shrink-0"/>
                         <div>
                             <p className="font-black text-red-700 dark:text-red-400">Protocolo não encontrado</p>
                             <p className="text-sm text-red-600/70 dark:text-red-400/70">Verifique o número e tente novamente.</p>
@@ -106,9 +106,9 @@ export default function AcompanharPage() {
                             <p className="text-[10px] font-black uppercase tracking-widest text-muted mb-6">Status do atendimento</p>
                             <div className="flex justify-between relative">
                                 {/* Linha de conexão */}
-                                <div className="absolute top-7 left-7 right-7 h-0.5 bg-border -z-0"/>
+                                <div className="absolute top-7 left-7 right-7 h-0.5 bg-border z-0"/>
                                 <div
-                                    className="absolute top-7 left-7 h-0.5 bg-primary transition-all -z-0"
+                                    className="absolute top-7 left-7 h-0.5 bg-primary transition-all z-0"
                                     style={{ width: currentStep === 0 ? '0%' : currentStep === 1 ? '50%' : '100%' }}
                                 />
                                 {statusSteps.map((step, idx) => {
@@ -140,21 +140,21 @@ export default function AcompanharPage() {
                                 <p className="text-[10px] font-black uppercase tracking-widest text-muted">Detalhes</p>
                                 <div className="space-y-3">
                                     <div className="flex items-center gap-3">
-                                        <Tag size={16} className="text-primary flex-shrink-0"/>
+                                        <Tag size={16} className="text-primary shrink-0"/>
                                         <div>
                                             <p className="text-[9px] font-black text-muted uppercase">Categoria</p>
                                             <p className="text-sm font-bold text-foreground">{ticket.category?.name}</p>
                                         </div>
                                     </div>
                                     <div className="flex items-center gap-3">
-                                        <MapPin size={16} className="text-primary flex-shrink-0"/>
+                                        <MapPin size={16} className="text-primary shrink-0"/>
                                         <div>
                                             <p className="text-[9px] font-black text-muted uppercase">Localização</p>
                                             <p className="text-sm font-bold text-foreground">{ticket.location || 'Não informada'}</p>
                                         </div>
                                     </div>
                                     <div className="flex items-center gap-3">
-                                        <Clock size={16} className="text-primary flex-shrink-0"/>
+                                        <Clock size={16} className="text-primary shrink-0"/>
                                         <div>
                                             <p className="text-[9px] font-black text-muted uppercase">Aberto em</p>
                                             <p className="text-sm font-bold text-foreground">
