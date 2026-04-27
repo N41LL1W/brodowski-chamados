@@ -9,39 +9,34 @@ async function checkMaster() {
 }
 
 export async function GET() {
-    const items = await prisma.categoryConfig.findMany({
+    const items = await (prisma as any).categoryConfig.findMany({
         orderBy: { order: 'asc' }
     });
     return NextResponse.json(items);
 }
 
-export async function POST(req: Request) {
-    if (!await checkMaster()) return new NextResponse('Não autorizado', { status: 403 });
-    const { name, icon, order } = await req.json();
-    const item = await prisma.categoryConfig.create({
-        data: { name, icon: icon || 'Monitor', order: order || 0 }
-    });
-    return NextResponse.json(item);
-}
-
 export async function PUT(req: Request) {
     if (!await checkMaster()) return new NextResponse('Não autorizado', { status: 403 });
-    const items = await req.json(); // array completo
-    await prisma.$transaction(
-        items.map((item: any) =>
-            prisma.categoryConfig.upsert({
-                where: { id: item.id || 'new' },
-                update: { name: item.name, icon: item.icon, order: item.order, active: item.active },
-                create: { name: item.name, icon: item.icon, order: item.order, active: item.active }
-            })
-        )
-    );
+    const items = await req.json();
+
+    // Deleta todos e recria na ordem certa
+    await (prisma as any).categoryConfig.deleteMany({});
+    await (prisma as any).categoryConfig.createMany({
+        data: items.map((item: any, i: number) => ({
+            id: item.id?.startsWith('new_') ? undefined : item.id,
+            name: item.name,
+            icon: item.icon || 'Monitor',
+            order: i,
+            active: item.active ?? true
+        }))
+    });
+
     return NextResponse.json({ success: true });
 }
 
 export async function DELETE(req: Request) {
     if (!await checkMaster()) return new NextResponse('Não autorizado', { status: 403 });
     const { id } = await req.json();
-    await prisma.categoryConfig.delete({ where: { id } });
+    await (prisma as any).categoryConfig.delete({ where: { id } });
     return NextResponse.json({ success: true });
 }

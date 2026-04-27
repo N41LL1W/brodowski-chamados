@@ -6,16 +6,15 @@ import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 export async function GET() {
     try {
         const [categoryConfigs, departments, roles, levels] = await Promise.all([
-            prisma.categoryConfig.findMany({ where: { active: true }, orderBy: { order: 'asc' } }),
+            (prisma as any).categoryConfig.findMany({ where: { active: true }, orderBy: { order: 'asc' } }),
             prisma.department.findMany({ orderBy: { name: 'asc' } }),
             prisma.role.findMany({ orderBy: { name: 'asc' } }),
             prisma.level.findMany({ orderBy: { rank: 'asc' } })
         ]);
 
-        // Se não há CategoryConfig, cai no fallback da tabela Category
         let categories = categoryConfigs;
-        if (categoryConfigs.length === 0) {
-            categories = await prisma.category.findMany({ orderBy: { name: 'asc' } }) as any;
+        if (!categoryConfigs || categoryConfigs.length === 0) {
+            categories = await prisma.category.findMany({ orderBy: { name: 'asc' } });
         }
 
         return NextResponse.json({ categories, departments, roles, levels });
@@ -65,7 +64,7 @@ export async function DELETE(req: NextRequest) {
         else if (type === 'role') await prisma.role.delete({ where: { id: Number(id) } });
         else if (type === 'level') await prisma.level.delete({ where: { id: Number(id) } });
         return NextResponse.json({ success: true });
-    } catch (e) {
+    } catch {
         return NextResponse.json({ message: "Item em uso." }, { status: 400 });
     }
 }

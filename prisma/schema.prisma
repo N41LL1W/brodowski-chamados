@@ -149,3 +149,12 @@ model VerificationToken {
   expires    DateTime
   @@unique([identifier, token])
 }
+
+model AuditLog {
+  id        String   @id @default(cuid())
+  userId    String
+  userName  String
+  action    String
+  details   String
+  createdAt DateTime @default(now())
+}

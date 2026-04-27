@@ -9,9 +9,9 @@ async function checkMaster() {
 }
 
 export async function GET() {
-    const perms = await prisma.rolePermission.findMany();
+    const perms = await (prisma as any).rolePermission.findMany();
     const map: Record<string, any> = {};
-    perms.forEach(p => {
+    perms.forEach((p: any) => {
         try { map[p.role] = JSON.parse(p.permissions); }
         catch { map[p.role] = {}; }
     });
@@ -19,12 +19,27 @@ export async function GET() {
 }
 
 export async function POST(req: Request) {
-    if (!await checkMaster()) return new NextResponse('Não autorizado', { status: 403 });
+    const master = await checkMaster();
+    if (!master) return new NextResponse('Não autorizado', { status: 403 });
+
     const { role, permissions } = await req.json();
-    const result = await prisma.rolePermission.upsert({
+    const result = await (prisma as any).rolePermission.upsert({
         where: { role },
         update: { permissions: JSON.stringify(permissions) },
         create: { role, permissions: JSON.stringify(permissions) }
     });
     return NextResponse.json(result);
+}
+
+export async function DELETE(req: Request) {
+    const master = await checkMaster();
+    if (!master) return new NextResponse('Não autorizado', { status: 403 });
+
+    const { role } = await req.json();
+    const fixed = ['FUNCIONARIO', 'TECNICO', 'CONTROLADOR', 'MASTER'];
+    if (fixed.includes(role)) {
+        return NextResponse.json({ message: 'Não pode excluir roles fixas do sistema.' }, { status: 400 });
+    }
+    await (prisma as any).rolePermission.delete({ where: { role } });
+    return NextResponse.json({ success: true });
 }
