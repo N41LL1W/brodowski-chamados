@@ -199,7 +199,7 @@ function TabDashboard() {
                         {data.tecnicos.length === 0 && <EmptyState text="Nenhum técnico cadastrado."/>}
                         {data.tecnicos.slice(0, 5).map((t: any, i: number) => (
                             <div key={t.id} className="flex items-center gap-3">
-                                <span className={`w-6 h-6 rounded-lg flex items-center justify-center text-[10px] font-black flex-shrink-0 ${
+                                <span className={`w-6 h-6 rounded-lg flex items-center justify-center text-[10px] font-black shrink-0 ${
                                     i === 0 ? 'bg-amber-100 text-amber-600' :
                                     i === 1 ? 'bg-slate-100 text-slate-600' :
                                     i === 2 ? 'bg-orange-100 text-orange-600' :
@@ -212,7 +212,7 @@ function TabDashboard() {
                                             style={{ width: t.total > 0 ? `${(t.concluidos / t.total) * 100}%` : '0%' }}/>
                                     </div>
                                 </div>
-                                <div className="text-right flex-shrink-0">
+                                <div className="text-right shrink-0">
                                     <p className="text-xs font-black text-foreground">{t.concluidos}</p>
                                     <p className="text-[9px] text-muted">concluídos</p>
                                 </div>
@@ -227,7 +227,7 @@ function TabDashboard() {
                         {data.recentAudit.length === 0 && <EmptyState text="Nenhum registro."/>}
                         {data.recentAudit.map((log: any) => (
                             <div key={log.id} className="flex items-start gap-3 p-3 bg-background rounded-xl">
-                                <div className="w-1.5 h-1.5 rounded-full bg-primary mt-1.5 flex-shrink-0"/>
+                                <div className="w-1.5 h-1.5 rounded-full bg-primary mt-1.5 shrink-0"/>
                                 <div className="min-w-0">
                                     <p className="text-xs font-bold text-foreground truncate">{log.details}</p>
                                     <p className="text-[9px] text-muted">{log.userName} · {new Date(log.createdAt).toLocaleString('pt-BR')}</p>
@@ -380,12 +380,12 @@ function TabTemas({ showFeedback }: any) {
                                     </div>
                                     <div className="flex items-center gap-3">
                                         {/* Preview da cor */}
-                                        <div className="w-10 h-10 rounded-xl border-2 border-border shadow-sm flex-shrink-0"
+                                        <div className="w-10 h-10 rounded-xl border-2 border-border shadow-sm shrink-0"
                                             style={{ backgroundColor: value }}/>
                                         {/* Color picker */}
                                         <input type="color" value={value}
                                             onChange={e => updateVar(varDef.key, e.target.value)}
-                                            className="w-10 h-10 rounded-xl border-2 border-border cursor-pointer bg-transparent flex-shrink-0"/>
+                                            className="w-10 h-10 rounded-xl border-2 border-border cursor-pointer bg-transparent shrink-0"/>
                                         {/* Input hex */}
                                         <input value={value}
                                             onChange={e => { if (/^#[0-9A-Fa-f]{0,6}$/.test(e.target.value)) updateVar(varDef.key, e.target.value); }}
@@ -598,7 +598,7 @@ function TabCampos({ showFeedback }: any) {
                                         <option value="select" className="bg-card">Seleção</option>
                                     </select>
                                 </div>
-                                <div className="flex gap-2 flex-shrink-0">
+                                <div className="flex gap-2 shrink-0">
                                     <button onClick={() => update(idx, 'required', !field.required)}
                                         title={field.required ? 'Obrigatório' : 'Opcional'}
                                         className={`p-2.5 rounded-xl text-[10px] font-black uppercase border transition-all ${field.required ? 'border-primary bg-primary/10 text-primary' : 'border-border text-muted'}`}>
@@ -684,11 +684,11 @@ function TabHorarios({ showFeedback }: any) {
                 <div className="divide-y divide-border">
                     {days.map((day, idx) => (
                         <div key={day.day} className={`p-5 flex items-center gap-4 ${!day.open ? 'opacity-60' : ''}`}>
-                            <div className="w-32 flex-shrink-0">
+                            <div className="w-32 shrink-0">
                                 <p className="text-sm font-bold text-foreground">{day.label}</p>
                             </div>
                             <button onClick={() => update(idx, 'open', !day.open)}
-                                className={`relative w-12 h-6 rounded-full transition-colors flex-shrink-0 ${day.open ? 'bg-primary' : 'bg-border'}`}>
+                                className={`relative w-12 h-6 rounded-full transition-colors shrink-0 ${day.open ? 'bg-primary' : 'bg-border'}`}>
                                 <span className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-all shadow ${day.open ? 'left-7' : 'left-1'}`}/>
                             </button>
                             {day.open ? (
@@ -1468,7 +1468,7 @@ function TabUsuarios({ showFeedback }: any) {
                             </div>
                         ) : (
                             <div className="p-4 flex items-center gap-3">
-                                <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center font-black text-primary flex-shrink-0 text-sm">{user.name?.charAt(0)?.toUpperCase() || '?'}</div>
+                                <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center font-black text-primary shrink-0 text-sm">{user.name?.charAt(0)?.toUpperCase() || '?'}</div>
                                 <div className="flex-1 min-w-0">
                                     <div className="flex items-center gap-2 flex-wrap">
                                         <p className="font-black text-foreground text-sm truncate">{user.name}</p>
@@ -1478,7 +1478,7 @@ function TabUsuarios({ showFeedback }: any) {
                                     <p className="text-[10px] text-muted truncate">{user.email}</p>
                                     <p className="text-[9px] text-muted/60">{user._count?.tickets || 0} chamados</p>
                                 </div>
-                                <div className="flex items-center gap-1 flex-shrink-0">
+                                <div className="flex items-center gap-1 shrink-0">
                                     <button onClick={() => toggleActive(user)} className={`p-2 rounded-xl transition-all ${user.active ? 'text-emerald-600 hover:bg-emerald-50' : 'text-muted hover:bg-background'}`}>{user.active ? <Unlock size={14}/> : <Lock size={14}/>}</button>
                                     <button onClick={() => startEdit(user)} className="p-2 rounded-xl text-muted hover:text-primary hover:bg-primary/10 transition-all"><Edit3 size={14}/></button>
                                     <button onClick={() => deleteUser(user.id, user.name)} className="p-2 rounded-xl text-muted hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-all"><UserX size={14}/></button>
@@ -1519,7 +1519,7 @@ function TabAuditoria() {
             <div className="space-y-2">
                 {filtered.map(log => (
                     <div key={log.id} className="bg-card border border-border rounded-2xl p-4 flex items-start gap-4">
-                        <div className={`px-2.5 py-1 rounded-xl text-[9px] font-black uppercase whitespace-nowrap flex-shrink-0 ${ACTION_STYLE[log.action] || 'bg-card text-muted border border-border'}`}>{log.action.replace('_', ' ')}</div>
+                        <div className={`px-2.5 py-1 rounded-xl text-[9px] font-black uppercase whitespace-nowrap shrink-0 ${ACTION_STYLE[log.action] || 'bg-card text-muted border border-border'}`}>{log.action.replace('_', ' ')}</div>
                         <div className="flex-1 min-w-0">
                             <p className="text-sm font-bold text-foreground truncate">{log.details}</p>
                             <p className="text-[10px] text-muted">{log.userName} · {new Date(log.createdAt).toLocaleString('pt-BR')}</p>
