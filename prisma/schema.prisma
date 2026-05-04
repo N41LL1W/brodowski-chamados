@@ -158,3 +158,53 @@ model AuditLog {
   details   String
   createdAt DateTime @default(now())
 }
+
+model ThemeConfig {
+  id    String @id @default(cuid())
+  theme String // "light" ou "dark"
+  key   String
+  value String
+  @@unique([theme, key])
+}
+
+model NotificationConfig {
+  id      String  @id @default(cuid())
+  event   String  @unique
+  label   String
+  enabled Boolean @default(true)
+  roles   String  // JSON array de roles
+}
+
+model CustomField {
+  id       String  @id @default(cuid())
+  name     String
+  label    String
+  type     String  @default("text") // text, select, number, textarea
+  options  String? // JSON array para type=select
+  required Boolean @default(false)
+  active   Boolean @default(true)
+  order    Int     @default(0)
+}
+
+model BusinessHours {
+  id        String @id @default(cuid())
+  dayOfWeek Int    @unique // 0=Dom, 1=Seg...6=Sab
+  open      Boolean @default(true)
+  startTime String  @default("08:00")
+  endTime   String  @default("17:00")
+}
+
+model AutoMessage {
+  id      String @id @default(cuid())
+  trigger String @unique // TICKET_OPENED, TICKET_ASSIGNED, etc
+  label   String
+  content String
+  active  Boolean @default(true)
+}
+
+model TermsOfUse {
+  id        String   @id @default(cuid())
+  content   String
+  version   String
+  updatedAt DateTime @updatedAt
+}
