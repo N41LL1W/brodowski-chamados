@@ -1,5 +1,3 @@
-//src\app\login\page.tsx
-
 "use client";
 
 import { useState, useEffect } from 'react';
@@ -24,11 +22,7 @@ export default function LoginPage() {
     e.preventDefault();
     setError(null);
     setIsLoading(true);
-
-    const result = await signIn('credentials', {
-      redirect: false, email, password,
-    });
-
+    const result = await signIn('credentials', { redirect: false, email, password });
     if (result?.error) {
       setError('Acesso negado. Verifique suas credenciais.');
       setIsLoading(false);
@@ -40,25 +34,25 @@ export default function LoginPage() {
   if (status === "loading") return null;
 
   return (
-    <div className="flex justify-center items-center min-h-[90vh] p-4 bg-background/50">
+    <div className="flex justify-center items-center min-h-[90vh] p-4 bg-background">
       <Card className="w-full max-w-md p-12 shadow-[0_32px_64px_-12px_rgba(0,0,0,0.1)] border-none rounded-[3rem] bg-card">
         <div className="flex flex-col items-center mb-12">
-          <div className="bg-slate-900 text-white p-5 rounded-4xl shadow-2xl mb-6 scale-110">
+          <div className="bg-slate-900 text-white p-5 rounded-3xl shadow-2xl mb-6">
             <LogIn size={32} />
           </div>
           <h1 className="text-4xl font-black tracking-tighter uppercase text-foreground">Brodowski</h1>
-          <p className="font-bold text-[10px] uppercase tracking-[0.3em] text-blue-600 mt-2">Central de Operações</p>
+          <p className="font-bold text-[10px] uppercase tracking-[0.3em] text-primary mt-2">Central de Operações</p>
         </div>
-        
+
         {error && (
-          <div className="bg-red-50 border-2 border-red-100 text-red-600 p-4 rounded-2xl mb-8 text-[11px] font-black uppercase text-center animate-shake">
+          <div className="bg-red-50 dark:bg-red-900/20 border-2 border-red-100 dark:border-red-800 text-red-600 dark:text-red-400 p-4 rounded-2xl mb-8 text-[11px] font-black uppercase text-center">
             {error}
           </div>
         )}
 
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="space-y-2">
-            <label className="flex items-center gap-2 text-[10px] font-black uppercase ml-1 tracking-widest text-slate-400">
+            <label className="flex items-center gap-2 text-[10px] font-black uppercase ml-1 tracking-widest text-muted">
               <Mail size={12}/> E-mail Corporativo
             </label>
             <input
@@ -66,14 +60,14 @@ export default function LoginPage() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
-              className="w-full p-5 bg-background border-2 border-transparent focus:border-blue-500 focus:bg-card rounded-2xl outline-none transition-all font-bold text-slate-700 placeholder:text-slate-300"
+              className="w-full p-5 bg-background border-2 border-border focus:border-primary rounded-2xl outline-none transition-all font-bold text-foreground placeholder:text-muted/50"
               placeholder="usuario@brodowski.sp.gov.br"
               disabled={isLoading}
             />
           </div>
 
           <div className="space-y-2">
-            <label className="flex items-center gap-2 text-[10px] font-black uppercase ml-1 tracking-widest text-slate-400">
+            <label className="flex items-center gap-2 text-[10px] font-black uppercase ml-1 tracking-widest text-muted">
               <Lock size={12}/> Senha de Acesso
             </label>
             <input
@@ -81,27 +75,34 @@ export default function LoginPage() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
-              className="w-full p-5 bg-background border-2 border-transparent focus:border-blue-500 focus:bg-card rounded-2xl outline-none transition-all font-bold text-slate-700 placeholder:text-slate-300"
+              className="w-full p-5 bg-background border-2 border-border focus:border-primary rounded-2xl outline-none transition-all font-bold text-foreground placeholder:text-muted/50"
               placeholder="••••••••"
               disabled={isLoading}
             />
           </div>
-          
-          <Button 
-            type="submit" 
-            className="w-full py-8 text-xs font-black uppercase tracking-[0.2em] shadow-2xl bg-blue-600 hover:bg-slate-900 transition-all rounded-2xl"
+
+          <Button
+            type="submit"
+            className="w-full py-8 text-xs font-black uppercase tracking-[0.2em] shadow-2xl bg-primary hover:opacity-90 transition-all rounded-2xl"
             disabled={isLoading}
           >
             {isLoading ? 'Autenticando...' : 'Entrar no Sistema'}
           </Button>
         </form>
 
-        <div className="text-center mt-12 pt-8 border-t border-slate-50">
-          <Link href="/registro" className="text-[10px] font-black uppercase tracking-widest text-slate-400 hover:text-blue-600 transition-colors">
+        {/* LINKS — com espaçamento correto */}
+        <div className="mt-10 pt-8 border-t border-border flex flex-col items-center gap-4">
+          <Link
+            href="/registro"
+            className="text-[10px] font-black uppercase tracking-widest text-muted hover:text-primary transition-colors"
+          >
             Solicitar acesso institucional
           </Link>
-          <Link href="/acompanhar" className="text-[10px] font-black uppercase tracking-widest text-muted hover:text-primary transition-colors">
-              Acompanhar chamado por protocolo
+          <Link
+            href="/acompanhar"
+            className="text-[10px] font-black uppercase tracking-widest text-muted hover:text-primary transition-colors"
+          >
+            Acompanhar chamado por protocolo
           </Link>
         </div>
       </Card>

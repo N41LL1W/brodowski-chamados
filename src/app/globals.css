@@ -10,28 +10,32 @@
 }
 
 :root {
-  --bg-primary: #f9fafb;     /* Gray 50 */
-  --bg-secondary: #ffffff;   /* White */
-  --text-primary: #111827;   /* Gray 900 */
-  --text-secondary: #4b5563; /* Gray 600 */
-  --border-color: #e5e7eb;   /* Gray 200 */
-  --brand-color: #2563eb;    /* Blue 600 */
+  --bg-primary:     #f9fafb;
+  --bg-secondary:   #ffffff;
+  --text-primary:   #111827;
+  --text-secondary: #4b5563;
+  --border-color:   #e5e7eb;
+  --brand-color:    #2563eb;
 }
 
 .dark {
-  --bg-primary: #020617;     /* Slate 950 */
-  --bg-secondary: #0f172a;   /* Slate 900 */
-  --text-primary: #f8fafc;   /* Slate 50 */
-  --text-secondary: #94a3b8; /* Slate 400 */
-  --border-color: #1e293b;   /* Slate 800 */
-  --brand-color: #3b82f6;    /* Blue 500 */
+  --bg-primary:     #020617;
+  --bg-secondary:   #0f172a;
+  --text-primary:   #f8fafc;
+  --text-secondary: #94a3b8;
+  --border-color:   #1e293b;
+  --brand-color:    #3b82f6;
 }
 
 @layer base {
   * {
     @apply border-border;
   }
+  html {
+    /* Transição suave ao trocar tema */
+    transition: background-color 0.2s ease, color 0.2s ease;
+  }
   body {
-    @apply bg-background text-foreground transition-colors duration-300 antialiased;
+    @apply bg-background text-foreground antialiased;
   }
 }
