@@ -13,7 +13,7 @@ import {
     AlertTriangle, Download, Upload, History,
     MessageSquare, Calendar, ToggleLeft, ToggleRight,
     Sun, Moon, Sliders, BarChart3, BookOpen,
-    Hash, AlignLeft, ChevronDown, List
+    Hash, AlignLeft, ChevronDown, List, MapPin
 } from 'lucide-react';
 
 // =====================
@@ -25,7 +25,7 @@ const AVAILABLE_ICONS: Record<string, any> = {
     Globe, Lock, Bell, Tag, LayoutGrid, Settings2,
     Shield, Clock, Building2, Phone, Mail, Key,
     Eye, Edit3, RefreshCw, UserCheck, Users
-};
+}
 const ICON_NAMES = Object.keys(AVAILABLE_ICONS);
 
 const FIXED_ROLES = ['FUNCIONARIO', 'TECNICO', 'CONTROLADOR', 'MASTER'];
@@ -109,7 +109,9 @@ export default function MasterConfigPage() {
         { id: 'horarios',    label: 'Horários',    icon: Calendar },
         { id: 'mensagens',   label: 'Mensagens',   icon: MessageSquare },
         { id: 'termos',      label: 'Termos',      icon: BookOpen },
+        { id: 'locais', label: 'Locais', icon: MapPin },
         { id: 'auditoria',   label: 'Auditoria',   icon: History },
+        { id: 'locais', label: 'Locais', icon: MapPin },
     ];
 
     return (
@@ -163,6 +165,7 @@ export default function MasterConfigPage() {
             {activeTab === 'horarios'     && <TabHorarios     showFeedback={showFeedback}/>}
             {activeTab === 'mensagens'    && <TabMensagens    showFeedback={showFeedback}/>}
             {activeTab === 'termos'       && <TabTermos       showFeedback={showFeedback}/>}
+            {activeTab === 'locais' && <TabLocais showFeedback={showFeedback}/>}
             {activeTab === 'auditoria'    && <TabAuditoria/>}
         </div>
     );
@@ -1534,6 +1537,142 @@ function TabAuditoria() {
 // =====================
 // HELPERS
 // =====================
+function TabLocais({ showFeedback }: any) {
+    const [locais, setLocais] = useState<string[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [saving, setSaving] = useState(false);
+    const [newLocal, setNewLocal] = useState('');
+
+    useEffect(() => {
+        fetch('/api/master/locais')
+            .then(r => r.json())
+            .then(data => setLocais(Array.isArray(data) ? data : []))
+            .finally(() => setLoading(false));
+    }, []);
+
+    const add = () => {
+        const trimmed = newLocal.trim();
+        if (!trimmed || locais.includes(trimmed)) return;
+        setLocais(p => [...p, trimmed]);
+        setNewLocal('');
+    };
+
+    const remove = (idx: number) => setLocais(p => p.filter((_, i) => i !== idx));
+
+    const move = (idx: number, dir: 'up' | 'down') => {
+        const arr = [...locais];
+        const target = dir === 'up' ? idx - 1 : idx + 1;
+        if (target < 0 || target >= arr.length) return;
+        [arr[idx], arr[target]] = [arr[target], arr[idx]];
+        setLocais(arr);
+    };
+
+    const save = async () => {
+        setSaving(true);
+        try {
+            const res = await fetch('/api/master/locais', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ locais })
+            });
+            if (res.ok) showFeedback('success', 'Locais salvos!');
+            else showFeedback('error', 'Erro ao salvar.');
+        } finally { setSaving(false); }
+    };
+
+    if (loading) return <Spinner/>;
+
+    return (
+        <div className="space-y-5">
+            <div className="p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-2xl">
+                <p className="text-xs font-bold text-blue-700 dark:text-blue-400">
+                    💡 Estes locais aparecem como sugestões rápidas no campo de localização ao abrir um chamado.
+                    Exemplos: Recepção, Sala 01, Sala do Servidor, Secretaria de Saúde...
+                </p>
+            </div>
+
+            {/* ADICIONAR NOVO */}
+            <div className="flex gap-3">
+                <input
+                    value={newLocal}
+                    onChange={e => setNewLocal(e.target.value)}
+                    onKeyDown={e => e.key === 'Enter' && add()}
+                    placeholder="Ex: Recepção, Sala 01, Servidor..."
+                    className="flex-1 p-4 bg-background border-2 border-border rounded-2xl outline-none focus:border-primary text-sm font-bold text-foreground placeholder:text-muted/50 transition-all"
+                />
+                <button
+                    onClick={add}
+                    disabled={!newLocal.trim()}
+                    className="flex items-center gap-2 px-6 py-4 bg-primary text-white rounded-2xl font-black uppercase text-[11px] hover:opacity-90 disabled:opacity-50 transition-all"
+                >
+                    <Plus size={15}/> Adicionar
+                </button>
+            </div>
+
+            {/* LISTA */}
+            <div className="space-y-2">
+                {locais.length === 0 && (
+                    <EmptyState text="Nenhum local cadastrado. Adicione acima."/>
+                )}
+                {locais.map((local, idx) => (
+                    <div key={idx} className="flex items-center gap-3 p-4 bg-card border border-border rounded-2xl group">
+                        <div className="flex flex-col gap-0.5 shrink-0">
+                            <button
+                                onClick={() => move(idx, 'up')}
+                                disabled={idx === 0}
+                                className="text-muted hover:text-foreground disabled:opacity-20 transition-colors p-0.5"
+                            >
+                                <GripVertical size={12}/>
+                            </button>
+                            <button
+                                onClick={() => move(idx, 'down')}
+                                disabled={idx === locais.length - 1}
+                                className="text-muted hover:text-foreground disabled:opacity-20 transition-colors p-0.5"
+                            >
+                                <GripVertical size={12}/>
+                            </button>
+                        </div>
+                        <div className="w-8 h-8 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
+                            <MapPin size={14} className="text-primary"/>
+                        </div>
+                        <span className="flex-1 font-bold text-foreground text-sm">{local}</span>
+                        <span className="text-[9px] font-black text-muted uppercase opacity-0 group-hover:opacity-100 transition-opacity">
+                            #{idx + 1}
+                        </span>
+                        <button
+                            onClick={() => remove(idx)}
+                            className="p-2 rounded-xl text-muted hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-all opacity-0 group-hover:opacity-100"
+                        >
+                            <Trash2 size={15}/>
+                        </button>
+                    </div>
+                ))}
+            </div>
+
+            {/* PREVIEW */}
+            {locais.length > 0 && (
+                <SectionBox title="Preview — como aparece no formulário" icon={<Eye size={12}/>}>
+                    <div className="flex flex-wrap gap-2">
+                        {locais.map((local, idx) => (
+                            <div key={idx} className="flex items-center gap-1.5 px-3 py-1.5 bg-background border border-border rounded-xl text-[10px] font-bold text-foreground">
+                                <MapPin size={9} className="text-primary"/>
+                                {local}
+                            </div>
+                        ))}
+                    </div>
+                </SectionBox>
+            )}
+
+            <button
+                onClick={save}
+                disabled={saving}
+                className="w-full flex items-center justify-center gap-2 p-4 bg-primary text-white rounded-2xl font-black uppercase text-[11px] hover:opacity-90 disabled:opacity-50 transition-all"
+            >
+                <Save size={15}/> {saving ? 'Salvando...' : 'Salvar locais'}
+            </button>
+        </div>
+    );
+}
 function Spinner() { return <div className="flex items-center justify-center h-40"><div className="w-8 h-8 border-4 border-border border-t-primary rounded-full animate-spin"/></div>; }
 function EmptyState({ text }: { text: string }) { return <div className="text-center py-12 border-2 border-dashed border-border rounded-3xl text-muted text-xs font-bold uppercase">{text}</div>; }
 function SectionBox({ title, icon, children }: any) { return <div className="bg-card border border-border rounded-3xl p-6 space-y-4"><p className="text-[10px] font-black uppercase tracking-widest text-muted flex items-center gap-2">{icon} {title}</p>{children}</div>; }
