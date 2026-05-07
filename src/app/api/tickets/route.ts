@@ -40,22 +40,41 @@ export async function POST(req: Request) {
         const userId = (session.user as any).id;
         const protocol = `${new Date().toISOString().slice(0,10).replace(/-/g, '')}-${Math.floor(1000 + Math.random() * 9000)}`;
 
-        const newTicket = await (prisma as any).ticket.create({
+        // Busca a categoria — primeiro na CategoryConfig, depois na Category original
+        let finalCategoryId = categoryId;
+        try {
+            const catConfig = await (prisma as any).categoryConfig.findUnique({ where: { id: categoryId } });
+            if (catConfig) {
+                // Garante que existe na tabela Category (cria se não existir)
+                const existing = await prisma.category.findUnique({ where: { id: categoryId } });
+                if (!existing) {
+                    await prisma.category.create({
+                        data: { id: categoryId, name: catConfig.name, icon: catConfig.icon }
+                    });
+                }
+                finalCategoryId = categoryId;
+            }
+        } catch {
+            // Usa o categoryId original se algo falhar
+        }
+
+        const newTicket = await prisma.ticket.create({
             data: {
                 protocol,
                 subject,
-                description,
+                description: description || '',
                 location,
                 priority: priority || 'NORMAL',
                 status: 'ABERTO',
                 requesterId: userId,
-                categoryId: categoryId,
-                departmentId: departmentId,
+                categoryId: finalCategoryId,
+                departmentId,
             }
         });
+
         return NextResponse.json(newTicket, { status: 201 });
-    } catch (error) {
-        return NextResponse.json({ message: "Erro ao abrir chamado" }, { status: 500 });
+    } catch (error: any) {
+        console.error('[TICKET_POST_ERROR]:', error);
+        return NextResponse.json({ message: 'Erro ao abrir chamado', details: error.message }, { status: 500 });
     }
 }
-
