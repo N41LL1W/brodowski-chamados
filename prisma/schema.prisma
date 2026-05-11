@@ -208,3 +208,24 @@ model TermsOfUse {
   version   String
   updatedAt DateTime @updatedAt
 }
+
+model AgendaItem {
+  id          String   @id @default(cuid())
+  userId      String
+  title       String
+  description String?
+  date        DateTime
+  time        String
+  type        String   @default("pessoal") // pessoal | chamado
+  ticketId    String?
+  done        Boolean  @default(false)
+  createdAt   DateTime @default(now())
+}
+
+model EmailVerification {
+  id        String   @id @default(cuid())
+  userId    String
+  token     String   @unique
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+}

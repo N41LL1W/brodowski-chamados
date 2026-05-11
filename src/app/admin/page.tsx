@@ -58,13 +58,6 @@ export default async function AdminPage() {
                     color="bg-slate-900 text-white hover:bg-slate-800"
                 />
                 <MenuCard
-                    href="/controlador"
-                    icon={<LayoutGrid size={28}/>}
-                    title="Dashboard"
-                    description="Visualize métricas, logs e o desempenho geral do sistema de chamados"
-                    color="bg-primary/10 text-primary border border-primary/20 hover:bg-primary/20"
-                />
-                <MenuCard
                     href="/meus-chamados"
                     icon={<FileText size={28}/>}
                     title="Meus Chamados"

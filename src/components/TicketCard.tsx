@@ -123,11 +123,14 @@ export default function TicketCard({
             </div>
 
             {/* AÇÕES */}
-            <div className="mt-4 space-y-2">
+            <div className="mt-4">
                 {isDisabled ? (
-                    <div className="flex items-center justify-center gap-2 py-2.5 bg-background border border-border rounded-xl text-[10px] font-black text-muted uppercase">
-                        <CheckCheck size={13} className="text-emerald-500"/> Finalizado
-                    </div>
+                    <Link
+                        href={`/tecnico/chamado/${ticket.id}/detalhes`}
+                        className="flex items-center justify-center gap-2 py-2.5 bg-background border border-border rounded-xl text-[10px] font-black text-muted uppercase hover:border-primary hover:text-primary transition-all w-full"
+                    >
+                        <CheckCheck size={13} className="text-emerald-500"/> Ver chamado concluído
+                    </Link>
                 ) : (
                     <>
                         <Link
@@ -141,14 +144,14 @@ export default function TicketCard({
                             }`}
                         >
                             {mode === 'ativo'   ? <><Wrench size={13}/> Trabalhar</> :
-                             mode === 'pausado' ? <><Eye size={13}/> Ver chamado</> :
-                                                 <><Eye size={13}/> Ver detalhes</>}
+                            mode === 'pausado' ? <><Eye size={13}/> Ver chamado</> :
+                                                <><Eye size={13}/> Ver detalhes</>}
                         </Link>
 
                         {onAction && actionLabel && mode !== 'ativo' && (
                             <button
                                 onClick={() => onAction(ticket.id)}
-                                className={`flex items-center justify-center gap-2 py-2.5 rounded-xl font-black text-[10px] uppercase transition-all w-full border-2 ${
+                                className={`flex items-center justify-center gap-2 py-2.5 rounded-xl font-black text-[10px] uppercase transition-all w-full border-2 mt-2 ${
                                     mode === 'pausado'
                                         ? 'border-purple-500 text-purple-600 dark:text-purple-400 hover:bg-purple-500 hover:text-white'
                                         : 'border-amber-500 text-amber-600 dark:text-amber-400 hover:bg-amber-500 hover:text-white'

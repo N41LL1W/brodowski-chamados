@@ -102,17 +102,28 @@ export default function NovoChamadoPage() {
         searchTimeout.current = setTimeout(async () => {
             setSearchLoading(true);
             try {
+                // Adiciona contexto da cidade para refinar resultados
+                const query = `${searchAddress}, Brodowski, São Paulo, Brasil`;
                 const res = await fetch(
-                    `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(searchAddress)}&limit=5&countrycodes=br`,
-                    { headers: { 'Accept-Language': 'pt-BR' } }
+                    `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=7&countrycodes=br&addressdetails=1&dedupe=1`,
+                    { headers: { 'Accept-Language': 'pt-BR', 'User-Agent': 'BrodowskiChamados/1.0' } }
                 );
-                setSuggestions(await res.json());
+                const data = await res.json();
+                // Remove duplicatas por display_name
+                const seen = new Set<string>();
+                const unique = data.filter((s: any) => {
+                    const key = s.display_name;
+                    if (seen.has(key)) return false;
+                    seen.add(key);
+                    return true;
+                });
+                setSuggestions(unique);
             } catch {
                 setSuggestions([]);
             } finally {
                 setSearchLoading(false);
             }
-        }, 500);
+        }, 600);
         return () => clearTimeout(searchTimeout.current);
     }, [searchAddress]);
 
@@ -398,15 +409,9 @@ export default function NovoChamadoPage() {
                                         className="p-4 bg-background border-2 border-border rounded-2xl text-muted hover:border-primary hover:text-primary transition-all shrink-0">
                                         <Search size={17}/>
                                     </button>
-                                    <button type="button"
-                                        onClick={() => window.open(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(form.location || 'Brodowski SP')}`, '_blank')}
-                                        title="Google Maps"
-                                        className="p-4 bg-background border-2 border-border rounded-2xl text-muted hover:border-primary hover:text-primary transition-all shrink-0">
-                                        <Navigation size={17}/>
-                                    </button>
                                 </div>
 
-                                {/* CHIPS DE LOCAIS */}
+                                {/* CHIPS DE LOCAIS PRÉ-CADASTRADOS */}
                                 {locaisSugeridos.length > 0 && (
                                     <div className="flex flex-wrap gap-1.5">
                                         {locaisSugeridos.slice(0, 8).map((l, i) => (

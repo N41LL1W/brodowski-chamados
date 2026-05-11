@@ -107,6 +107,20 @@ export default function RegisterPage() {
                     </button>
                 </form>
 
+                {/* if (!response.ok) {
+                    setError(data.message || 'Erro ao criar conta.');
+                } else if (data.needsVerification) {
+                    setSuccess('Conta criada! Verifique seu e-mail para ativar o acesso.');
+                    // Em dev, mostra o link
+                    if (data.verifyUrl) {
+                        console.log('Link de verificação (dev):', data.verifyUrl);
+                    }
+                    setTimeout(() => router.push('/login'), 4000);
+                } else {
+                    setSuccess('Conta criada com sucesso! Redirecionando...');
+                    setTimeout(() => router.push('/login'), 2000);
+                } */}
+
                 <div className="text-center mt-8 pt-8 border-t border-slate-100 dark:border-slate-800">
                     <Link href="/login" className="text-sm font-bold text-muted dark:text-slate-400 hover:text-blue-600 transition-colors">
                         Já possui uma credencial? <span className="underline italic">Fazer Login</span>

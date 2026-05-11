@@ -111,7 +111,6 @@ export default function MasterConfigPage() {
         { id: 'termos',      label: 'Termos',      icon: BookOpen },
         { id: 'locais', label: 'Locais', icon: MapPin },
         { id: 'auditoria',   label: 'Auditoria',   icon: History },
-        { id: 'locais', label: 'Locais', icon: MapPin },
     ];
 
     return (
@@ -1226,6 +1225,25 @@ function TabSistema({ showFeedback }: any) {
                             <span className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-all shadow ${system.registrationOpen === 'true' ? 'left-7' : 'left-1'}`}/>
                         </button>
                     </div>
+                    {/* <div className="flex items-center justify-between p-4 bg-background rounded-2xl border border-border">
+                        <div>
+                            <p className="text-sm font-black text-foreground">Verificação de e-mail obrigatória</p>
+                            <p className="text-[10px] text-muted">Novos usuários precisam confirmar o e-mail antes de acessar</p>
+                        </div>
+                        <button
+                            onClick={() => setSystem(p => ({
+                                ...p,
+                                emailVerificationRequired: p.emailVerificationRequired === 'false' ? 'true' : 'false'
+                            }))}
+                            className={`relative w-12 h-6 rounded-full transition-colors ${
+                                system.emailVerificationRequired !== 'false' ? 'bg-primary' : 'bg-border'
+                            }`}
+                        >
+                            <span className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-all shadow ${
+                                system.emailVerificationRequired !== 'false' ? 'left-7' : 'left-1'
+                            }`}/>
+                        </button>
+                    </div> */}
                     <Field label="Domínio obrigatório">
                         <div className="flex items-center gap-2 p-4 bg-background border-2 border-border rounded-2xl focus-within:border-primary transition-all">
                             <span className="text-muted font-bold text-sm">@</span>
