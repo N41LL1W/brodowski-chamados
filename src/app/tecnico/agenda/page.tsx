@@ -306,7 +306,7 @@ function AgendaSection({ title, items, empty, muted, children }: any) {
 function VisitaCard({ visita, muted }: any) {
     const data = new Date(visita.visitDate);
     return (
-        <Link href={`/tecnico/chamado/${visita.id}`}>
+        <Link href={`/tecnico/chamado/${visita.id}/detalhes`}>
             <div className={`p-5 rounded-3xl border transition-all hover:shadow-md flex items-center gap-4 group ${muted ? 'bg-card/50 border-border opacity-70' : 'bg-card border-border hover:border-blue-300 dark:hover:border-blue-700'}`}>
                 <div className="shrink-0 w-14 h-14 rounded-2xl bg-blue-50 dark:bg-blue-900/20 flex flex-col items-center justify-center border border-blue-100 dark:border-blue-900/30">
                     <span className="text-[9px] font-black text-blue-600 uppercase">

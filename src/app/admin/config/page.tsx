@@ -99,6 +99,7 @@ export default function MasterConfigPage() {
         { id: 'dashboard',   label: 'Dashboard',   icon: BarChart3 },
         { id: 'categorias',  label: 'Categorias',  icon: LayoutGrid },
         { id: 'secretarias', label: 'Secretarias', icon: Building2 },
+        { id: 'locais',      label: 'Locais',      icon: MapPin },
         { id: 'sla',         label: 'SLA',         icon: Clock },
         { id: 'sistema',     label: 'Sistema',     icon: Settings2 },
         { id: 'temas',       label: 'Temas',       icon: Palette },
@@ -109,7 +110,6 @@ export default function MasterConfigPage() {
         { id: 'horarios',    label: 'Horários',    icon: Calendar },
         { id: 'mensagens',   label: 'Mensagens',   icon: MessageSquare },
         { id: 'termos',      label: 'Termos',      icon: BookOpen },
-        { id: 'locais', label: 'Locais', icon: MapPin },
         { id: 'auditoria',   label: 'Auditoria',   icon: History },
     ];
 
@@ -154,6 +154,7 @@ export default function MasterConfigPage() {
             {activeTab === 'dashboard'    && <TabDashboard/>}
             {activeTab === 'categorias'   && <TabCategorias   showFeedback={showFeedback}/>}
             {activeTab === 'secretarias'  && <TabSecretarias  showFeedback={showFeedback}/>}
+            {activeTab === 'locais'       && <TabLocais       showFeedback={showFeedback}/>}
             {activeTab === 'sla'          && <TabSLA          showFeedback={showFeedback}/>}
             {activeTab === 'sistema'      && <TabSistema      showFeedback={showFeedback}/>}
             {activeTab === 'temas'        && <TabTemas        showFeedback={showFeedback}/>}
@@ -164,7 +165,6 @@ export default function MasterConfigPage() {
             {activeTab === 'horarios'     && <TabHorarios     showFeedback={showFeedback}/>}
             {activeTab === 'mensagens'    && <TabMensagens    showFeedback={showFeedback}/>}
             {activeTab === 'termos'       && <TabTermos       showFeedback={showFeedback}/>}
-            {activeTab === 'locais' && <TabLocais showFeedback={showFeedback}/>}
             {activeTab === 'auditoria'    && <TabAuditoria/>}
         </div>
     );
@@ -1146,37 +1146,79 @@ function TabSLA({ showFeedback }: any) {
 }
 
 function TabSistema({ showFeedback }: any) {
-    const [system, setSystem] = useState({ systemName: 'TI BRODOWSKI', systemSubtitle: 'Central de Operações', cityName: 'Brodowski', supportPhone: '', supportEmail: '', primaryColor: '#2563eb', logoText: 'TI', allowedDomain: '', registrationOpen: 'true', maintenanceMode: 'false', maintenanceMessage: 'Sistema em manutenção. Voltamos em breve.' });
+    const [system, setSystem] = useState({
+        systemName: 'TI BRODOWSKI',
+        systemSubtitle: 'Central de Operações',
+        cityName: 'Brodowski',
+        supportPhone: '',
+        supportEmail: '',
+        primaryColor: '#2563eb',
+        logoText: 'TI',
+        allowedDomain: '',
+        registrationOpen: 'true',
+        emailVerificationRequired: 'true',
+        maintenanceMode: 'false',
+        maintenanceMessage: 'Sistema em manutenção. Voltamos em breve.',
+    });
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
 
-    useEffect(() => { fetch('/api/master/config').then(r => r.json()).then(data => { if (data.system) setSystem(p => ({ ...p, ...data.system })); }).finally(() => setLoading(false)); }, []);
+    useEffect(() => { 
+        fetch('/api/master/config')
+            .then(r => r.json())
+            .then(data => { 
+                if (data.system) setSystem(p => ({ ...p, ...data.system })); 
+            })
+            .finally(() => setLoading(false)); 
+    }, []);
 
     const save = async () => {
         setSaving(true);
         try {
-            await Promise.all(Object.entries(system).map(([key, value]) => fetch('/api/master/config', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ type: 'system', data: { key, value } }) })));
+            await Promise.all(Object.entries(system).map(([key, value]) => 
+                fetch('/api/master/config', { 
+                    method: 'POST', 
+                    headers: { 'Content-Type': 'application/json' }, 
+                    body: JSON.stringify({ type: 'system', data: { key, value } }) 
+                })
+            ));
             showFeedback('success', 'Configurações salvas! Recarregue a página.');
-        } finally { setSaving(false); }
+        } finally { 
+            setSaving(false); 
+        }
     };
 
     const exportConfig = () => {
         const blob = new Blob([JSON.stringify(system, null, 2)], { type: 'application/json' });
         const url = URL.createObjectURL(blob);
-        const a = document.createElement('a'); a.href = url; a.download = `config-${new Date().toISOString().slice(0,10)}.json`; a.click(); URL.revokeObjectURL(url);
+        const a = document.createElement('a'); 
+        a.href = url; 
+        a.download = `config-${new Date().toISOString().slice(0,10)}.json`; 
+        a.click(); 
+        URL.revokeObjectURL(url);
     };
 
     const importConfig = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const file = e.target.files?.[0]; if (!file) return;
+        const file = e.target.files?.[0]; 
+        if (!file) return;
         const reader = new FileReader();
-        reader.onload = (ev) => { try { setSystem(p => ({ ...p, ...JSON.parse(ev.target?.result as string) })); showFeedback('success', 'Importado! Clique em Salvar.'); } catch { showFeedback('error', 'Arquivo inválido.'); } };
-        reader.readAsText(file); e.target.value = '';
+        reader.onload = (ev) => { 
+            try { 
+                setSystem(p => ({ ...p, ...JSON.parse(ev.target?.result as string) })); 
+                showFeedback('success', 'Importado! Clique em Salvar.'); 
+            } catch { 
+                showFeedback('error', 'Arquivo inválido.'); 
+            } 
+        };
+        reader.readAsText(file); 
+        e.target.value = '';
     };
 
     if (loading) return <Spinner/>;
 
     return (
         <div className="space-y-5">
+            {/* Bloco de Manutenção */}
             <div className={`border-2 rounded-3xl p-5 space-y-4 ${system.maintenanceMode === 'true' ? 'border-amber-400 bg-amber-50 dark:bg-amber-900/10' : 'border-border bg-card'}`}>
                 <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
@@ -1191,6 +1233,8 @@ function TabSistema({ showFeedback }: any) {
                     <textarea value={system.maintenanceMessage} onChange={e => setSystem(p => ({...p, maintenanceMessage: e.target.value}))} className="w-full p-3 bg-white dark:bg-slate-900 border-2 border-amber-300 rounded-2xl outline-none text-sm font-medium text-foreground resize-none h-20"/>
                 )}
             </div>
+
+            {/* Identidade */}
             <SectionBox title="Identidade" icon={<Type size={12}/>}>
                 <div className="grid md:grid-cols-2 gap-4">
                     <Field label="Nome"><input value={system.systemName} onChange={e => setSystem(p => ({...p, systemName: e.target.value}))} className={inputCls}/></Field>
@@ -1199,12 +1243,16 @@ function TabSistema({ showFeedback }: any) {
                     <Field label="Sigla (máx 4)"><input value={system.logoText} onChange={e => setSystem(p => ({...p, logoText: e.target.value.slice(0,4)}))} className={inputCls} maxLength={4}/></Field>
                 </div>
             </SectionBox>
+
+            {/* Contato */}
             <SectionBox title="Contato" icon={<Phone size={12}/>}>
                 <div className="grid md:grid-cols-2 gap-4">
                     <Field label="Telefone"><input value={system.supportPhone} onChange={e => setSystem(p => ({...p, supportPhone: e.target.value}))} className={inputCls} placeholder="(16) 3664-0000"/></Field>
                     <Field label="E-mail"><input value={system.supportEmail} onChange={e => setSystem(p => ({...p, supportEmail: e.target.value}))} className={inputCls} placeholder="ti@brodowski.sp.gov.br"/></Field>
                 </div>
             </SectionBox>
+
+            {/* Cor Primária */}
             <SectionBox title="Cor primária" icon={<Palette size={12}/>}>
                 <div className="flex items-center gap-4">
                     <input type="color" value={system.primaryColor} onChange={e => setSystem(p => ({...p, primaryColor: e.target.value}))} className="w-14 h-14 rounded-2xl border-2 border-border cursor-pointer bg-transparent"/>
@@ -1217,15 +1265,20 @@ function TabSistema({ showFeedback }: any) {
                     ))}
                 </div>
             </SectionBox>
+
+            {/* Controle de Acesso */}
             <SectionBox title="Controle de acesso" icon={<Lock size={12}/>}>
                 <div className="space-y-4">
+                    {/* Toggle: Auto-registro */}
                     <div className="flex items-center justify-between p-4 bg-background rounded-2xl border border-border">
                         <div><p className="text-sm font-black text-foreground">Permitir auto-registro</p><p className="text-[10px] text-muted">Usuários criam conta pela página de registro</p></div>
                         <button onClick={() => setSystem(p => ({...p, registrationOpen: p.registrationOpen === 'true' ? 'false' : 'true'}))} className={`relative w-12 h-6 rounded-full transition-colors ${system.registrationOpen === 'true' ? 'bg-primary' : 'bg-border'}`}>
                             <span className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-all shadow ${system.registrationOpen === 'true' ? 'left-7' : 'left-1'}`}/>
                         </button>
                     </div>
-                    {/* <div className="flex items-center justify-between p-4 bg-background rounded-2xl border border-border">
+
+                    {/* Toggle: Verificação de E-mail (Adicionado aqui) */}
+                    <div className="flex items-center justify-between p-4 bg-background rounded-2xl border border-border">
                         <div>
                             <p className="text-sm font-black text-foreground">Verificação de e-mail obrigatória</p>
                             <p className="text-[10px] text-muted">Novos usuários precisam confirmar o e-mail antes de acessar</p>
@@ -1243,7 +1296,9 @@ function TabSistema({ showFeedback }: any) {
                                 system.emailVerificationRequired !== 'false' ? 'left-7' : 'left-1'
                             }`}/>
                         </button>
-                    </div> */}
+                    </div>
+
+                    {/* Input: Domínio */}
                     <Field label="Domínio obrigatório">
                         <div className="flex items-center gap-2 p-4 bg-background border-2 border-border rounded-2xl focus-within:border-primary transition-all">
                             <span className="text-muted font-bold text-sm">@</span>
@@ -1252,6 +1307,8 @@ function TabSistema({ showFeedback }: any) {
                     </Field>
                 </div>
             </SectionBox>
+
+            {/* Backup */}
             <SectionBox title="Backup" icon={<Download size={12}/>}>
                 <div className="flex gap-3">
                     <button onClick={exportConfig} className="flex-1 flex items-center justify-center gap-2 p-4 bg-slate-900 text-white rounded-2xl font-black uppercase text-[11px] hover:opacity-90 transition-all"><Download size={15}/> Exportar JSON</button>
@@ -1260,13 +1317,14 @@ function TabSistema({ showFeedback }: any) {
                     </label>
                 </div>
             </SectionBox>
+
+            {/* Botão Salvar */}
             <button onClick={save} disabled={saving} className="w-full flex items-center justify-center gap-2 p-5 bg-primary text-white rounded-2xl font-black uppercase text-[11px] hover:opacity-90 disabled:opacity-50 transition-all">
                 <Save size={15}/> {saving ? 'Salvando...' : 'Salvar configurações'}
             </button>
         </div>
     );
 }
-
 function TabPerfis({ showFeedback }: any) {
     const [permissions, setPermissions] = useState<Record<string, Record<string, boolean>>>(DEFAULT_PERMISSIONS);
     const [loading, setLoading] = useState(true);
