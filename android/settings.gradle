@@ -15,4 +15,7 @@ dependencyResolutionManagement {
 }
 
 rootProject.name = "brodowski-chamados"
+
+apply from: file("capacitor.settings.gradle")
+
 include ':app'
