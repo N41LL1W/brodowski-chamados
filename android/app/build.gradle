@@ -2,12 +2,12 @@ apply plugin: 'com.android.application'
 
 android {
     namespace "br.gov.brodowski.chamados"
-    compileSdk 34
+    compileSdk 36
 
     defaultConfig {
         applicationId "br.gov.brodowski.chamados"
         minSdk 23
-        targetSdk 34
+        targetSdk 36
         versionCode 1
         versionName "1.0"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
