@@ -1,55 +1,58 @@
-//src/app/api/tickets/route.ts
-
-import { NextResponse } from 'next/server';
+import { NextResponse, NextRequest } from 'next/server';
 import prisma from '@/lib/prisma';
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import { getServerSession } from 'next-auth';
+import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 import {
     sendTicketOpenedEmail,
     sendNewTicketNotificationEmail
 } from '@/lib/email';
 
-export async function GET() {
-    const session = await getServerSession(authOptions);
+export async function GET(req: NextRequest) {
+    try {
+        const session = await getServerSession(authOptions);
+        if (!session?.user) return new NextResponse('Não autorizado', { status: 401 });
 
-    if (!session || !session.user) {
-        return new NextResponse('Não autorizado', { status: 401 });
+        const user = session.user as any;
+        const { searchParams } = new URL(req.url);
+        const status = searchParams.get('status');
+
+        const where: any = {};
+        if (user.role === 'FUNCIONARIO') where.requesterId = user.id;
+        if (status) where.status = status;
+
+        const tickets = await prisma.ticket.findMany({
+            where,
+            include: {
+                requester:  { select: { id: true, name: true } },
+                category:   { select: { id: true, name: true } },
+                department: { select: { id: true, name: true } },
+                assignedTo: { select: { id: true, name: true } },
+                _count:     { select: { comments: true } }
+            },
+            orderBy: { createdAt: 'desc' }
+        });
+
+        return NextResponse.json(tickets);
+    } catch (error) {
+        console.error('[TICKETS_GET_ERROR]:', error);
+        return NextResponse.json({ error: 'Erro interno' }, { status: 500 });
     }
-
-    const user = session.user as any;
-
-    // Filtro estrito: independente da role, busca apenas o que o usuário logado abriu
-    const tickets = await prisma.ticket.findMany({
-        where: {
-            requesterId: user.id
-        },
-        include: {
-            requester: { select: { name: true } },
-            category: { select: { name: true } },
-            department: { select: { name: true } },
-            assignedTo: { select: { name: true } }
-        },
-        orderBy: { createdAt: 'desc' }
-    });
-
-    return NextResponse.json(tickets);
 }
 
-export async function POST(req: Request) {
+export async function POST(req: NextRequest) {
     const session = await getServerSession(authOptions);
     if (!session || !session.user) return new NextResponse('Não autorizado', { status: 401 });
 
     try {
         const { subject, description, priority, categoryId, departmentId, location } = await req.json();
         const userId = (session.user as any).id;
-        const protocol = `${new Date().toISOString().slice(0,10).replace(/-/g, '')}-${Math.floor(1000 + Math.random() * 9000)}`;
+        const protocol = `${new Date().toISOString().slice(0, 10).replace(/-/g, '')}-${Math.floor(1000 + Math.random() * 9000)}`;
 
-        // Busca a categoria — primeiro na CategoryConfig, depois na Category original
+        // Garante que a categoria existe na tabela Category
         let finalCategoryId = categoryId;
         try {
             const catConfig = await (prisma as any).categoryConfig.findUnique({ where: { id: categoryId } });
             if (catConfig) {
-                // Garante que existe na tabela Category (cria se não existir)
                 const existing = await prisma.category.findUnique({ where: { id: categoryId } });
                 if (!existing) {
                     await prisma.category.create({
@@ -76,7 +79,7 @@ export async function POST(req: Request) {
             }
         });
 
-        // Após criar o ticket, busca dados do solicitante e envia e-mails
+        // Envia e-mails — não bloqueia a resposta
         try {
             const fullTicket = await prisma.ticket.findUnique({
                 where: { id: newTicket.id },
@@ -87,7 +90,6 @@ export async function POST(req: Request) {
             });
 
             if (fullTicket?.requester?.email) {
-                // Confirma para o solicitante
                 await sendTicketOpenedEmail(
                     fullTicket.requester.email,
                     fullTicket.requester.name || 'Usuário',
@@ -100,12 +102,13 @@ export async function POST(req: Request) {
                 );
             }
 
-            // Notifica todos os técnicos
+            // Notifica técnicos
             const tecnicos = await prisma.user.findMany({
                 where: { role: 'TECNICO', active: true },
                 select: { email: true }
             });
             const emails = tecnicos.map(t => t.email).filter(Boolean) as string[];
+
             if (emails.length) {
                 await sendNewTicketNotificationEmail(emails, {
                     protocol:   fullTicket!.protocol,
@@ -116,7 +119,6 @@ export async function POST(req: Request) {
                 });
             }
         } catch (emailError) {
-            // E-mail não bloqueia a criação do chamado
             console.error('[EMAIL] Erro não crítico:', emailError);
         }
 

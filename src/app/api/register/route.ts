@@ -14,7 +14,7 @@ export async function POST(request: Request) {
             return NextResponse.json({ message: 'Dados incompletos.' }, { status: 400 });
         }
 
-        // Verifica configs
+        // Verifica configs do sistema
         const configs = await prisma.systemConfig.findMany({
             where: { key: { in: ['registrationOpen', 'allowedDomain', 'emailVerificationRequired'] } }
         });
@@ -22,14 +22,20 @@ export async function POST(request: Request) {
         configs.forEach(c => { cfg[c.key] = c.value; });
 
         if (cfg.registrationOpen === 'false') {
-            return NextResponse.json({ message: 'Auto-registro desativado. Contate o administrador.' }, { status: 403 });
+            return NextResponse.json(
+                { message: 'Auto-registro desativado. Contate o administrador.' },
+                { status: 403 }
+            );
         }
 
         const domain = cfg.allowedDomain?.trim();
         if (domain) {
             const emailDomain = email.split('@')[1]?.toLowerCase();
             if (emailDomain !== domain.toLowerCase()) {
-                return NextResponse.json({ message: `Apenas e-mails @${domain} podem se registrar.` }, { status: 403 });
+                return NextResponse.json(
+                    { message: `Apenas e-mails @${domain} podem se registrar.` },
+                    { status: 403 }
+                );
             }
         }
 
@@ -43,23 +49,29 @@ export async function POST(request: Request) {
 
         const newUser = await prisma.user.create({
             data: {
-                name, email, passwordHash,
+                name,
+                email,
+                passwordHash,
                 role: 'FUNCIONARIO',
-                // Se verificação obrigatória, emailVerified fica null até confirmar
                 emailVerified: requireVerification ? null : new Date(),
             }
         });
 
         if (requireVerification) {
             const token = crypto.randomBytes(32).toString('hex');
-            const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000);
+            const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24h
 
             await (prisma as any).emailVerification.create({
                 data: { userId: newUser.id, token, expiresAt }
             });
 
-            // Envia e-mail real
-            await sendVerificationEmail(email, name, token);
+            // Envia e-mail real via Gmail SMTP
+            const emailSent = await sendVerificationEmail(email, name, token);
+
+            if (!emailSent) {
+                console.warn('[REGISTER] Falha ao enviar e-mail para:', email);
+                // Não bloqueia o cadastro — só avisa no log
+            }
 
             return NextResponse.json({
                 id: newUser.id,
@@ -69,10 +81,16 @@ export async function POST(request: Request) {
             }, { status: 201 });
         }
 
-        return NextResponse.json({ id: newUser.id, email: newUser.email }, { status: 201 });
+        return NextResponse.json(
+            { id: newUser.id, email: newUser.email },
+            { status: 201 }
+        );
 
     } catch (error: any) {
         console.error('ERRO NO REGISTRO:', error);
-        return NextResponse.json({ message: 'Erro interno.', details: error.message }, { status: 500 });
+        return NextResponse.json(
+            { message: 'Erro interno.', details: error.message },
+            { status: 500 }
+        );
     }
 }

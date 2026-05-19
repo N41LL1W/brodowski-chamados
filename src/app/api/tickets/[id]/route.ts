@@ -1,5 +1,3 @@
-//src/app/api/tickets/[id]/route.ts
-
 import { NextResponse, NextRequest } from 'next/server';
 import prisma from '@/lib/prisma';
 import { getServerSession } from "next-auth";
@@ -17,7 +15,7 @@ type RouteContext = {
 export async function GET(req: NextRequest, { params }: RouteContext) {
     try {
         const session = await getServerSession(authOptions);
-        const { id } = await params; // Aguarda o params conforme exigido pelo Next 16
+        const { id } = await params;
 
         if (!session?.user) {
             return new NextResponse('Não autorizado', { status: 401 });
@@ -33,12 +31,12 @@ export async function GET(req: NextRequest, { params }: RouteContext) {
                 department: true,
                 assignedTo: { select: { id: true, name: true } },
                 comments: {
-                    select: { 
+                    select: {
                         id: true,
                         content: true,
                         proofImage: true,
                         createdAt: true,
-                        user: { select: { id: true, name: true, role: true, image: true } } 
+                        user: { select: { id: true, name: true, role: true, image: true } }
                     },
                     orderBy: { createdAt: 'desc' }
                 }
@@ -50,7 +48,7 @@ export async function GET(req: NextRequest, { params }: RouteContext) {
         }
 
         const isOwner = ticket.requesterId === user.id;
-        const isStaff = ['TECNICO', 'ADMIN', 'MASTER'].includes(user.role);
+        const isStaff = ['TECNICO', 'ADMIN', 'MASTER', 'CONTROLADOR'].includes(user.role);
 
         if (!isOwner && !isStaff) {
             return NextResponse.json({ message: "Acesso negado" }, { status: 403 });
@@ -80,19 +78,19 @@ export async function POST(req: NextRequest, { params }: RouteContext) {
             return NextResponse.json({ error: "O comentário não pode estar vazio" }, { status: 400 });
         }
 
-        const finalContent = isInternal 
-            ? `[INTERNO] ${content || 'Anexo de imagem'}` 
+        const finalContent = isInternal
+            ? `[INTERNO] ${content || 'Anexo de imagem'}`
             : (content || "Foto anexada ao chamado");
 
         const comment = await prisma.comment.create({
-            data: { 
-                content: finalContent, 
+            data: {
+                content: finalContent,
                 proofImage: proofImage || null,
-                ticketId: id, 
-                userId: user.id 
+                ticketId: id,
+                userId: user.id
             },
-            include: { 
-                user: { select: { name: true, role: true } } 
+            include: {
+                user: { select: { name: true, role: true } }
             }
         });
 
@@ -108,7 +106,7 @@ export async function PATCH(req: NextRequest, { params }: RouteContext) {
     try {
         const session = await getServerSession(authOptions);
         if (!session?.user) return new NextResponse('Não autorizado', { status: 401 });
-        
+
         const { id } = await params;
         const { action, proofImage, ...body } = await req.json();
         const user = session.user as any;
@@ -141,41 +139,42 @@ export async function PATCH(req: NextRequest, { params }: RouteContext) {
             data: updateData,
         });
 
+        // Envia e-mails após atualizar — não bloqueia a resposta se falhar
+        try {
+            const fullTicket = await prisma.ticket.findUnique({
+                where: { id },
+                include: {
+                    requester:  { select: { name: true, email: true } },
+                    assignedTo: { select: { name: true } },
+                }
+            });
+
+            if (fullTicket?.requester?.email) {
+                if (action === 'ASSUMIR') {
+                    await sendTicketAssignedEmail(
+                        fullTicket.requester.email,
+                        fullTicket.requester.name || 'Usuário',
+                        { protocol: fullTicket.protocol, subject: fullTicket.subject },
+                        fullTicket.assignedTo?.name || 'Técnico'
+                    );
+                }
+
+                if (action === 'FINALIZAR') {
+                    await sendTicketClosedEmail(
+                        fullTicket.requester.email,
+                        fullTicket.requester.name || 'Usuário',
+                        { protocol: fullTicket.protocol, subject: fullTicket.subject },
+                        fullTicket.assignedTo?.name || 'Técnico'
+                    );
+                }
+            }
+        } catch (emailError) {
+            console.error('[EMAIL] Erro não crítico:', emailError);
+        }
+
         return NextResponse.json(updatedTicket);
     } catch (error: any) {
         console.error("[TICKET_PATCH_ERROR]:", error);
         return NextResponse.json({ error: error.message }, { status: 500 });
     }
 }
-
-// Após atualizar o ticket:
-try {
-    const fullTicket = await prisma.ticket.findUnique({
-        where: { id },
-        include: {
-            requester:  { select: { name: true, email: true } },
-            assignedTo: { select: { name: true } },
-        }
-    });
-
-    if (action === 'ASSUMIR' && fullTicket?.requester?.email) {
-        await sendTicketAssignedEmail(
-            fullTicket.requester.email,
-            fullTicket.requester.name || 'Usuário',
-            { protocol: fullTicket.protocol, subject: fullTicket.subject },
-            fullTicket.assignedTo?.name || 'Técnico'
-        );
-    }
-
-    if (action === 'FINALIZAR' && fullTicket?.requester?.email) {
-        await sendTicketClosedEmail(
-            fullTicket.requester.email,
-            fullTicket.requester.name || 'Usuário',
-            { protocol: fullTicket.protocol, subject: fullTicket.subject },
-            fullTicket.assignedTo?.name || 'Técnico'
-        );
-    }
-} catch (emailError) {
-    console.error('[EMAIL] Erro não crítico:', emailError);
-}
-
