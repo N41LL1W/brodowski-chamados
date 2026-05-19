@@ -19,16 +19,29 @@ export default function LoginPage() {
   }, [status]);
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError(null);
-    setIsLoading(true);
-    const result = await signIn('credentials', { redirect: false, email, password });
-    if (result?.error) {
-      setError('Acesso negado. Verifique suas credenciais.');
-      setIsLoading(false);
-    } else {
-      window.location.href = "/";
-    }
+      e.preventDefault();
+      setError(null);
+      setIsLoading(true);
+
+      const result = await signIn('credentials', {
+          redirect: false,
+          email,
+          password
+      });
+
+      if (result?.error) {
+          // Trata erros específicos
+          if (result.error.includes('desativada')) {
+              setError('Conta desativada. Contate o administrador do sistema.');
+          } else if (result.error.includes('verificado')) {
+              setError('E-mail não verificado. Verifique sua caixa de entrada.');
+          } else {
+              setError('E-mail ou senha incorretos.');
+          }
+          setIsLoading(false);
+      } else {
+          window.location.href = '/';
+      }
   };
 
   if (status === "loading") return null;

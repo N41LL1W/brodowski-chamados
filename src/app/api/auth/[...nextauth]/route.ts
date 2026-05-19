@@ -1,70 +1,76 @@
-//src/app/api/auth/[...nextauth]/route.ts
-
-import NextAuth, { NextAuthOptions } from "next-auth";
+import NextAuth from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import prisma from "@/lib/prisma";
 import bcrypt from "bcryptjs";
+import { NextAuthOptions } from "next-auth";
 
 export const authOptions: NextAuthOptions = {
-  providers: [
-    CredentialsProvider({
-      name: "Credentials",
-      credentials: {
-        email: { label: "Email", type: "text" },
-        password: { label: "Senha", type: "password" }
-      },
-      async authorize(credentials) {
-        if (!credentials?.email || !credentials?.password) return null;
+    providers: [
+        CredentialsProvider({
+            name: "credentials",
+            credentials: {
+                email:    { label: "Email",    type: "email" },
+                password: { label: "Password", type: "password" },
+            },
+            async authorize(credentials) {
+                if (!credentials?.email || !credentials?.password) return null;
 
-        const user = await prisma.user.findUnique({
-          where: { email: credentials.email }
-        });
+                const user = await prisma.user.findUnique({
+                    where: { email: credentials.email }
+                });
 
-        console.log("--- TENTATIVA DE LOGIN ---");
-        console.log("Email:", credentials.email);
+                if (!user || !user.passwordHash) return null;
 
-        if (!user || !user.passwordHash) {
-          console.log("DEBUG: Usuário não encontrado.");
-          return null;
-        }
+                // BLOQUEIA usuário inativo
+                if (user.active === false) {
+                    throw new Error('Conta desativada. Contate o administrador.');
+                }
 
-        const isPasswordValid = await bcrypt.compare(
-          credentials.password,
-          user.passwordHash
-        );
+                // BLOQUEIA e-mail não verificado (se verificação estiver ativa)
+                const emailVerificationConfig = await prisma.systemConfig.findUnique({
+                    where: { key: 'emailVerificationRequired' }
+                });
+                const requireVerification = emailVerificationConfig?.value !== 'false';
 
-        console.log("DEBUG: Senha correta?", isPasswordValid);
+                if (requireVerification && !user.emailVerified) {
+                    throw new Error('E-mail não verificado. Verifique sua caixa de entrada.');
+                }
 
-        if (!isPasswordValid) return null;
+                const isValid = await bcrypt.compare(credentials.password, user.passwordHash);
+                if (!isValid) return null;
 
-        return {
-          id: user.id,
-          name: user.name,
-          email: user.email,
-          role: user.role,
-        };
-      }
-    })
-  ],
-  callbacks: {
-    async jwt({ token, user }) {
-      if (user) {
-        token.role = (user as any).role;
-        token.id = user.id;
-      }
-      return token;
+                return {
+                    id:    user.id,
+                    name:  user.name,
+                    email: user.email,
+                    image: user.image,
+                    role:  user.role,
+                };
+            },
+        }),
+    ],
+    callbacks: {
+        async jwt({ token, user }) {
+            if (user) {
+                token.id   = user.id;
+                token.role = (user as any).role;
+            }
+            return token;
+        },
+        async session({ session, token }) {
+            if (token && session.user) {
+                (session.user as any).id   = token.id;
+                (session.user as any).role = token.role;
+            }
+            return session;
+        },
     },
-    async session({ session, token }) {
-      if (session.user) {
-        (session.user as any).role = token.role;
-        (session.user as any).id = token.id;
-      }
-      return session;
-    }
-  },
-  pages: { signIn: "/login" },
-  session: { strategy: "jwt" },
-  secret: process.env.NEXTAUTH_SECRET,
+    pages: {
+        signIn: '/login',
+        error:  '/login',
+    },
+    session: { strategy: "jwt" },
+    secret: process.env.NEXTAUTH_SECRET,
 };
 
 const handler = NextAuth(authOptions);

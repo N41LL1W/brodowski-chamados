@@ -1,284 +1,297 @@
-// src/app/meus-chamados/[id]/page.tsx
 "use client";
 
-import { useState, useEffect, use } from 'react';
-import Link from "next/link";
-import { 
-    Clock, Wrench, CheckCircle2, ArrowLeft, 
-    Tag, MapPin, Send, MessageSquare, User, Lock, Download, Camera
-} from "lucide-react";
+import { useEffect, useState, use } from 'react';
+import Link from 'next/link';
+import {
+    ArrowLeft, MapPin, Clock, Tag, Building2,
+    MessageSquare, Send, Camera, UploadCloud,
+    CheckCircle2, AlertTriangle, X, User,
+    Download, Calendar
+} from 'lucide-react';
 import { PDFDownloadLink } from '@react-pdf/renderer';
 import { TicketPDF } from '@/components/TicketPDF';
 
-export default function TicketDetailPage({ params }: { params: Promise<{ id: string }> }) {
+const STATUS_LABEL: Record<string, string> = {
+    ABERTO: 'Aberto', OPEN: 'Aberto',
+    EM_ANDAMENTO: 'Em andamento', IN_PROGRESS: 'Em andamento',
+    EM_PAUSA: 'Pausado',
+    CONCLUIDO: 'Concluído', CONCLUDED: 'Concluído',
+};
+
+const STATUS_STYLE: Record<string, string> = {
+    ABERTO:       'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400',
+    OPEN:         'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400',
+    EM_ANDAMENTO: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400',
+    IN_PROGRESS:  'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400',
+    EM_PAUSA:     'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400',
+    CONCLUIDO:    'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400',
+    CONCLUDED:    'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400',
+};
+
+const PRIORITY_STYLE: Record<string, string> = {
+    URGENTE: 'text-red-600 bg-red-50 dark:bg-red-900/20',
+    ALTA:    'text-amber-600 bg-amber-50 dark:bg-amber-900/20',
+    NORMAL:  'text-blue-600 bg-blue-50 dark:bg-blue-900/20',
+    BAIXA:   'text-slate-500 bg-slate-50 dark:bg-slate-800',
+};
+
+export default function MeuChamadoPage({ params }: { params: Promise<{ id: string }> }) {
     const { id } = use(params);
     const [ticket, setTicket] = useState<any>(null);
-    const [newComment, setNewComment] = useState("");
-    const [chatImage, setChatImage] = useState<string | null>(null);
     const [loading, setLoading] = useState(true);
-    const [errorStatus, setErrorStatus] = useState<number | null>(null);
+    const [message, setMessage] = useState('');
+    const [photo, setPhoto] = useState<string | null>(null);
+    const [sending, setSending] = useState(false);
+    const [selectedImg, setSelectedImg] = useState<string | null>(null);
 
-    const loadData = async () => {
-        try {
-            const res = await fetch(`/api/tickets/${id}`);
-            if (res.ok) {
-                const data = await res.json();
-                setTicket(data);
-            } else {
-                setErrorStatus(res.status);
-            }
-        } catch (err) {
-            console.error("Erro ao carregar dados:", err);
-        } finally {
-            setLoading(false);
-        }
+    const loadTicket = async () => {
+        const res = await fetch(`/api/tickets/${id}`);
+        if (res.ok) setTicket(await res.json());
+        setLoading(false);
     };
 
-    useEffect(() => { loadData(); }, [id]);
+    useEffect(() => { loadTicket(); }, [id]);
 
-    const handleSendComment = async () => {
-        if (!newComment.trim() && !chatImage) return;
+    const sendMessage = async () => {
+        if (!message.trim() && !photo) return;
+        setSending(true);
         try {
-            const res = await fetch(`/api/tickets/${id}`, {
+            await fetch(`/api/tickets/${id}`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ 
-                    content: newComment || "Foto anexada ao chamado.",
-                    proofImage: chatImage || null
-                })
+                body: JSON.stringify({ content: message, proofImage: photo })
             });
-            if (res.ok) {
-                setNewComment("");
-                setChatImage(null);
-                loadData();
-            }
-        } catch (err) {
-            console.error("Erro no chat:", err);
-        }
+            setMessage('');
+            setPhoto(null);
+            loadTicket();
+        } finally { setSending(false); }
     };
 
+    const isClosed = ticket && ['CONCLUIDO', 'CONCLUDED'].includes(ticket.status);
+
+    const publicComments = ticket?.comments?.filter((c: any) =>
+        !c.content.includes('[INTERNO]') && !c.content.startsWith('[VISITA]')
+    ) || [];
+
     if (loading) return (
-        <div className="min-h-screen flex items-center justify-center bg-background">
-            <div className="text-center animate-pulse">
-                <div className="w-16 h-16 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-                <p className="font-black text-muted uppercase tracking-widest">Sincronizando Protocolo...</p>
-            </div>
+        <div className="flex items-center justify-center h-[70vh]">
+            <div className="w-8 h-8 border-4 border-border border-t-primary rounded-full animate-spin"/>
         </div>
     );
 
-    if (errorStatus === 403) return (
-        <div className="min-h-screen flex flex-col items-center justify-center p-6 text-center bg-background">
-            <div className="bg-red-50 dark:bg-red-900/20 p-8 rounded-full mb-6">
-                <Lock size={64} className="text-red-500" />
-            </div>
-            <h1 className="text-3xl font-black text-foreground uppercase tracking-tighter">Acesso Restrito</h1>
-            <p className="text-muted mt-2 max-w-md italic">Este chamado não pertence a você.</p>
-            <Link href="/meus-chamados" className="mt-8 bg-slate-900 dark:bg-blue-600 text-white px-8 py-3 rounded-2xl font-bold hover:scale-105 transition-all">
-                Voltar aos meus pedidos
-            </Link>
+    if (!ticket) return (
+        <div className="flex items-center justify-center h-[70vh]">
+            <p className="text-muted font-bold">Chamado não encontrado.</p>
         </div>
     );
-
-    if (!ticket) return null;
-
-    const statusSteps = ['ABERTO', 'EM_ANDAMENTO', 'CONCLUIDO'];
-    const currentStep = statusSteps.indexOf(ticket.status);
 
     return (
-        <div className="max-w-7xl mx-auto py-10 px-6 animate-in fade-in duration-500">
-            <Link href="/meus-chamados" className="group inline-flex items-center gap-2 text-muted hover:text-blue-600 transition-all font-bold mb-8">
-                <div className="p-2 rounded-xl group-hover:bg-blue-50 dark:group-hover:bg-blue-900/20 transition-colors">
-                    <ArrowLeft size={20} />
+        <div className="min-h-screen bg-background pb-8">
+            {/* VISUALIZADOR DE IMAGEM */}
+            {selectedImg && (
+                <div className="fixed inset-0 z-50 bg-black/90 flex items-center justify-center p-4"
+                    onClick={() => setSelectedImg(null)}>
+                    <img src={selectedImg} className="max-w-full max-h-full rounded-2xl" alt="Imagem"/>
                 </div>
-                Voltar para meus pedidos
-            </Link>
+            )}
 
-            <div className="grid lg:grid-cols-3 gap-8">
-                {/* COLUNA PRINCIPAL */}
-                <div className="lg:col-span-2 space-y-6">
-                    <div className="bg-card rounded-[3rem] shadow-2xl shadow-slate-200/50 dark:shadow-none border border-border overflow-hidden">
-                        
-                        {/* HEADER DO CHAMADO */}
-                        <div className="bg-slate-900 dark:bg-slate-950 p-10 text-white flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
-                            <div className="flex flex-col md:flex-row md:items-center gap-6">
-                                <div>
-                                    <p className="text-blue-400 text-[10px] font-black uppercase tracking-[0.3em] mb-2">Protocolo Oficial</p>
-                                    <h1 className="text-3xl font-mono font-bold tracking-tighter">{ticket.protocol}</h1>
-                                </div>
-                                <PDFDownloadLink 
-                                    document={<TicketPDF ticket={ticket} />} 
-                                    fileName={`comprovante-${ticket.protocol}.pdf`}
-                                    className="flex items-center gap-2 bg-slate-800 hover:bg-slate-700 text-slate-300 px-4 py-2 rounded-xl border border-slate-700 text-[10px] font-black uppercase mt-2 md:mt-6"
-                                >
-                                    {({ loading }) => loading ? '...' : <><Download size={14} /> PDF</>}
-                                </PDFDownloadLink>
-                            </div>
-                            <span className="bg-blue-600 px-6 py-2.5 rounded-2xl text-xs font-black uppercase">
-                                {ticket.status.replace('_', ' ')}
-                            </span>
+            {/* HEADER STICKY */}
+            <div className="bg-card border-b border-border sticky top-0 z-30 px-4 py-3">
+                <div className="max-w-3xl mx-auto flex items-center gap-3">
+                    <Link href="/meus-chamados"
+                        className="p-2 hover:bg-background rounded-xl transition-colors text-foreground shrink-0">
+                        <ArrowLeft size={20}/>
+                    </Link>
+                    <div className="flex-1 min-w-0">
+                        <p className="text-[10px] font-black uppercase tracking-widest text-muted">
+                            #{ticket.protocol}
+                        </p>
+                        <h1 className="text-sm font-black text-foreground uppercase truncate leading-tight">
+                            {ticket.subject}
+                        </h1>
+                    </div>
+                    <span className={`text-[9px] font-black px-3 py-1.5 rounded-full uppercase shrink-0 ${STATUS_STYLE[ticket.status] || 'bg-border text-muted'}`}>
+                        {STATUS_LABEL[ticket.status] || ticket.status}
+                    </span>
+                </div>
+            </div>
+
+            <div className="max-w-3xl mx-auto px-4 pt-5 space-y-4">
+
+                {/* CARD INFO PRINCIPAL */}
+                <div className="bg-card border border-border rounded-3xl p-5 space-y-4">
+
+                    {/* STATUS + PRIORIDADE */}
+                    <div className="flex flex-wrap gap-2">
+                        <span className={`text-[10px] font-black px-3 py-1.5 rounded-full uppercase ${STATUS_STYLE[ticket.status] || 'bg-border text-muted'}`}>
+                            {STATUS_LABEL[ticket.status]}
+                        </span>
+                        <span className={`text-[10px] font-black px-3 py-1.5 rounded-full uppercase ${PRIORITY_STYLE[ticket.priority] || 'bg-border text-muted'}`}>
+                            {ticket.priority}
+                        </span>
+                    </div>
+
+                    {/* DESCRIÇÃO */}
+                    {ticket.description && (
+                        <div className="p-4 bg-background rounded-2xl border border-border">
+                            <p className="text-sm text-foreground leading-relaxed italic">
+                                "{ticket.description}"
+                            </p>
                         </div>
+                    )}
 
-                        {/* BARRA DE PROGRESSO */}
-                        <div className="p-10 bg-background/50 dark:bg-slate-900/50 border-b border-border">
-                            <div className="flex justify-between relative z-10">
-                                {statusSteps.map((step, idx) => {
-                                    const isActive = idx <= currentStep;
-                                    return (
-                                        <div key={step} className="flex flex-col items-center gap-3">
-                                            <div className={`w-14 h-14 rounded-full flex items-center justify-center transition-all ${
-                                                isActive 
-                                                    ? 'bg-blue-600 text-white shadow-xl shadow-blue-200 dark:shadow-none scale-110' 
-                                                    : 'bg-card border-2 border-border text-slate-300'
-                                            }`}>
-                                                {idx === 0 && <Clock size={24} />}
-                                                {idx === 1 && <Wrench size={24} />}
-                                                {idx === 2 && <CheckCircle2 size={24} />}
-                                            </div>
-                                            <span className={`text-[10px] font-black uppercase ${isActive ? 'text-blue-600' : 'text-muted'}`}>
-                                                {step.replace('_', ' ')}
+                    {/* GRID DE INFOS — responsivo */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <InfoItem icon={<User size={14}/>}      label="Solicitante" value={ticket.requester?.name}/>
+                        <InfoItem icon={<Building2 size={14}/>} label="Secretaria"  value={ticket.department?.name}/>
+                        <InfoItem icon={<Tag size={14}/>}       label="Categoria"   value={ticket.category?.name}/>
+                        <InfoItem icon={<Clock size={14}/>}     label="Aberto em"   value={new Date(ticket.createdAt).toLocaleString('pt-BR')}/>
+                        {ticket.location && (
+                            <InfoItem icon={<MapPin size={14}/>} label="Local" value={ticket.location}/>
+                        )}
+                        {ticket.assignedTo && (
+                            <InfoItem icon={<User size={14}/>} label="Técnico" value={ticket.assignedTo.name}/>
+                        )}
+                    </div>
+
+                    {/* VISITA */}
+                    {ticket.visitDate && (
+                        <div className="flex items-center gap-3 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-2xl border border-blue-200 dark:border-blue-800">
+                            <Calendar size={16} className="text-blue-600 shrink-0"/>
+                            <div>
+                                <p className="text-[10px] font-black uppercase text-blue-600 dark:text-blue-400">Visita agendada</p>
+                                <p className="text-sm font-bold text-blue-700 dark:text-blue-300">
+                                    {new Date(ticket.visitDate).toLocaleString('pt-BR')}
+                                </p>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* FOTO DE CONCLUSÃO */}
+                    {ticket.proofImage && (
+                        <div>
+                            <p className="text-[10px] font-black uppercase text-muted mb-2 flex items-center gap-1">
+                                <Camera size={11}/> Evidência
+                            </p>
+                            <img src={ticket.proofImage} onClick={() => setSelectedImg(ticket.proofImage)}
+                                className="w-full max-h-48 object-cover rounded-2xl cursor-pointer hover:opacity-90 border border-border"
+                                alt="Evidência"/>
+                        </div>
+                    )}
+
+                    {/* DOWNLOAD PDF */}
+                    {isClosed && (
+                        <PDFDownloadLink
+                            document={<TicketPDF ticket={ticket}/>}
+                            fileName={`chamado-${ticket.protocol}.pdf`}
+                            className="flex items-center justify-center gap-2 p-3 bg-foreground text-background rounded-2xl font-black uppercase text-[11px] hover:opacity-90 transition-all w-full"
+                        >
+                            {({ loading }) => (
+                                <><Download size={15}/>{loading ? 'Preparando...' : 'Baixar comprovante PDF'}</>
+                            )}
+                        </PDFDownloadLink>
+                    )}
+                </div>
+
+                {/* HISTÓRICO DE MENSAGENS */}
+                <div className="bg-card border border-border rounded-3xl overflow-hidden">
+                    <div className="px-5 py-4 border-b border-border flex items-center gap-2 bg-background/50">
+                        <MessageSquare size={14} className="text-muted"/>
+                        <p className="text-[10px] font-black uppercase tracking-widest text-muted">
+                            Histórico ({publicComments.length})
+                        </p>
+                    </div>
+
+                    <div className="max-h-80 overflow-y-auto divide-y divide-border/50">
+                        {publicComments.length === 0 && (
+                            <p className="text-center text-muted text-[10px] py-8 font-bold uppercase">
+                                Nenhuma mensagem ainda.
+                            </p>
+                        )}
+                        {[...publicComments].reverse().map((c: any) => {
+                            const isTecnico = ['TECNICO', 'ADMIN', 'MASTER'].includes(c.user?.role);
+                            return (
+                                <div key={c.id} className={`p-4 flex gap-3 ${isTecnico ? 'bg-slate-50 dark:bg-slate-900/30' : ''}`}>
+                                    <div className={`w-8 h-8 rounded-xl flex items-center justify-center text-xs font-black shrink-0 ${isTecnico ? 'bg-primary text-white' : 'bg-border text-foreground'}`}>
+                                        {c.user?.name?.charAt(0)?.toUpperCase()}
+                                    </div>
+                                    <div className="flex-1 min-w-0">
+                                        <div className="flex items-center gap-2 flex-wrap mb-1">
+                                            <span className="text-[10px] font-black text-foreground">{c.user?.name}</span>
+                                            {isTecnico && (
+                                                <span className="text-[8px] font-black uppercase bg-primary/10 text-primary px-1.5 py-0.5 rounded">
+                                                    Técnico
+                                                </span>
+                                            )}
+                                            <span className="text-[9px] text-muted ml-auto">
+                                                {new Date(c.createdAt).toLocaleString('pt-BR', { day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit' })}
                                             </span>
                                         </div>
-                                    );
-                                })}
-                            </div>
-                        </div>
-
-                        {/* DETALHES DO CHAMADO */}
-                        <div className="p-10 space-y-10">
-                            <section>
-                                <h2 className="text-[10px] font-black text-muted uppercase tracking-widest mb-4">Assunto & Descrição</h2>
-                                <h3 className="text-2xl font-bold text-foreground mb-4 tracking-tight">{ticket.subject}</h3>
-                                <div className="bg-background p-8 rounded-3xl border border-border text-muted italic text-lg">
-                                    "{ticket.description}"
-                                </div>
-                            </section>
-
-                            <div className="grid md:grid-cols-2 gap-6">
-                                <div className="flex items-center gap-4 p-6 bg-card border border-border rounded-3xl">
-                                    <div className="p-4 bg-blue-50 dark:bg-blue-900/20 text-blue-600 rounded-2xl">
-                                        <Tag size={24}/>
-                                    </div>
-                                    <div>
-                                        <p className="text-[10px] font-black text-muted uppercase tracking-widest">Categoria</p>
-                                        <p className="text-lg font-bold text-foreground">{ticket.category?.name || "Geral"}</p>
+                                        <p className="text-sm text-foreground leading-relaxed">{c.content}</p>
+                                        {c.proofImage && (
+                                            <img src={c.proofImage} onClick={() => setSelectedImg(c.proofImage)}
+                                                className="mt-2 rounded-xl max-h-40 w-full object-cover cursor-pointer hover:opacity-90 border border-border"
+                                                alt="Anexo"/>
+                                        )}
                                     </div>
                                 </div>
-                                <div className="flex items-center gap-4 p-6 bg-card border border-border rounded-3xl">
-                                    <div className="p-4 bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 rounded-2xl">
-                                        <MapPin size={24}/>
-                                    </div>
-                                    <div>
-                                        <p className="text-[10px] font-black text-muted uppercase tracking-widest">Localização</p>
-                                        <p className="text-lg font-bold text-foreground">{ticket.location || "Não informada"}</p>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
+                            );
+                        })}
                     </div>
-                </div>
 
-                {/* COLUNA DO CHAT */}
-                <div className="lg:col-span-1">
-                    <div className="bg-card rounded-[3rem] shadow-2xl border border-border overflow-hidden flex flex-col h-[750px]">
-                        
-                        {/* HEADER DO CHAT */}
-                        <div className="p-8 bg-slate-900 dark:bg-slate-950 text-white flex items-center justify-between">
-                            <div className="flex items-center gap-3">
-                                <MessageSquare className="text-blue-400" size={20} />
-                                <h2 className="text-xs font-black uppercase tracking-widest">Atendimento</h2>
-                            </div>
-                        </div>
-
-                        {/* MENSAGENS */}
-                        <div className="flex-1 overflow-y-auto p-6 space-y-6 bg-background/30">
-                            {ticket.comments?.map((c: any) => {
-                                const isMe = c.userId === ticket.requesterId;
-                                return (
-                                    <div key={c.id} className={`flex flex-col ${isMe ? 'items-end' : 'items-start'}`}>
-                                        <div className={`max-w-[90%] p-5 rounded-3xl text-sm ${
-                                            isMe 
-                                                ? 'bg-blue-600 text-white rounded-tr-none' 
-                                                : 'bg-card text-foreground rounded-tl-none border border-border shadow-sm'
-                                        }`}>
-                                            <p className={`text-[8px] font-black uppercase mb-2 ${isMe ? 'text-blue-100' : 'text-muted'}`}>
-                                                {c.user?.name}
-                                            </p>
-                                            {c.content !== "Foto anexada ao chamado." && (
-                                                <p className="font-semibold">{c.content}</p>
-                                            )}
-                                            {/* FOTO NO COMENTÁRIO */}
-                                            {c.proofImage && (
-                                                <img 
-                                                    src={c.proofImage} 
-                                                    className="mt-2 rounded-xl max-w-full cursor-pointer hover:opacity-90 transition-opacity border border-white/10"
-                                                    onClick={() => window.open(c.proofImage, '_blank')}
-                                                    alt="Foto anexada"
-                                                />
-                                            )}
-                                        </div>
-                                    </div>
-                                );
-                            })}
-                        </div>
-
-                        {/* INPUT DO CHAT */}
-                        <div className="p-6 bg-card border-t border-border">
-
-                            {/* PREVIEW DA IMAGEM */}
-                            {chatImage && (
-                                <div className="mb-3 relative inline-block">
-                                    <img 
-                                        src={chatImage} 
-                                        className="h-20 w-20 object-cover rounded-xl border-2 border-blue-500" 
-                                        alt="Preview"
-                                    />
-                                    <button
-                                        onClick={() => setChatImage(null)}
-                                        className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs font-black"
-                                    >
-                                        ×
+                    {/* INPUT DE MENSAGEM */}
+                    {!isClosed && (
+                        <div className="p-4 border-t border-border bg-background/50">
+                            {photo && (
+                                <div className="relative mb-3">
+                                    <img src={photo} className="w-full max-h-32 object-cover rounded-xl border border-primary" alt="Preview"/>
+                                    <button onClick={() => setPhoto(null)}
+                                        className="absolute top-2 right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center">
+                                        <X size={12}/>
                                     </button>
                                 </div>
                             )}
-
-                            <div className="flex gap-3 bg-background p-2 rounded-3xl border-2 border-border focus-within:border-blue-500 transition-all">
-                                
-                                {/* BOTÃO DE FOTO */}
-                                <label className="cursor-pointer p-3 text-muted hover:text-blue-600 transition-colors shrink-0">
-                                    <Camera size={20} />
-                                    <input
-                                        type="file"
-                                        accept="image/*"
-                                        className="hidden"
-                                        onChange={(e) => {
-                                            const file = e.target.files?.[0];
-                                            if (!file) return;
-                                            const reader = new FileReader();
-                                            reader.onloadend = () => setChatImage(reader.result as string);
-                                            reader.readAsDataURL(file);
-                                            e.target.value = '';
-                                        }}
-                                    />
-                                </label>
-
-                                <input 
-                                    className="flex-1 bg-transparent px-2 outline-none text-sm font-bold text-foreground"
-                                    placeholder="Digite sua dúvida ou anexe uma foto..."
-                                    value={newComment}
-                                    onChange={(e) => setNewComment(e.target.value)}
-                                    onKeyDown={(e) => e.key === 'Enter' && !chatImage && handleSendComment()}
+                            <div className="flex gap-2">
+                                <textarea value={message} onChange={e => setMessage(e.target.value)}
+                                    placeholder="Escreva uma mensagem ou atualização..."
+                                    className="flex-1 p-3 bg-background border-2 border-border rounded-2xl outline-none focus:border-primary text-sm font-medium text-foreground resize-none h-12 min-h-12 max-h-32 placeholder:text-muted/50 transition-all"
+                                    onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); } }}
                                 />
-                                <button 
-                                    onClick={handleSendComment}
-                                    disabled={!newComment.trim() && !chatImage}
-                                    className="p-4 bg-blue-600 text-white rounded-2xl hover:bg-blue-700 active:scale-95 transition-all disabled:opacity-40"
-                                >
-                                    <Send size={18} />
-                                </button>
+                                <div className="flex flex-col gap-2">
+                                    <label className="p-3 bg-background border-2 border-border rounded-2xl text-muted hover:border-primary hover:text-primary transition-all cursor-pointer shrink-0">
+                                        <Camera size={16}/>
+                                        <input type="file" accept="image/*" className="hidden"
+                                            onChange={e => {
+                                                const file = e.target.files?.[0];
+                                                if (!file) return;
+                                                const reader = new FileReader();
+                                                reader.onloadend = () => setPhoto(reader.result as string);
+                                                reader.readAsDataURL(file);
+                                                e.target.value = '';
+                                            }}/>
+                                    </label>
+                                    <button onClick={sendMessage} disabled={sending || (!message.trim() && !photo)}
+                                        className="p-3 bg-primary text-white rounded-2xl hover:opacity-90 disabled:opacity-40 transition-all shrink-0">
+                                        <Send size={16}/>
+                                    </button>
+                                </div>
                             </div>
                         </div>
-                    </div>
+                    )}
                 </div>
+            </div>
+        </div>
+    );
+}
+
+function InfoItem({ icon, label, value }: any) {
+    if (!value) return null;
+    return (
+        <div className="flex items-start gap-3 p-3 bg-background rounded-2xl border border-border">
+            <div className="p-1.5 bg-card rounded-lg text-muted shrink-0">{icon}</div>
+            <div className="min-w-0">
+                <p className="text-[9px] font-black text-muted uppercase tracking-widest">{label}</p>
+                <p className="text-sm font-bold text-foreground truncate">{value}</p>
             </div>
         </div>
     );
