@@ -4,6 +4,10 @@ import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import {
+    sendTicketOpenedEmail,
+    sendNewTicketNotificationEmail
+} from '@/lib/email';
 
 export async function GET() {
     const session = await getServerSession(authOptions);
@@ -71,6 +75,50 @@ export async function POST(req: Request) {
                 departmentId,
             }
         });
+
+        // Após criar o ticket, busca dados do solicitante e envia e-mails
+        try {
+            const fullTicket = await prisma.ticket.findUnique({
+                where: { id: newTicket.id },
+                include: {
+                    requester:  { select: { name: true, email: true } },
+                    department: { select: { name: true } },
+                }
+            });
+
+            if (fullTicket?.requester?.email) {
+                // Confirma para o solicitante
+                await sendTicketOpenedEmail(
+                    fullTicket.requester.email,
+                    fullTicket.requester.name || 'Usuário',
+                    {
+                        protocol: fullTicket.protocol,
+                        subject:  fullTicket.subject,
+                        priority: fullTicket.priority,
+                        location: fullTicket.location || '',
+                    }
+                );
+            }
+
+            // Notifica todos os técnicos
+            const tecnicos = await prisma.user.findMany({
+                where: { role: 'TECNICO', active: true },
+                select: { email: true }
+            });
+            const emails = tecnicos.map(t => t.email).filter(Boolean) as string[];
+            if (emails.length) {
+                await sendNewTicketNotificationEmail(emails, {
+                    protocol:   fullTicket!.protocol,
+                    subject:    fullTicket!.subject,
+                    priority:   fullTicket!.priority,
+                    location:   fullTicket!.location || '',
+                    department: fullTicket?.department?.name || '',
+                });
+            }
+        } catch (emailError) {
+            // E-mail não bloqueia a criação do chamado
+            console.error('[EMAIL] Erro não crítico:', emailError);
+        }
 
         return NextResponse.json(newTicket, { status: 201 });
     } catch (error: any) {

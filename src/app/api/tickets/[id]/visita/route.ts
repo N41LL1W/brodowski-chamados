@@ -2,6 +2,7 @@ import { NextResponse, NextRequest } from 'next/server';
 import prisma from '@/lib/prisma';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/app/api/auth/[...nextauth]/route';
+import { sendVisitScheduledEmail } from '@/lib/email';
 
 type RouteContext = { params: Promise<{ id: string }> };
 
@@ -33,6 +34,29 @@ export async function POST(req: NextRequest, { params }: RouteContext) {
             userId: user.id,
         }
     });
+    // Após salvar:
+    try {
+        const fullTicket = await prisma.ticket.findUnique({
+            where: { id },
+            include: {
+                requester:  { select: { name: true, email: true } },
+                assignedTo: { select: { name: true } },
+            }
+        });
+
+        if (fullTicket?.requester?.email) {
+            await sendVisitScheduledEmail(
+                fullTicket.requester.email,
+                fullTicket.requester.name || 'Usuário',
+                { protocol: fullTicket.protocol, subject: fullTicket.subject },
+                new Date(visitDate).toLocaleString('pt-BR'),
+                fullTicket.assignedTo?.name || 'Técnico',
+                visitNote
+            );
+        }
+    } catch (emailError) {
+        console.error('[EMAIL] Erro não crítico:', emailError);
+    }
 
     return NextResponse.json({ success: true });
 }

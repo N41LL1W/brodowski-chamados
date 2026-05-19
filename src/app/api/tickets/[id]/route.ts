@@ -4,6 +4,10 @@ import { NextResponse, NextRequest } from 'next/server';
 import prisma from '@/lib/prisma';
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import {
+    sendTicketAssignedEmail,
+    sendTicketClosedEmail
+} from '@/lib/email';
 
 type RouteContext = {
     params: Promise<{ id: string }>;
@@ -142,5 +146,36 @@ export async function PATCH(req: NextRequest, { params }: RouteContext) {
         console.error("[TICKET_PATCH_ERROR]:", error);
         return NextResponse.json({ error: error.message }, { status: 500 });
     }
+}
+
+// Após atualizar o ticket:
+try {
+    const fullTicket = await prisma.ticket.findUnique({
+        where: { id },
+        include: {
+            requester:  { select: { name: true, email: true } },
+            assignedTo: { select: { name: true } },
+        }
+    });
+
+    if (action === 'ASSUMIR' && fullTicket?.requester?.email) {
+        await sendTicketAssignedEmail(
+            fullTicket.requester.email,
+            fullTicket.requester.name || 'Usuário',
+            { protocol: fullTicket.protocol, subject: fullTicket.subject },
+            fullTicket.assignedTo?.name || 'Técnico'
+        );
+    }
+
+    if (action === 'FINALIZAR' && fullTicket?.requester?.email) {
+        await sendTicketClosedEmail(
+            fullTicket.requester.email,
+            fullTicket.requester.name || 'Usuário',
+            { protocol: fullTicket.protocol, subject: fullTicket.subject },
+            fullTicket.assignedTo?.name || 'Técnico'
+        );
+    }
+} catch (emailError) {
+    console.error('[EMAIL] Erro não crítico:', emailError);
 }
 

@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import bcrypt from 'bcryptjs';
 import prisma from '@/lib/prisma';
 import crypto from 'crypto';
+import { sendVerificationEmail } from '@/lib/email';
 
 export const dynamic = 'force-dynamic';
 
@@ -50,24 +51,20 @@ export async function POST(request: Request) {
         });
 
         if (requireVerification) {
-            // Gera token de verificação
             const token = crypto.randomBytes(32).toString('hex');
-            const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24h
+            const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000);
 
             await (prisma as any).emailVerification.create({
                 data: { userId: newUser.id, token, expiresAt }
             });
 
-            // Por enquanto retorna o link de verificação na resposta
-            // Em produção, enviar por e-mail via SMTP
-            const verifyUrl = `${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/api/verificar-email?token=${token}`;
+            // Envia e-mail real
+            await sendVerificationEmail(email, name, token);
 
             return NextResponse.json({
                 id: newUser.id,
                 email: newUser.email,
                 needsVerification: true,
-                // Em dev, retorna o link. Em prod, enviar por e-mail
-                verifyUrl: process.env.NODE_ENV === 'development' ? verifyUrl : undefined,
                 message: 'Conta criada! Verifique seu e-mail para ativar o acesso.'
             }, { status: 201 });
         }
