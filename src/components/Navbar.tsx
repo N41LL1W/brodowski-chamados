@@ -26,6 +26,12 @@ export default function Navbar() {
             ? "text-primary font-bold border-b-2 border-primary pb-1"
             : "opacity-70 hover:opacity-100 hover:text-primary transition-all";
 
+    const isTecnicoActive = (p: string) => {
+    if (p === '/tecnico') return pathname === '/tecnico' || 
+        (pathname.startsWith('/tecnico/') && !pathname.startsWith('/tecnico/agenda'));
+    return pathname === p || pathname.startsWith(p + '/');
+    };
+
     const isTecnico     = role === 'TECNICO';
     const isControlador = role === 'CONTROLADOR';
     const isMaster      = role === 'MASTER';
@@ -62,7 +68,9 @@ export default function Navbar() {
                         )}
                         {isLogged && isTecnico && (
                             <div className="relative">
-                                <Link href="/tecnico" className={isActive("/tecnico")}>Painel Técnico</Link>
+                                <Link href="/tecnico" className={`${isTecnicoActive('/tecnico') ? 'text-primary font-bold border-b-2 border-primary pb-1' : 'opacity-70 hover:opacity-100 hover:text-primary transition-all'}`}>
+                                    Painel Técnico
+                                </Link>
                                 <NotificacaoBadge/>
                             </div>
                         )}
@@ -97,11 +105,11 @@ export default function Navbar() {
                 {isLogged && <MobileNavLink href="/meus-chamados" icon={<ListChecks size={20}/>} active={pathname.startsWith("/meus-chamados")} />}
                 {isLogged && isTecnico && (
                     <div className="relative">
-                        <MobileNavLink href="/tecnico" icon={<LayoutDashboard size={20}/>} active={pathname.startsWith("/tecnico") && !pathname.startsWith("/tecnico/agenda")} />
+                            <MobileNavLink href="/tecnico" icon={<LayoutDashboard size={20}/>} active={pathname === '/tecnico' || (pathname.startsWith('/tecnico/') && !pathname.startsWith('/tecnico/agenda'))}/>
                         <NotificacaoBadge/>
                     </div>
                 )}
-                {isLogged && isTecnico && <MobileNavLink href="/tecnico/agenda" icon={<CalendarClock size={20}/>} active={pathname.startsWith("/tecnico/agenda")} />}
+                {isLogged && isTecnico && <MobileNavLink href="/tecnico/agenda" icon={<CalendarClock size={20}/>} active={pathname.startsWith('/tecnico/agenda')}/>}
                 {isLogged && isControlador && <MobileNavLink href="/controlador" icon={<History size={20}/>} active={pathname.startsWith("/controlador")} />}
                 {isLogged && isMaster && <MobileNavLink href="/admin" icon={<Terminal size={20} className="text-red-500"/>} active={pathname.startsWith("/admin")} />}
                 {isLogged && <MobileNavLink href="/conta" icon={<UserCircle2 size={20}/>} active={pathname === "/conta"} />}
