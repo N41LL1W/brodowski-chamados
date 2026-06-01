@@ -27,9 +27,9 @@ export default function Navbar() {
             : "opacity-70 hover:opacity-100 hover:text-primary transition-all";
 
     const isTecnicoActive = (p: string) => {
-    if (p === '/tecnico') return pathname === '/tecnico' || 
-        (pathname.startsWith('/tecnico/') && !pathname.startsWith('/tecnico/agenda'));
-    return pathname === p || pathname.startsWith(p + '/');
+        if (p === '/tecnico') return pathname === '/tecnico' || 
+            (pathname.startsWith('/tecnico/') && !pathname.startsWith('/tecnico/agenda'));
+        return pathname === p || pathname.startsWith(p + '/');
     };
 
     const isTecnico     = role === 'TECNICO';
