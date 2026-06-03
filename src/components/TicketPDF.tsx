@@ -92,12 +92,20 @@ function fmtDate(d: any) {
 }
 
 // Garante que o valor é string legível, não um ID técnico
+// function safe(value: any): string {
+//     if (!value) return '—';
+//     if (typeof value === 'string') {
+//         // Se parece um CUID (começa com c e tem 25+ chars sem espaço), retorna —
+//         if (/^c[a-z0-9]{20,}$/.test(value)) return '—';
+//         return value;
+//     }
+//     return String(value);
+// }
+
 function safe(value: any): string {
-    if (!value) return '—';
-    if (typeof value === 'string') {
-        // Se parece um CUID (começa com c e tem 25+ chars sem espaço), retorna —
-        if (/^c[a-z0-9]{20,}$/.test(value)) return '—';
-        return value;
+    // Se o valor for nulo, undefined ou string vazia, retorna um texto padrão
+    if (!value || value === null || value === undefined || value === '') {
+        return 'Não informado';
     }
     return String(value);
 }
@@ -187,7 +195,7 @@ export const TicketPDF = ({ ticket, systemName, cityName }: {
                     </View>
                     <View style={styles.infoItem}>
                         <Text style={styles.infoLabel}>Técnico responsável</Text>
-                        <Text style={styles.infoValue}>{assignedName}</Text>
+                        <Text style={styles.infoValueNormal}>{safe(ticket.assignedTo?.name) || 'Não informado'}</Text>
                     </View>
                     <View style={styles.infoItem}>
                         <Text style={styles.infoLabel}>Abertura</Text>
@@ -217,7 +225,7 @@ export const TicketPDF = ({ ticket, systemName, cityName }: {
                     <View style={[styles.timelineDot, { backgroundColor: '#f59e0b' }]}/>
                     <View style={styles.timelineContent}>
                         <Text style={styles.timelineTitle}>Chamado aberto</Text>
-                        <Text style={styles.timelineSub}>Por: {requesterName}</Text>
+                        <Text style={styles.timelineSub}>Por: {safe(ticket.assignedTo?.name) || 'Não informado'}</Text>
                         <Text style={styles.timelineTime}>{fmt(ticket.createdAt)}</Text>
                     </View>
                 </View>
