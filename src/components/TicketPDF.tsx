@@ -91,17 +91,6 @@ function fmtDate(d: any) {
     return new Date(d).toLocaleDateString('pt-BR');
 }
 
-// Garante que o valor é string legível, não um ID técnico
-// function safe(value: any): string {
-//     if (!value) return '—';
-//     if (typeof value === 'string') {
-//         // Se parece um CUID (começa com c e tem 25+ chars sem espaço), retorna —
-//         if (/^c[a-z0-9]{20,}$/.test(value)) return '—';
-//         return value;
-//     }
-//     return String(value);
-// }
-
 function safe(value: any): string {
     // Se o valor for nulo, undefined ou string vazia, retorna um texto padrão
     if (!value || value === null || value === undefined || value === '') {
@@ -173,15 +162,15 @@ export const TicketPDF = ({ ticket, systemName, cityName }: {
                 <View style={styles.infoGrid}>
                     <View style={styles.infoItem}>
                         <Text style={styles.infoLabel}>Solicitante</Text>
-                        <Text style={styles.infoValueNormal}>{safe(ticket.requester?.name) || 'Não informada'}</Text>
+                        <Text style={styles.infoValueNormal}>{safe(ticket.requester?.name)}</Text>
                     </View>
                     <View style={styles.infoItem}>
                         <Text style={styles.infoLabel}>Secretaria / Departamento</Text>
-                        <Text style={styles.infoValueNormal}>{safe(ticket.department?.name) || 'Não informada'}</Text>
+                        <Text style={styles.infoValueNormal}>{safe(ticket.department?.name)}</Text>
                     </View>
                     <View style={styles.infoItem}>
                         <Text style={styles.infoLabel}>Categoria</Text>
-                        <Text style={styles.infoValueNormal}>{safe(ticket.category?.name) || 'Não informada'}</Text>
+                        <Text style={styles.infoValueNormal}>{safe(ticket.category?.name)}</Text>
                     </View>
                     <View style={styles.infoItem}>
                         <Text style={styles.infoLabel}>Prioridade</Text>
@@ -191,11 +180,11 @@ export const TicketPDF = ({ ticket, systemName, cityName }: {
                     </View>
                     <View style={styles.infoItem}>
                         <Text style={styles.infoLabel}>Localização</Text>
-                        <Text style={styles.infoValueNormal}>{safe(ticket.location) || 'Não informada'}</Text>
+                        <Text style={styles.infoValueNormal}>{safe(ticket.location)}</Text>
                     </View>
                     <View style={styles.infoItem}>
-                        <Text style={styles.infoLabel}>Técnico responsável</Text>
-                        <Text style={styles.infoValueNormal}>{safe(ticket.assignedTo?.name) || 'Não informado'}</Text>
+                        <Text style={styles.infoLabel}>Técnico responsável (Assumido por)</Text>
+                        <Text style={styles.infoValueNormal}>{safe(ticket.assignedTo?.name)}</Text>
                     </View>
                     <View style={styles.infoItem}>
                         <Text style={styles.infoLabel}>Abertura</Text>
