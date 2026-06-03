@@ -162,15 +162,15 @@ export const TicketPDF = ({ ticket, systemName, cityName }: {
                 <View style={styles.infoGrid}>
                     <View style={styles.infoItem}>
                         <Text style={styles.infoLabel}>Solicitante</Text>
-                        <Text style={styles.infoValueNormal}>{safe(ticket.requester?.name)}</Text>
+                        <Text style={styles.infoValueNormal}>{requesterName}</Text>
                     </View>
                     <View style={styles.infoItem}>
                         <Text style={styles.infoLabel}>Secretaria / Departamento</Text>
-                        <Text style={styles.infoValueNormal}>{ticket.department?.name}</Text>
+                        <Text style={styles.infoValueNormal}>{departName}</Text>
                     </View>
                     <View style={styles.infoItem}>
                         <Text style={styles.infoLabel}>Categoria</Text>
-                        <Text style={styles.infoValueNormal}>{safe(ticket.category?.name)}</Text>
+                        <Text style={styles.infoValueNormal}>{categoryName}</Text>
                     </View>
                     <View style={styles.infoItem}>
                         <Text style={styles.infoLabel}>Prioridade</Text>
