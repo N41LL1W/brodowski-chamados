@@ -166,7 +166,7 @@ export const TicketPDF = ({ ticket, systemName, cityName }: {
                     </View>
                     <View style={styles.infoItem}>
                         <Text style={styles.infoLabel}>Secretaria / Departamento</Text>
-                        <Text style={styles.infoValueNormal}>{safe(ticket.department?.name)}</Text>
+                        <Text style={styles.infoValueNormal}>{ticket.department?.name}</Text>
                     </View>
                     <View style={styles.infoItem}>
                         <Text style={styles.infoLabel}>Categoria</Text>
