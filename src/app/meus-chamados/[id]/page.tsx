@@ -4,12 +4,13 @@ import { useEffect, useState, use } from 'react';
 import Link from 'next/link';
 import {
     ArrowLeft, MapPin, Clock, Tag, Building2,
-    MessageSquare, Send, Camera, UploadCloud,
-    CheckCircle2, AlertTriangle, X, User,
+    MessageSquare, Send, Camera,
+    CheckCircle2, X, User,
     Download, Calendar
 } from 'lucide-react';
 import { PDFDownloadLink } from '@react-pdf/renderer';
 import { TicketPDF } from '@/components/TicketPDF';
+import { useSystemConfig } from '@/components/SystemConfigProvider';
 
 const STATUS_LABEL: Record<string, string> = {
     ABERTO: 'Aberto', OPEN: 'Aberto',
@@ -37,6 +38,8 @@ const PRIORITY_STYLE: Record<string, string> = {
 
 export default function MeuChamadoPage({ params }: { params: Promise<{ id: string }> }) {
     const { id } = use(params);
+    const sysConfig = useSystemConfig(); // ← DENTRO do componente
+
     const [ticket, setTicket] = useState<any>(null);
     const [loading, setLoading] = useState(true);
     const [message, setMessage] = useState('');
@@ -87,6 +90,7 @@ export default function MeuChamadoPage({ params }: { params: Promise<{ id: strin
 
     return (
         <div className="min-h-screen bg-background pb-8">
+
             {/* VISUALIZADOR DE IMAGEM */}
             {selectedImg && (
                 <div className="fixed inset-0 z-50 bg-black/90 flex items-center justify-center p-4"
@@ -118,10 +122,9 @@ export default function MeuChamadoPage({ params }: { params: Promise<{ id: strin
 
             <div className="max-w-3xl mx-auto px-4 pt-5 space-y-4">
 
-                {/* CARD INFO PRINCIPAL */}
+                {/* CARD INFO */}
                 <div className="bg-card border border-border rounded-3xl p-5 space-y-4">
 
-                    {/* STATUS + PRIORIDADE */}
                     <div className="flex flex-wrap gap-2">
                         <span className={`text-[10px] font-black px-3 py-1.5 rounded-full uppercase ${STATUS_STYLE[ticket.status] || 'bg-border text-muted'}`}>
                             {STATUS_LABEL[ticket.status]}
@@ -131,7 +134,6 @@ export default function MeuChamadoPage({ params }: { params: Promise<{ id: strin
                         </span>
                     </div>
 
-                    {/* DESCRIÇÃO */}
                     {ticket.description && (
                         <div className="p-4 bg-background rounded-2xl border border-border">
                             <p className="text-sm text-foreground leading-relaxed italic">
@@ -140,7 +142,6 @@ export default function MeuChamadoPage({ params }: { params: Promise<{ id: strin
                         </div>
                     )}
 
-                    {/* GRID DE INFOS — responsivo */}
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         <InfoItem icon={<User size={14}/>}      label="Solicitante" value={ticket.requester?.name}/>
                         <InfoItem icon={<Building2 size={14}/>} label="Secretaria"  value={ticket.department?.name}/>
@@ -154,7 +155,6 @@ export default function MeuChamadoPage({ params }: { params: Promise<{ id: strin
                         )}
                     </div>
 
-                    {/* VISITA */}
                     {ticket.visitDate && (
                         <div className="flex items-center gap-3 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-2xl border border-blue-200 dark:border-blue-800">
                             <Calendar size={16} className="text-blue-600 shrink-0"/>
@@ -167,22 +167,28 @@ export default function MeuChamadoPage({ params }: { params: Promise<{ id: strin
                         </div>
                     )}
 
-                    {/* FOTO DE CONCLUSÃO */}
                     {ticket.proofImage && (
                         <div>
                             <p className="text-[10px] font-black uppercase text-muted mb-2 flex items-center gap-1">
                                 <Camera size={11}/> Evidência
                             </p>
-                            <img src={ticket.proofImage} onClick={() => setSelectedImg(ticket.proofImage)}
+                            <img src={ticket.proofImage}
+                                onClick={() => setSelectedImg(ticket.proofImage)}
                                 className="w-full max-h-48 object-cover rounded-2xl cursor-pointer hover:opacity-90 border border-border"
                                 alt="Evidência"/>
                         </div>
                     )}
 
-                    {/* DOWNLOAD PDF */}
+                    {/* PDF — usa ticket (não createdTicket) */}
                     {isClosed && (
                         <PDFDownloadLink
-                            document={<TicketPDF ticket={ticket}/>}
+                            document={
+                                <TicketPDF
+                                    ticket={ticket}
+                                    systemName={sysConfig.systemName}
+                                    cityName={sysConfig.cityName}
+                                />
+                            }
                             fileName={`chamado-${ticket.protocol}.pdf`}
                             className="flex items-center justify-center gap-2 p-3 bg-foreground text-background rounded-2xl font-black uppercase text-[11px] hover:opacity-90 transition-all w-full"
                         >
@@ -193,7 +199,7 @@ export default function MeuChamadoPage({ params }: { params: Promise<{ id: strin
                     )}
                 </div>
 
-                {/* HISTÓRICO DE MENSAGENS */}
+                {/* HISTÓRICO */}
                 <div className="bg-card border border-border rounded-3xl overflow-hidden">
                     <div className="px-5 py-4 border-b border-border flex items-center gap-2 bg-background/50">
                         <MessageSquare size={14} className="text-muted"/>
@@ -224,12 +230,13 @@ export default function MeuChamadoPage({ params }: { params: Promise<{ id: strin
                                                 </span>
                                             )}
                                             <span className="text-[9px] text-muted ml-auto">
-                                                {new Date(c.createdAt).toLocaleString('pt-BR', { day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit' })}
+                                                {new Date(c.createdAt).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })}
                                             </span>
                                         </div>
                                         <p className="text-sm text-foreground leading-relaxed">{c.content}</p>
                                         {c.proofImage && (
-                                            <img src={c.proofImage} onClick={() => setSelectedImg(c.proofImage)}
+                                            <img src={c.proofImage}
+                                                onClick={() => setSelectedImg(c.proofImage)}
                                                 className="mt-2 rounded-xl max-h-40 w-full object-cover cursor-pointer hover:opacity-90 border border-border"
                                                 alt="Anexo"/>
                                         )}
@@ -239,7 +246,7 @@ export default function MeuChamadoPage({ params }: { params: Promise<{ id: strin
                         })}
                     </div>
 
-                    {/* INPUT DE MENSAGEM */}
+                    {/* INPUT */}
                     {!isClosed && (
                         <div className="p-4 border-t border-border bg-background/50">
                             {photo && (
@@ -252,8 +259,10 @@ export default function MeuChamadoPage({ params }: { params: Promise<{ id: strin
                                 </div>
                             )}
                             <div className="flex gap-2">
-                                <textarea value={message} onChange={e => setMessage(e.target.value)}
-                                    placeholder="Escreva uma mensagem ou atualização..."
+                                <textarea
+                                    value={message}
+                                    onChange={e => setMessage(e.target.value)}
+                                    placeholder="Escreva uma mensagem..."
                                     className="flex-1 p-3 bg-background border-2 border-border rounded-2xl outline-none focus:border-primary text-sm font-medium text-foreground resize-none h-12 min-h-12 max-h-32 placeholder:text-muted/50 transition-all"
                                     onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); } }}
                                 />
@@ -270,8 +279,11 @@ export default function MeuChamadoPage({ params }: { params: Promise<{ id: strin
                                                 e.target.value = '';
                                             }}/>
                                     </label>
-                                    <button onClick={sendMessage} disabled={sending || (!message.trim() && !photo)}
-                                        className="p-3 bg-primary text-white rounded-2xl hover:opacity-90 disabled:opacity-40 transition-all shrink-0">
+                                    <button
+                                        onClick={sendMessage}
+                                        disabled={sending || (!message.trim() && !photo)}
+                                        className="p-3 bg-primary text-white rounded-2xl hover:opacity-90 disabled:opacity-40 transition-all shrink-0"
+                                    >
                                         <Send size={16}/>
                                     </button>
                                 </div>

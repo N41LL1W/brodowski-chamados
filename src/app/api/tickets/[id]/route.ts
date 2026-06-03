@@ -26,9 +26,9 @@ export async function GET(req: NextRequest, { params }: RouteContext) {
         const ticket = await prisma.ticket.findUnique({
             where: { id },
             include: {
-                requester: { select: { id: true, name: true, image: true } },
-                category: true,
-                department: true,
+                requester:  { select: { id: true, name: true, email: true, image: true } },
+                category:   { select: { id: true, name: true } },      // ← precisa disso
+                department: { select: { id: true, name: true } },      // ← e isso
                 assignedTo: { select: { id: true, name: true } },
                 comments: {
                     select: {

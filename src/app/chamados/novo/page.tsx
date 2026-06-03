@@ -13,6 +13,7 @@ import {
 } from 'lucide-react';
 import { PDFDownloadLink } from '@react-pdf/renderer';
 import { TicketPDF } from '@/components/TicketPDF';
+import { useSystemConfig } from '@/components/SystemConfigProvider';
 
 const IconMap: Record<string, any> = {
     Monitor, Wifi, Printer, ShieldAlert, FileText,
@@ -22,7 +23,7 @@ const IconMap: Record<string, any> = {
 };
 
 const PRIORITY_STYLES: Record<string, { active: string; dot: string }> = {
-    URGENTE: { active: 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 border-red-300 dark:border-red-700',     dot: 'bg-red-500' },
+    URGENTE: { active: 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 border-red-300 dark:border-red-700',      dot: 'bg-red-500' },
     ALTA:    { active: 'bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 border-amber-300 dark:border-amber-700', dot: 'bg-amber-500' },
     NORMAL:  { active: 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 border-blue-300 dark:border-blue-700',   dot: 'bg-blue-500' },
     BAIXA:   { active: 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border-slate-300 dark:border-slate-600', dot: 'bg-slate-400' },
@@ -37,6 +38,7 @@ const DEFAULT_PRIORITIES = [
 
 export default function NovoChamadoPage() {
     const router = useRouter();
+    const sysConfig = useSystemConfig(); // ← DENTRO do componente
     const [step, setStep] = useState(1);
     const [submitting, setSubmitting] = useState(false);
     const [categories, setCategories] = useState<any[]>([]);
@@ -102,22 +104,18 @@ export default function NovoChamadoPage() {
         searchTimeout.current = setTimeout(async () => {
             setSearchLoading(true);
             try {
-                // Adiciona contexto da cidade para refinar resultados
-                const query = `${searchAddress}, Brodowski, São Paulo, Brasil`;
+                const query = `${searchAddress}, Brasil`;
                 const res = await fetch(
                     `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=7&countrycodes=br&addressdetails=1&dedupe=1`,
-                    { headers: { 'Accept-Language': 'pt-BR', 'User-Agent': 'BrodowskiChamados/1.0' } }
+                    { headers: { 'Accept-Language': 'pt-BR', 'User-Agent': 'ChamadosTI/1.0' } }
                 );
                 const data = await res.json();
-                // Remove duplicatas por display_name
                 const seen = new Set<string>();
-                const unique = data.filter((s: any) => {
-                    const key = s.display_name;
-                    if (seen.has(key)) return false;
-                    seen.add(key);
+                setSuggestions(data.filter((s: any) => {
+                    if (seen.has(s.display_name)) return false;
+                    seen.add(s.display_name);
                     return true;
-                });
-                setSuggestions(unique);
+                }));
             } catch {
                 setSuggestions([]);
             } finally {
@@ -142,7 +140,6 @@ export default function NovoChamadoPage() {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(form),
             });
-
             if (res.ok) {
                 const ticketData = await res.json();
                 if (photo) {
@@ -211,7 +208,7 @@ export default function NovoChamadoPage() {
                         {/* LOCAIS PRÉ-CADASTRADOS */}
                         {locaisSugeridos.length > 0 && searchAddress.length < 3 && (
                             <div className="p-4 border-b border-border">
-                                <p className="text-[9px] font-black uppercase tracking-widest text-muted mb-2">Locais da prefeitura</p>
+                                <p className="text-[9px] font-black uppercase tracking-widest text-muted mb-2">Locais cadastrados</p>
                                 <div className="flex flex-wrap gap-1.5">
                                     {locaisSugeridos.map((l, i) => (
                                         <button key={i} onClick={() => selectLocation(l)}
@@ -239,7 +236,7 @@ export default function NovoChamadoPage() {
 
                         <div className="p-3 border-t border-border bg-background/50">
                             <button
-                                onClick={() => window.open(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(searchAddress || 'Brodowski SP')}`, '_blank')}
+                                onClick={() => window.open(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(searchAddress || 'Brasil')}`, '_blank')}
                                 className="w-full flex items-center justify-center gap-2 p-2.5 rounded-xl border border-border text-muted hover:border-primary hover:text-primary text-[10px] font-black uppercase transition-all"
                             >
                                 <ExternalLink size={12}/> Abrir no Google Maps
@@ -273,7 +270,6 @@ export default function NovoChamadoPage() {
                         )}
                     </div>
 
-                    {/* PROGRESS */}
                     {step < 3 && (
                         <div className="flex gap-2">
                             <div className={`h-1.5 flex-1 rounded-full transition-all duration-500 ${step >= 1 ? 'bg-primary' : 'bg-border'}`}/>
@@ -411,7 +407,6 @@ export default function NovoChamadoPage() {
                                     </button>
                                 </div>
 
-                                {/* CHIPS DE LOCAIS PRÉ-CADASTRADOS */}
                                 {locaisSugeridos.length > 0 && (
                                     <div className="flex flex-wrap gap-1.5">
                                         {locaisSugeridos.slice(0, 8).map((l, i) => (
@@ -466,7 +461,7 @@ export default function NovoChamadoPage() {
                                     </div>
                                     <div className="min-w-0">
                                         <p className="text-sm font-bold text-foreground truncate">Anexar foto do problema</p>
-                                        <p className="text-[10px] text-muted mt-0.5">Ajuda no diagnóstico — JPG, PNG</p>
+                                        <p className="text-[10px] text-muted mt-0.5">JPG, PNG</p>
                                     </div>
                                     <input type="file" accept="image/*" className="hidden"
                                         onChange={e => {
@@ -503,7 +498,6 @@ export default function NovoChamadoPage() {
                                 {submitting ? 'Enviando...' : 'Finalizar Chamado'}
                             </button>
 
-                            {/* CAMPOS FALTANDO */}
                             {!canSubmit && (
                                 <p className="text-center text-[10px] text-muted mt-2">
                                     Preencha:{' '}
@@ -518,7 +512,7 @@ export default function NovoChamadoPage() {
                     </div>
                 )}
 
-                {/* ========== PASSO 3 ========== */}
+                {/* ========== PASSO 3 — SUCESSO ========== */}
                 {step === 3 && createdTicket && (
                     <div className="animate-in fade-in zoom-in-95 duration-500 text-center space-y-8">
                         <div className="flex flex-col items-center gap-5">
@@ -550,8 +544,15 @@ export default function NovoChamadoPage() {
                         </div>
 
                         <div className="grid gap-3 max-w-sm mx-auto w-full">
+                            {/* PDF DOWNLOAD */}
                             <PDFDownloadLink
-                                document={<TicketPDF ticket={createdTicket}/>}
+                                document={
+                                    <TicketPDF
+                                        ticket={createdTicket}
+                                        systemName={sysConfig.systemName}
+                                        cityName={sysConfig.cityName}
+                                    />
+                                }
                                 fileName={`protocolo-${createdTicket.protocol}.pdf`}
                                 className="flex items-center justify-center gap-2 p-4 bg-foreground text-background rounded-2xl font-black uppercase text-sm hover:opacity-90 transition-all"
                             >
