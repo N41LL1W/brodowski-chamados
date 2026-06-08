@@ -92,11 +92,12 @@ function fmtDate(d: any) {
 }
 
 function safe(value: any): string {
-    // Se o valor for nulo, undefined ou string vazia, retorna um texto padrão
-    if (!value || value === null || value === undefined || value === '') {
-        return 'Não informado';
-    }
-    return String(value);
+    if (!value || value === null || value === undefined) return 'Não informado';
+    const str = String(value).trim();
+    if (str === '') return 'Não informado';
+    // Se parece um CUID (string técnica sem espaços com 20+ chars), retorna padrão
+    if (/^[a-z0-9]{20,}$/.test(str)) return 'Não informado';
+    return str;
 }
 
 export const TicketPDF = ({ ticket, systemName, cityName }: {
@@ -104,8 +105,13 @@ export const TicketPDF = ({ ticket, systemName, cityName }: {
     systemName?: string;
     cityName?: string;
 }) => {
-    const sysName  = systemName || 'Central de Chamados';
-    const sysCity  = cityName   || '';
+    // Garante que o systemName não é um CUID ou valor técnico
+    const rawName = systemName || '';
+    const sysName = rawName && !/^[a-z0-9]{20,}$/.test(rawName) && rawName.length > 0
+        ? rawName
+        : 'Central de Chamados';
+
+    const sysCity  = cityName || '';
     const subTitle = sysCity
         ? `Chamados Técnicos — ${sysCity}`
         : 'Sistema de Chamados Técnicos';

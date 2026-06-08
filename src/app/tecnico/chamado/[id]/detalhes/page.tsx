@@ -7,10 +7,13 @@ import {
     ArrowLeft, MapPin, User, Clock, Tag,
     Building2, MessageSquare, Camera,
     CalendarClock, CheckCircle2, AlertTriangle,
-    Navigation, Wrench, ArrowRight
+    Navigation, Wrench, ArrowRight, Download 
 } from 'lucide-react';
 import { Badge } from '@/components/ui/Badge';
 import SLABadge from '@/components/SLABadge';
+import { PDFDownloadLink } from '@react-pdf/renderer';
+import { TicketPDF } from '@/components/TicketPDF';
+import { useSystemConfig } from '@/components/SystemConfigProvider';
 
 const STATUS_LABEL: Record<string, string> = {
     ABERTO: 'Aberto', OPEN: 'Aberto',
@@ -28,6 +31,8 @@ const STATUS_STYLE: Record<string, string> = {
     CONCLUIDO: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400',
     CONCLUDED: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400',
 };
+
+const sysConfig = useSystemConfig();
 
 export default function DetalhesReadOnlyPage({ params }: { params: Promise<{ id: string }> }) {
     const { id } = use(params);
@@ -310,6 +315,23 @@ export default function DetalhesReadOnlyPage({ params }: { params: Promise<{ id:
                                 {assuming ? 'Assumindo...' : 'Assumir e iniciar atendimento'}
                             </button>
                         )}
+
+                        {/* BOTÃO PDF — disponível para todos os chamados */}
+                        <PDFDownloadLink
+                            document={
+                                <TicketPDF
+                                    ticket={ticket}
+                                    systemName={sysConfig.systemName}
+                                    cityName={sysConfig.cityName}
+                                />
+                            }
+                            fileName={`chamado-${ticket.protocol}.pdf`}
+                            className="w-full flex items-center justify-center gap-2 p-4 bg-card border-2 border-border text-foreground rounded-2xl font-black uppercase text-[11px] hover:bg-background transition-all"
+                        >
+                        {({ loading }) => (
+                            <><Download size={15}/>{loading ? 'Gerando...' : 'Baixar PDF do chamado'}</>
+                        )}
+                    </PDFDownloadLink>
                     </div>
                 </div>
             </div>

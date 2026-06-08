@@ -180,7 +180,7 @@ export default function MeuChamadoPage({ params }: { params: Promise<{ id: strin
                     )}
 
                     {/* PDF — usa ticket (não createdTicket) */}
-                    {isClosed && (
+                    {(
                         <PDFDownloadLink
                             document={
                                 <TicketPDF

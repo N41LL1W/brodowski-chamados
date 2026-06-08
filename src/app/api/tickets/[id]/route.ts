@@ -27,8 +27,8 @@ export async function GET(req: NextRequest, { params }: RouteContext) {
             where: { id },
             include: {
                 requester:  { select: { id: true, name: true, email: true, image: true } },
-                category:   { select: { id: true, name: true } },      // ← precisa disso
-                department: { select: { id: true, name: true } },      // ← e isso
+                category:   { select: { id: true, name: true } },
+                department: { select: { id: true, name: true } },
                 assignedTo: { select: { id: true, name: true } },
                 comments: {
                     select: {
@@ -54,7 +54,34 @@ export async function GET(req: NextRequest, { params }: RouteContext) {
             return NextResponse.json({ message: "Acesso negado" }, { status: 403 });
         }
 
-        return NextResponse.json(ticket);
+        // Se category veio nulo, tenta buscar na CategoryConfig
+        let enrichedTicket: any = { ...ticket };
+
+        if (!ticket.category && ticket.categoryId) {
+            try {
+                const catConfig = await (prisma as any).categoryConfig.findUnique({
+                    where: { id: ticket.categoryId }
+                });
+                if (catConfig) {
+                    enrichedTicket.category = { id: catConfig.id, name: catConfig.name };
+                }
+            } catch { /* ignora se não encontrar */ }
+        }
+
+        // Se department veio nulo, tenta buscar diretamente
+        if (!ticket.department && ticket.departmentId) {
+            try {
+                const dept = await prisma.department.findUnique({
+                    where: { id: ticket.departmentId },
+                    select: { id: true, name: true }
+                });
+                if (dept) {
+                    enrichedTicket.department = dept;
+                }
+            } catch { /* ignora */ }
+        }
+
+        return NextResponse.json(enrichedTicket);
     } catch (error) {
         console.error("[TICKET_GET_ERROR]:", error);
         return NextResponse.json({ error: "Erro interno" }, { status: 500 });

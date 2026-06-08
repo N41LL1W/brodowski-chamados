@@ -141,9 +141,10 @@ export default function NovoChamadoPage() {
                 body: JSON.stringify(form),
             });
             if (res.ok) {
-                const ticketData = await res.json();
+                const ticketBasico = await res.json();
+
                 if (photo) {
-                    await fetch(`/api/tickets/${ticketData.id}`, {
+                    await fetch(`/api/tickets/${ticketBasico.id}`, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({
@@ -152,7 +153,12 @@ export default function NovoChamadoPage() {
                         })
                     });
                 }
-                setCreatedTicket(ticketData);
+
+                // Busca o ticket COMPLETO com todos os includes para o PDF
+                const resCompleto = await fetch(`/api/tickets/${ticketBasico.id}`);
+                const ticketCompleto = resCompleto.ok ? await resCompleto.json() : ticketBasico;
+
+                setCreatedTicket(ticketCompleto);
                 setStep(3);
             } else {
                 const err = await res.json();
