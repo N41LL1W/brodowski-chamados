@@ -24,7 +24,7 @@ export default function MeusChamadosPage() {
     const [showFilters, setShowFilters] = useState(false);
 
     useEffect(() => {
-        fetch('/api/tickets')
+        fetch('/api/tickets?scope=meus')
             .then(res => res.json())
             .then(data => setTickets(Array.isArray(data) ? data : []))
             .catch(() => setTickets([]))

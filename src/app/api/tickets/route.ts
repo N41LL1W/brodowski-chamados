@@ -15,9 +15,15 @@ export async function GET(req: NextRequest) {
         const user = session.user as any;
         const { searchParams } = new URL(req.url);
         const status = searchParams.get('status');
+        const scope  = searchParams.get('scope'); // 'meus' ou 'todos'
 
         const where: any = {};
-        if (user.role === 'FUNCIONARIO') where.requesterId = user.id;
+
+        // Se scope=meus OU se for FUNCIONARIO, filtra só os chamados do usuário
+        if (scope === 'meus' || user.role === 'FUNCIONARIO') {
+            where.requesterId = user.id;
+        }
+
         if (status) where.status = status;
 
         const tickets = await prisma.ticket.findMany({

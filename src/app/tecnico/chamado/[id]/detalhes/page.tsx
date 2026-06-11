@@ -36,6 +36,7 @@ const sysConfig = useSystemConfig();
 
 export default function DetalhesReadOnlyPage({ params }: { params: Promise<{ id: string }> }) {
     const { id } = use(params);
+    const sysConfig = useSystemConfig();
     const router = useRouter();
     const [ticket, setTicket] = useState<any>(null);
     const [loading, setLoading] = useState(true);
